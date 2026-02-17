@@ -1,33 +1,39 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      
+      <div className="app">
+      <header className="header">
+        <h1>Library Database System</h1>
+      </header>
+
+      <nav className="navbar">
+        <button>Home</button>
+        <button>Search</button>
+        <button>My Loans</button>
+        <button>Login</button>
+      </nav>
+
+      <main className="content">
+        <h2>Welcome to the Library</h2>
+        <p>Please search books or manage your account.</p>
+      </main>
+
+      <footer className="footer">
+        <p>Library System © TeamProject 2026 Spring</p>
+        <p>By Azan,Mehrab U</p>
+        <p>Lin, Evan</p>
+        <p>Chukwu,David David</p>
+        <p>Morin,Rainer Diamond</p>
+        <p>Patel,Devkumar</p>
+      </footer>
+    </div>
+      
+      
     </>
   )
 }
