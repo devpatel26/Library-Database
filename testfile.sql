@@ -57,9 +57,8 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `Library_Database`.`books` (
   `book_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `shelf_number` INT NULL,
-  `available` INT NULL,
+  `available` BOOLEAN NOT NULL DEFAULT TRUE,
   `on_hold` INT NULL,
-  `unavailable` INT NULL,
   `book_type_code` INT NULL,
   `language_code` INT NULL,
   `genre_code` INT NULL,
@@ -126,9 +125,8 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `Library_Database`.`periodicals` (
   `periodical_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `shelf_number` INT NULL,
-  `available` INT NULL,
+  `available` BOOLEAN NOT NULL DEFAULT TRUE,
   `on_hold` INT NULL,
-  `unavailable` INT NULL,
   `periodical_type_code` INT NULL,
   `language_code` INT NULL,
   `genre_code` INT NULL,
@@ -178,9 +176,8 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `Library_Database`.`audiovisual_media` (
   `audiovisual_media_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `shelf_number` INT NULL,
-  `available` INT NULL,
+  `available` BOOLEAN NOT NULL DEFAULT TRUE,
   `on_hold` INT NULL,
-  `unavailable` INT NULL,
   `audiovisual_media_type_code` INT NULL,
   `language_code` INT NULL,
   `genre_code` INT NULL,
@@ -236,9 +233,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `Library_Database`.`equipment` (
   `equipment_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `available` INT NULL,
+  `available` BOOLEAN NOT NULL DEFAULT TRUE,
   `on_hold` INT NULL,
-  `unavailable` INT NULL,
   `equipment_name` VARCHAR(20) NOT NULL,
   PRIMARY KEY (`equipment_id`),
   UNIQUE INDEX `equipment_id_UNIQUE` (`equipment_id` ASC) VISIBLE)
@@ -319,9 +315,9 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `Library_Database`.`book_loans` (
   `patron_id` INT UNSIGNED NOT NULL,
   `book_id` INT UNSIGNED NOT NULL,
-  `loan_start_date` VARCHAR(45) NOT NULL,
-  `loan_return_date` VARCHAR(45) NULL,
-  `loan_due_date` VARCHAR(45) NOT NULL,
+  `loan_start_date` DATE NOT NULL,
+  `loan_return_date` DATE NULL,
+  `loan_due_date` DATE NOT NULL,
   `item_type` VARCHAR(45) NULL,
   PRIMARY KEY (`patron_id`, `book_id`),
   INDEX `book_id_idx` (`book_id` ASC) VISIBLE,
@@ -344,7 +340,7 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `Library_Database`.`fines` (
   `fine_id` INT NOT NULL AUTO_INCREMENT,
   `patron_id` INT UNSIGNED NOT NULL,
-  `fine_amount` FLOAT NULL,
+  `fine_amount` DECIMAL(10,2) NULL,
   `fine_date` DATE NULL,
   `paid_date` DATE NULL,
   `waived_date` DATE NULL,
@@ -365,9 +361,9 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `Library_Database`.`audiovisual_media_loans` (
   `patron_id` INT UNSIGNED NOT NULL,
   `audiovisual_media_id` INT UNSIGNED NOT NULL,
-  `loan_start_date` VARCHAR(45) NOT NULL,
-  `loan_return_date` VARCHAR(45) NULL,
-  `loan_due_date` VARCHAR(45) NOT NULL,
+  `loan_start_date` DATE NOT NULL,
+  `loan_return_date` DATE NULL,
+  `loan_due_date` DATE NOT NULL,
   `item_type` VARCHAR(45) NULL,
   PRIMARY KEY (`patron_id`, `audiovisual_media_id`),
   INDEX `audiovisual_media_id_idx` (`audiovisual_media_id` ASC) VISIBLE,
@@ -390,9 +386,9 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `Library_Database`.`equipment_loans` (
   `patron_id` INT UNSIGNED NOT NULL,
   `equipment_id` INT UNSIGNED NOT NULL,
-  `loan_start_date` VARCHAR(45) NOT NULL,
-  `loan_return_date` VARCHAR(45) NULL,
-  `loan_due_date` VARCHAR(45) NOT NULL,
+  `loan_start_date` DATE NOT NULL,
+  `loan_return_date` DATE NULL,
+  `loan_due_date` DATE NOT NULL,
   PRIMARY KEY (`patron_id`, `equipment_id`),
   INDEX `equipment_id_idx` (`equipment_id` ASC) VISIBLE,
   CONSTRAINT `patron_id`
@@ -414,9 +410,8 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `Library_Database`.`audiovisual_media_copy1` (
   `item_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `shelf_number` INT NULL,
-  `available` INT NULL,
+  `available` BOOLEAN NOT NULL DEFAULT TRUE,
   `on_hold` INT NULL,
-  `unavailable` INT NULL,
   `media_type_code` INT NULL,
   `language_code` INT NULL,
   `genre_code` INT NULL,
