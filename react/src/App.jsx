@@ -1,41 +1,63 @@
-import './App.css'
+import "./App.css";
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+
+import Home from "./pages/Home.jsx";
+import SearchPage from "./pages/SearchPage.jsx";
+import AccountPage from "./pages/AccountPage.jsx";
+import FinesPage from "./pages/FinesPage.jsx";
+import LoanPage from "./pages/LoanPage.jsx";
+import HoldPage from "./pages/HoldPage.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
+import RegistrationPage from "./pages/RegistrationPage.jsx";
+import ReportPage from "./pages/ReportPage.jsx";
+import TestPage from "./pages/TestPage.jsx";
 
 function App() {
-
-
   return (
-    <>
-      
-      <div className="app">
-      <header className="header">
-        <h1>Library Database System</h1>
-      </header>
-
+    <BrowserRouter>
       <nav className="navbar">
-        <button>Home</button>
-        <button>Search</button>
-        <button>My Loans</button>
-        <button>Login</button>
+        <Link to="/">
+          <button>Home</button>
+        </Link>
+        <Link to="/TestPage">
+          <button>TestPage</button>
+        </Link>
+        <Link to="/AccountPage">
+          <button>AccountPage</button>
+        </Link>
+        <Link to="/FinesPage">
+          <button>FinesPage</button>
+        </Link>
+        <Link to="/HoldPage">
+          <button>HoldPage</button>
+        </Link>
+        <Link to="/LoanPage">
+          <button>LoanPage</button>
+        </Link>
+        <Link to="/RegistrationPage">
+          <button>RegistrationPage</button>
+        </Link>
+        <Link to="/ReportPage">
+          <button>ReportPage</button>
+        </Link>
+        <Link to="/SearchPage">
+          <button>SearchPage</button>
+        </Link>
       </nav>
-
-      <main className="content">
-        <h2>Welcome to the Library</h2>
-        <p>Please search books or manage your account.</p>
-      </main>
-
-      <footer className="footer">
-        <p>Library System © TeamProject 2026 Spring</p>
-        <p>By Azan,Mehrab U</p>
-        <p>Lin, Evan</p>
-        <p>Chukwu,David David</p>
-        <p>Morin,Rainer Diamond</p>
-        <p>Patel,Devkumar</p>
-      </footer>
-    </div>
-      
-      
-    </>
-  )
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/TestPage" element={<TestPage />} />
+        <Route path="/AccountPage" element={<AccountPage />} />
+        <Route path="/FinesPage" element={<FinesPage />} />
+        <Route path="/HoldPage" element={<HoldPage />} />
+        <Route path="/LoanPage" element={<LoanPage />} />
+        <Route path="/LoginPage" element={<LoginPage />} />
+        <Route path="/RegistrationPage" element={<RegistrationPage />} />
+        <Route path="/ReportPage" element={<ReportPage />} />
+        <Route path="/SearchPage" element={<SearchPage />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
