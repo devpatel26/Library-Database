@@ -2,14 +2,11 @@ import "./App.css";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 
 import Home from "./pages/Home.jsx";
-import SearchPage from "./pages/SearchPage.jsx";
-import AccountPage from "./pages/AccountPage.jsx";
-import FinesPage from "./pages/FinesPage.jsx";
-import LoanPage from "./pages/LoanPage.jsx";
-import HoldPage from "./pages/HoldPage.jsx";
-import LoginPage from "./pages/LoginPage.jsx";
-import RegistrationPage from "./pages/RegistrationPage.jsx";
-import ReportPage from "./pages/ReportPage.jsx";
+import Search from "./pages/Search.jsx";
+import Account from "./pages/Account.jsx";
+import Login from "./pages/Login.jsx";
+import Registration from "./pages/Registration.jsx";
+import Report from "./pages/Report.jsx";
 import TestPage from "./pages/TestPage.jsx";
 
 function App() {
@@ -19,42 +16,33 @@ function App() {
         <Link to="/">
           <button>Home</button>
         </Link>
-        <Link to="/TestPage">
+        <Link to="/test">
           <button>TestPage</button>
         </Link>
-        <Link to="/AccountPage">
-          <button>AccountPage</button>
+        <Link to="/account">
+          <button>Account</button>
         </Link>
-        <Link to="/FinesPage">
-          <button>FinesPage</button>
+        <Link to="/login">
+          <button>Login</button>
         </Link>
-        <Link to="/HoldPage">
-          <button>HoldPage</button>
+        <Link to="/registration">
+          <button>Registration</button>
         </Link>
-        <Link to="/LoanPage">
-          <button>LoanPage</button>
+        <Link to="/report">
+          <button>Report</button>
         </Link>
-        <Link to="/RegistrationPage">
-          <button>RegistrationPage</button>
-        </Link>
-        <Link to="/ReportPage">
-          <button>ReportPage</button>
-        </Link>
-        <Link to="/SearchPage">
-          <button>SearchPage</button>
+        <Link to="/search">
+          <button>Search</button>
         </Link>
       </nav>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/TestPage" element={<TestPage />} />
-        <Route path="/AccountPage" element={<AccountPage />} />
-        <Route path="/FinesPage" element={<FinesPage />} />
-        <Route path="/HoldPage" element={<HoldPage />} />
-        <Route path="/LoanPage" element={<LoanPage />} />
-        <Route path="/LoginPage" element={<LoginPage />} />
-        <Route path="/RegistrationPage" element={<RegistrationPage />} />
-        <Route path="/ReportPage" element={<ReportPage />} />
-        <Route path="/SearchPage" element={<SearchPage />} />
+        <Route path="/test" element={<TestPage />} />
+        <Route path="/account" element={<Account />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/registration" element={<Registration />} />
+        <Route path="/report" element={<Report />} />
+        <Route path="/search" element={<Search />} />
       </Routes>
     </BrowserRouter>
   );
