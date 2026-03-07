@@ -1,4 +1,3 @@
-import "./App.css";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 
 import Home from "./pages/Home.jsx";
@@ -9,41 +8,46 @@ import Registration from "./pages/Registration.jsx";
 import Report from "./pages/Report.jsx";
 import TestPage from "./pages/TestPage.jsx";
 
+const navLinks = [
+  { to: "/", label: "Home" },
+  { to: "/test", label: "Test Page" },
+  { to: "/account", label: "Account" },
+  { to: "/login", label: "Login" },
+  { to: "/registration", label: "Registration" },
+  { to: "/report", label: "Report" },
+  { to: "/search", label: "Search" },
+];
+
 function App() {
   return (
     <BrowserRouter>
-      <nav className="navbar">
-        <Link to="/">
-          <button>Home</button>
-        </Link>
-        <Link to="/test">
-          <button>TestPage</button>
-        </Link>
-        <Link to="/account">
-          <button>Account</button>
-        </Link>
-        <Link to="/login">
-          <button>Login</button>
-        </Link>
-        <Link to="/registration">
-          <button>Registration</button>
-        </Link>
-        <Link to="/report">
-          <button>Report</button>
-        </Link>
-        <Link to="/search">
-          <button>Search</button>
-        </Link>
-      </nav>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/test" element={<TestPage />} />
-        <Route path="/account" element={<Account />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/registration" element={<Registration />} />
-        <Route path="/report" element={<Report />} />
-        <Route path="/search" element={<Search />} />
-      </Routes>
+      <div className="min-h-screen min-w-80 bg-slate-950 text-slate-100 antialiased">
+        <nav className="border-b border-white/10 bg-slate-950/95 backdrop-blur">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-3 px-4 py-4 sm:px-6">
+            {navLinks.map(({ to, label }) => (
+              <Link
+                key={to}
+                to={to}
+                className="rounded-full border border-sky-400/20 bg-slate-900 px-4 py-2 text-sm font-medium text-slate-100 transition hover:border-sky-300 hover:bg-slate-800"
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
+        </nav>
+
+        <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/test" element={<TestPage />} />
+            <Route path="/account" element={<Account />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/registration" element={<Registration />} />
+            <Route path="/report" element={<Report />} />
+            <Route path="/search" element={<Search />} />
+          </Routes>
+        </main>
+      </div>
     </BrowserRouter>
   );
 }
