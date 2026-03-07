@@ -1,4 +1,5 @@
 import TestComponentNoData from "../components/TestComponentNoData";
+import PrimaryButton, { SecondaryButton } from "../components/Buttons";
 
 export default function TestPage() {
   return (
@@ -16,6 +17,13 @@ export default function TestPage() {
         </p>
       </div>
       <TestComponentNoData />
+
+      <PrimaryButton title={"Primary Button"} />
+      <SecondaryButton title={"Secondary Button"} />
+      <div>
+        <SecondaryButton title={"Cancel"} />
+        <PrimaryButton title={"Register"} />
+      </div>
     </div>
   );
 }
