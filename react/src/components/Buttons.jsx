@@ -4,10 +4,11 @@ function clickFunction() {
   console.log("Test");
 }
 
-export default function PrimaryButton({ title }) {
+export default function PrimaryButton({ title, disabledValue = false }) {
   return (
     <div className="inline">
       <button
+        disabled={disabledValue}
         onClick={clickFunction}
         className="rounded-md bg-indigo-800 px-3 py-1.5 outline-1 -outline-offset-1 outline-indigo-700 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 m-1 hover:bg-indigo-500 disabled:bg-indigo-1000"
       >
@@ -17,11 +18,12 @@ export default function PrimaryButton({ title }) {
   );
 }
 
-export function SubmitButton({ title, value }) {
+export function SubmitButton({ title, disabledValue = false }) {
   return (
     <div className="inline">
       <button
         type="submit"
+        disabled={disabledValue}
         onClick={clickFunction}
         className="rounded-md bg-indigo-800 px-3 py-1.5 outline-1 -outline-offset-1 outline-indigo-700 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 m-1 hover:bg-indigo-500 disabled:bg-indigo-1000"
       >
