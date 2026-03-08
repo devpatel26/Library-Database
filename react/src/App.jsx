@@ -9,6 +9,7 @@ import StaffRegistration from "./pages/StaffRegistration.jsx";
 import Report from "./pages/Report.jsx";
 import TestPage from "./pages/TestPage.jsx";
 import Fines from "./pages/Fines.jsx";
+import ItemEntry from "./pages/ItemEntry.jsx";
 import StaffFines from "./pages/StaffFines.jsx";
 
 const navLinks = [
@@ -18,6 +19,7 @@ const navLinks = [
   { to: "/account", label: "Account" },
   { to: "/fines", label: "Fines (Patron)" },
   { to: "/stafffines", label: "Fines (Staff)" },
+  { to: "/itementry", label: "Item Entry (Staff)" },
   { to: "/report", label: "Report (Admin)" },
   { to: "/test", label: "Test Page" },
 ];
@@ -49,6 +51,7 @@ function App() {
             <Route path="/registration" element={<Registration />} />
             <Route path="/fines" element={<Fines />} />
             <Route path="/stafffines" element={<StaffFines />} />
+            <Route path="/itementry" element={<ItemEntry />} />
             <Route path="/staffregistration" element={<StaffRegistration />} />
             <Route path="/report" element={<Report />} />
             <Route path="/search" element={<Search />} />
