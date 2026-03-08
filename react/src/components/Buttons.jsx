@@ -1,7 +1,7 @@
 import React from "react";
 
 function clickFunction() {
-  alert("Test");
+  console.log("Test");
 }
 
 export default function PrimaryButton({ title }) {
