@@ -5,6 +5,7 @@ import Search from "./pages/Search.jsx";
 import Account from "./pages/Account.jsx";
 import Login from "./pages/Login.jsx";
 import Registration from "./pages/Registration.jsx";
+import StaffRegistration from "./pages/StaffRegistration.jsx";
 import Report from "./pages/Report.jsx";
 import TestPage from "./pages/TestPage.jsx";
 
@@ -14,6 +15,7 @@ const navLinks = [
   { to: "/account", label: "Account" },
   { to: "/login", label: "Login" },
   { to: "/registration", label: "Registration" },
+  { to: "/staffregistration", label: "StaffRegistration" },
   { to: "/report", label: "Report" },
   { to: "/search", label: "Search" },
 ];
@@ -43,6 +45,7 @@ function App() {
             <Route path="/account" element={<Account />} />
             <Route path="/login" element={<Login />} />
             <Route path="/registration" element={<Registration />} />
+            <Route path="/staffregistration" element={<StaffRegistration />} />
             <Route path="/report" element={<Report />} />
             <Route path="/search" element={<Search />} />
           </Routes>
