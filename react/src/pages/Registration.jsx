@@ -12,7 +12,7 @@ export default function Registration() {
         Registration
       </p>
       <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">
-        Registration Page
+        Registration
       </h1>
       <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
         New library members can be onboarded here once the registration form is
@@ -50,7 +50,7 @@ export default function Registration() {
             </div>
             <div className="sm:col-span-3">
               <div>
-                <label htmlFor="birthday">Birthday WIP</label>
+                <label htmlFor="birthday">Date of Birth</label>
                 <div className="mt-2">
                   <input
                     required

@@ -12,7 +12,7 @@ export default function StaffRegistration() {
         Staff Registration
       </p>
       <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">
-        Staff Registration Page
+        Staff Registration
       </h1>
       <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
         Admin page for registering staff accounts.
@@ -49,7 +49,7 @@ export default function StaffRegistration() {
             </div>
             <div className="sm:col-span-3">
               <div>
-                <label htmlFor="birthday">Birth Date WIP</label>
+                <label htmlFor="birthday">Date of Birth</label>
                 <div className="mt-2">
                   <input
                     required

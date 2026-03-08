@@ -16,8 +16,6 @@ const navLinks = [
   { to: "/test", label: "Test Page" },
   { to: "/account", label: "Account" },
   { to: "/login", label: "Login" },
-  { to: "/registration", label: "Registration" },
-  { to: "/staffregistration", label: "StaffRegistration" },
   { to: "/report", label: "Report" },
   { to: "/fines", label: "Fines" },
   { to: "/stafffines", label: "StaffFines" },
