@@ -1,5 +1,9 @@
 import React from "react";
 import InputComponent from "../components/InputComponent";
+import PrimaryButton, {
+  SecondaryButton,
+  SubmitButton,
+} from "../components/Buttons";
 
 export default function Registration() {
   return (
@@ -17,9 +21,9 @@ export default function Registration() {
       <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
         Register an account with the below form:
       </p>
-      <form>
+      <form method="post">
         <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-6">
+          <div className="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-9">
             <div className="sm:col-span-3">
               <label htmlFor="firstname">First Name</label>
               <div className="mt-2">
@@ -42,6 +46,20 @@ export default function Registration() {
                   type="lastname"
                   className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                 />
+              </div>
+            </div>
+            <div className="sm:col-span-3">
+              <div>
+                <label htmlFor="birthday">Birthday WIP</label>
+                <div className="mt-2">
+                  <input
+                    required
+                    id="birthday"
+                    name="birthday"
+                    type="text"
+                    className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -72,6 +90,9 @@ export default function Registration() {
                 </div>
               </div>
             </div>
+          </div>
+          <div className="grid justify-center">
+            <SubmitButton title={"Register"} value={"OK"} />
           </div>
         </div>
       </form>
