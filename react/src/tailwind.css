@@ -1,1 +1,6 @@
 @import "tailwindcss";
+
+/* Registration page test */
+body {
+  background: #020617; /*Stops the white top/bottom*/
+}
