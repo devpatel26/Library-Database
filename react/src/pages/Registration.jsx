@@ -7,7 +7,9 @@ import PrimaryButton, {
 
 export default function Registration() {
   return (
-    <section className="rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
+    // mx-auto flex w-full max-w-lg flex-col items-center rounded-3xl border border-white/10 bg-slate-900/70 p-6 text-center shadow-xl shadow-slate-950/3
+    // rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30 text-center grid justify-items-center
+    <section className="mx-auto flex w-full max-w-lg flex-col items-center rounded-3xl border border-white/10 bg-slate-900/70 p-6 text-center shadow-xl shadow-slate-950/3">
       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
         Registration
       </p>
@@ -18,7 +20,7 @@ export default function Registration() {
         New library members can be onboarded here once the registration form is
         added.
       </p>
-      <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
+      <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300 mb-2">
         Register an account with the below form:
       </p>
       <form method="post">

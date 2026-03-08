@@ -7,7 +7,7 @@ import PrimaryButton, {
 
 export default function StaffRegistration() {
   return (
-    <section className="rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
+    <section className="mx-auto flex w-full max-w-lg flex-col items-center rounded-3xl border border-white/10 bg-slate-900/70 p-6 text-center shadow-xl shadow-slate-950/3">
       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
         Staff Registration
       </p>
@@ -17,7 +17,7 @@ export default function StaffRegistration() {
       <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
         Admin page for registering staff accounts.
       </p>
-      <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
+      <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300 mb-2">
         Register an account with the below form:
       </p>
       <form method="post">
@@ -62,8 +62,8 @@ export default function StaffRegistration() {
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-6">
-            <div className="sm:col-span-5">
+          <div className="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-3">
+            <div className="sm:col-span-2">
               <label htmlFor="address">Address</label>
               <div className="mt-2">
                 <input

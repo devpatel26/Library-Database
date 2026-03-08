@@ -13,13 +13,13 @@ import StaffFines from "./pages/StaffFines.jsx";
 
 const navLinks = [
   { to: "/", label: "Home" },
-  { to: "/test", label: "Test Page" },
-  { to: "/account", label: "Account" },
-  { to: "/login", label: "Login" },
-  { to: "/report", label: "Report" },
-  { to: "/fines", label: "Fines" },
-  { to: "/stafffines", label: "StaffFines" },
   { to: "/search", label: "Search" },
+  { to: "/login", label: "Login" },
+  { to: "/account", label: "Account" },
+  { to: "/fines", label: "Fines (Patron)" },
+  { to: "/stafffines", label: "Fines (Staff)" },
+  { to: "/report", label: "Report (Admin)" },
+  { to: "/test", label: "Test Page" },
 ];
 
 function App() {
