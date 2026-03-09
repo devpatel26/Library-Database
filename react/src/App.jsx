@@ -11,6 +11,7 @@ import TestPage from "./pages/TestPage.jsx";
 import Fines from "./pages/Fines.jsx";
 import ItemEntry from "./pages/ItemEntry.jsx";
 import StaffFines from "./pages/StaffFines.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
 
 const navLinks = [
   { to: "/", label: "Home" },
@@ -55,6 +56,7 @@ function App() {
             <Route path="/staffregistration" element={<StaffRegistration />} />
             <Route path="/report" element={<Report />} />
             <Route path="/search" element={<Search />} />
+            <Route path="/forgotpassword" element={<ForgotPassword />} />
           </Routes>
         </main>
       </div>

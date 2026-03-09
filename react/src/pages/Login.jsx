@@ -1,4 +1,5 @@
-import PrimaryButton, { SubmitButton } from "../components/Buttons";
+import { Link } from "react-router-dom";
+import { SubmitButton } from "../components/Buttons";
 
 export default function Login() {
   return (
@@ -34,21 +35,21 @@ export default function Login() {
       </div>
       <p className="mt-4 text-sm text-slate-400">
         Don't have an account?{" "}
-        <a href="/registration" className="text-sky-300 hover:text-sky-200">
+        <Link to="/registration" className="text-sky-300 hover:text-sky-200">
           Register
-        </a>
+        </Link>
       </p>
       <p className="mt-4 text-sm text-slate-400">
         Staff registration?{" "}
-        <a href="/staffregistration" className="text-sky-300 hover:text-sky-200">
+        <Link to="/staffregistration" className="text-sky-300 hover:text-sky-200">
           Register
-        </a>
+        </Link>
       </p>
       <p className="mt-4 text-sm text-slate-400">
         Forgot your password?{" "}
-        <a href="/forgot-password" className="text-sky-300 hover:text-sky-200">
+        <Link to="/forgotpassword" className="text-sky-300 hover:text-sky-200">
           Reset it
-        </a>
+        </Link>
       </p>
     </section>
   );
