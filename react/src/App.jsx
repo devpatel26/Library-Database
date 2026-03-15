@@ -18,8 +18,6 @@ const navLinks = [
   { to: "/search", label: "Search" },
   { to: "/login", label: "Login" },
   { to: "/account", label: "Account" },
-  { to: "/fines", label: "Fines (Patron)" },
-  { to: "/stafffines", label: "Fines (Staff)" },
   { to: "/itementry", label: "Item Entry (Staff)" },
   { to: "/report", label: "Report (Admin)" },
   { to: "/test", label: "Test Page" },
