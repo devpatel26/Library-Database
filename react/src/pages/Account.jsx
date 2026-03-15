@@ -1,15 +1,43 @@
+import { Routes, Route, Link } from "react-router-dom";
+
+import Fines from "./Fines";
+import StaffFines from "./StaffFines";
+import Loans from "./Loans";
+import StaffLoans from "./StaffLoans";
+
+const navLinks = [
+  { to: "/account", label: "Account"},
+  { to: "/fines", label: "Fines"},
+  { to: "/loans", label: "Loans"}
+];
+
 export default function Account() {
   return (
-    <section className="rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
-      <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
-        Account
-      </p>
-      <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">
-        Account Page
-      </h1>
-      <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
-        Use this area for account details, borrowed items, and profile updates.
-      </p>
-    </section>
+    <div className="flex">
+      <nav className="w-64 h-screen sticky top-0 p-4 border-r">
+        <div className="flex flex-col gap-4 p-2 items-start">
+          {navLinks.map((link, index) => (
+            <Link
+              key={index} 
+              to={link.to}
+              className="block w-full rounded px-3 py-2 text-left hover:bg-slate-700 hover:text-white"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
+      </nav>
+      <main className="flex-1 p-8 space-y-24">
+        <h1 className="text-3xl font-bold">
+          Account
+        </h1>
+        <Routes>
+          <Route path="/fines" element={<Fines />} />
+          <Route path="/stafffines" element={<StaffFines />} />
+          <Route path="/loans" element={<Loans />} />
+          <Route path="/staffloans" element={<StaffLoans />} />
+        </Routes>
+      </main>
+    </div>
   );
 }

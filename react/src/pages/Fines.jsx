@@ -12,7 +12,7 @@ export default function Fines() {
       <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
         Lists of fines can be found here.
       </p>
-      <div class="flex gap-4 flex-wrap justify-evenly mt-4">
+      <div className="flex gap-4 flex-wrap justify-evenly mt-4">
         <Fine
           amount={"1.50"}
           date={"3/7/2026"}
