@@ -50,38 +50,45 @@ export function ItemStaff({ itemData }) {
           <ItemHolder data={itemData} />
         </div>
         <div className="col-span-2 grid grid-cols-2 items-center m-2">
-          <div className="grid grid-rows-3 col-span-1">
-            <div>Copy number: {itemData.copy}</div>
-            <div>Item status: {itemData.status}</div>
-            {itemData.status == "Available" ? null : itemData.status ==
-              "On hold" ? (
+          {itemData.status == "Available" ? (
+            <div className="grid grid-rows-2 col-span-1">
+              <div>Copy number: {itemData.copy}</div>
+              <div>Item status: {itemData.status}</div>
+            </div>
+          ) : itemData.status == "On hold" ? (
+            <div className="grid grid-rows-4 col-span-1">
+              <div>Copy number: {itemData.copy}</div>
+              <div>Item status: {itemData.status}</div>
               <div>On hold until {itemData.holdEnd}</div>
-            ) : itemData.status == "Loaned" ? (
+              <div>Held by user {itemData.userid}</div>
+            </div>
+          ) : itemData.status == "Loaned" ? (
+            <div className="grid grid-rows-4 col-span-1">
+              <div>Copy number: {itemData.copy}</div>
+              <div>Item status: {itemData.status}</div>
               <div>Loaned until {itemData.loanEnd}</div>
-            ) : (
-              <div>Item Missing</div>
-            )}
-          </div>
+              <div>Loaned by user {itemData.userid}</div>
+            </div>
+          ) : (
+            <div className="grid grid-rows-2 col-span-1">
+              <div>Copy number: {itemData.copy}</div>
+              <div>Item status: {itemData.status}</div>
+            </div>
+          )}
           <div className="col-span-1 items-center justify-items-center text-center">
             {itemData.status == "On hold" ? (
               <div>
-                <PrimaryButton title="Cancel hold" />
+                <SecondaryButton title="Cancel hold" />
               </div>
             ) : itemData.status == "Loaned" ? (
               <div>
-                <PrimaryButton title="Mark as missing" />
+                <PrimaryButton title="Mark as returned" />
+                <SecondaryButton title="Mark as missing" />
               </div>
+            ) : itemData.status == "Available" ? (
+              <SecondaryButton title="Mark as missing" />
             ) : null}
           </div>
-
-          {/* {itemData.status == "Available" ? null : itemData.status ==
-            "On hold" ? (
-            <PrimaryButton title="Cancel hold" />
-          ) : itemData.status == "Loaned" ? (
-            <div>Loaned until {itemData.loanEnd}</div>
-          ) : (
-            <div>Item Missing</div>
-          )} */}
         </div>
       </div>
     </div>

@@ -73,6 +73,7 @@ export const dummyBaseItemsStaff = [
     author: { firstName: "Herman", lastName: "Hesse" },
   },
   {
+    userid: 12354354,
     category: "periodical",
     title: "People",
     type: "Magazine",
@@ -83,6 +84,7 @@ export const dummyBaseItemsStaff = [
     summary:
       "Lorem ipsum dolor sit amet. Nulla et luctus libero, nec lacinia est. Praesent eget nisi volutpat, tristique neque a, volutpat tellus. Mauris at lacus eget tortor cursus lacinia eu ut turpis. Maecenas dignissim erat id sapien interdum commodo. Praesent a placerat neque. Mauris vulputate tortor vitae cursus semper. Fusce volutpat magna ut lorem lacinia consequat.",
     status: "Loaned",
+    loanStart: "10-10-2025",
     loanEnd: "10-16-2025",
     genre: "Psychological Horror",
     publisher: "People Inc",
@@ -90,6 +92,7 @@ export const dummyBaseItemsStaff = [
     publicationDate: "2018",
   },
   {
+    userid: 12354354,
     category: "audiovisualmedia",
     title: "Jaws",
     type: "DVD",
@@ -100,6 +103,7 @@ export const dummyBaseItemsStaff = [
       "Lorem ipsum dolor sit amet. Nulla et luctus libero, nec lacinia est. Praesent eget nisi volutpat, tristique neque a, volutpat tellus. Mauris at lacus eget tortor cursus lacinia eu ut turpis. Maecenas dignissim erat id sapien interdum commodo. Praesent a placerat neque. Mauris vulputate tortor vitae cursus semper. Fusce volutpat magna ut lorem lacinia consequat.",
     genre: "Horror",
     status: "On hold",
+    holdStart: "10-02-2025",
     holdEnd: "10-04-2025",
     publisher: "Universal Home Video",
     shelfNumber: 4,
@@ -123,6 +127,7 @@ export const dummyBaseItemsStaff = [
 ];
 export const dummyItemHolds = [
   {
+    userid: 12354354,
     category: "book",
     title: "Demian",
     type: "Paperback",
@@ -133,11 +138,13 @@ export const dummyItemHolds = [
     publisher: "Penguin Classics",
     shelfNumber: 1,
     holdStart: "10-02-2025",
+    holdEnd: "10-03-2025",
     ready: false,
     publicationDate: "2013",
     author: { firstName: "Herman", lastName: "Hesse" },
   },
   {
+    userid: 6354554,
     category: "book",
     title: "Demian",
     type: "Paperback",
@@ -156,6 +163,7 @@ export const dummyItemHolds = [
 ];
 export const dummyItemLoans = [
   {
+    userid: 12354354,
     category: "book",
     title: "Demian",
     type: "Paperback",
@@ -172,6 +180,7 @@ export const dummyItemLoans = [
     author: { firstName: "Herman", lastName: "Hesse" },
   },
   {
+    userid: 654543452,
     category: "book",
     title: "Demian",
     type: "Paperback",
