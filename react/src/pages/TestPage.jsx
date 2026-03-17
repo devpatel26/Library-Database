@@ -1,9 +1,10 @@
 import TestComponentNoData from "../components/TestComponentNoData";
 import PrimaryButton, { SecondaryButton } from "../components/Buttons";
-import Item, { Book } from "../components/Items";
+import Item from "../components/Items";
 
 export default function TestPage() {
-  const dummyBook1 = {
+  const dummyData1 = {
+    category: "book",
     title: "Demian",
     type: "Paperback",
     language: "English",
@@ -18,19 +19,44 @@ export default function TestPage() {
     onHold: 1,
     unavailable: 5,
   };
-  const dummyBook2 = {
-    title: "Crime and Punishment",
-    type: "Paperback",
+  const dummyData2 = {
+    category: "periodical",
+    title: "People",
+    type: "Magazine",
+    vol: 23,
+    no: 5,
     language: "English",
-    genre: "Psychological Thriller",
+    genre: "Psychological Horror",
     summary:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec scelerisque vestibulum eros, at dignissim orci dapibus a. Nulla et luctus libero, nec lacinia est. Praesent eget nisi volutpat, tristique neque a, volutpat tellus. Mauris at lacus eget tortor cursus lacinia eu ut turpis. Maecenas dignissim erat id sapien interdum commodo. Praesent a placerat neque. Mauris vulputate tortor vitae cursus semper. Fusce volutpat magna ut lorem lacinia consequat.",
-    publisher: "Penguin Books",
-    shelfNumber: 1,
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec scelerisque vestibulum eros. Nulla et luctus libero. Praesent eget nisi volutpat, tristique neque a, volutpat tellus. Mauris at lacus eget tortor cursus lacinia eu ut turpis. Maecenas dignissim erat id sapien interdum commodo. Praesent a placerat neque. Mauris vulputate tortor vitae cursus semper. Fusce volutpat magna ut lorem lacinia consequat.",
+    publisher: "People Inc",
+    shelfNumber: 7,
     publicationDate: "2018",
-    author: { firstName: "Fyodor", lastName: "Dostoyevsky" },
     available: 0,
-    onHold: 2,
+    onHold: 6,
+    unavailable: 3,
+  };
+  const dummyData3 = {
+    category: "audiovisualmedia",
+    title: "Jaws",
+    type: "DVD",
+    runtime: 124,
+    language: "English",
+    genre: "Horror",
+    summary:
+      "Lorem ipsum dolor sit amet. Nulla et luctus libero, nec lacinia est. Praesent eget nisi volutpat, tristique neque a, volutpat tellus. Mauris at lacus eget tortor cursus lacinia eu ut turpis. Maecenas dignissim erat id sapien interdum commodo. Praesent a placerat neque. Mauris vulputate tortor vitae cursus semper. Fusce volutpat magna ut lorem lacinia consequat.",
+    publisher: "Universal Home Video",
+    shelfNumber: 4,
+    publicationDate: "2018",
+    available: 5,
+    onHold: 1,
+    unavailable: 3,
+  };
+  const dummyData4 = {
+    category: "equipment",
+    title: "Guitar",
+    available: 0,
+    onHold: 1,
     unavailable: 3,
   };
   return (
@@ -55,8 +81,10 @@ export default function TestPage() {
         <SecondaryButton title={"Cancel"} />
         <PrimaryButton title={"Register"} />
       </div>
-      <Item itemType={Book} itemData={dummyBook1} />
-      <Item itemType={Book} itemData={dummyBook2} />
+      <Item itemData={dummyData1} />
+      <Item itemData={dummyData2} />
+      <Item itemData={dummyData3} />
+      <Item itemData={dummyData4} />
     </div>
   );
 }
