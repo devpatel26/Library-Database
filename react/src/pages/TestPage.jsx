@@ -1,6 +1,6 @@
 import TestComponentNoData from "../components/TestComponentNoData";
 import PrimaryButton, { SecondaryButton } from "../components/Buttons";
-import Item from "../components/Items";
+import Item, { ItemHold, ItemLoan } from "../components/Items";
 
 export default function TestPage() {
   const dummyData1 = {
@@ -18,6 +18,68 @@ export default function TestPage() {
     available: 2,
     onHold: 1,
     unavailable: 5,
+  };
+  const dummyDataL1 = {
+    category: "book",
+    title: "Demian",
+    type: "Paperback",
+    language: "English",
+    genre: "Bildungsroman",
+    summary:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam eu fringilla nisi. Nullam in imperdiet eros. Praesent eget ultrices leo, ut congue orci. Mauris lorem felis, viverra quis neque ac, mollis venenatis elit. Mauris ultrices nibh nunc, ac auctor mi interdum a. Fusce lacus sem, gravida sit amet ligula mollis, molestie semper augue. Pellentesque vel quam id metus volutpat pharetra. Nulla quis sem interdum massa varius malesuada. Suspendisse hendrerit sodales congue. ",
+    publisher: "Penguin Classics",
+    shelfNumber: 1,
+    publicationDate: "2013",
+    loanStart: "10-02-2025",
+    loanEnd: "10-16-2025",
+    overdue: false,
+    author: { firstName: "Herman", lastName: "Hesse" },
+  };
+  const dummyDataL2 = {
+    category: "book",
+    title: "Demian",
+    type: "Paperback",
+    language: "English",
+    genre: "Bildungsroman",
+    summary:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam eu fringilla nisi. Nullam in imperdiet eros. Praesent eget ultrices leo, ut congue orci. Mauris lorem felis, viverra quis neque ac, mollis venenatis elit. Mauris ultrices nibh nunc, ac auctor mi interdum a. Fusce lacus sem, gravida sit amet ligula mollis, molestie semper augue. Pellentesque vel quam id metus volutpat pharetra. Nulla quis sem interdum massa varius malesuada. Suspendisse hendrerit sodales congue. ",
+    publisher: "Penguin Classics",
+    shelfNumber: 1,
+    publicationDate: "2013",
+    loanStart: "10-02-2025",
+    loanEnd: "10-16-2025",
+    overdue: true,
+    author: { firstName: "Herman", lastName: "Hesse" },
+  };
+  const dummyDataH1 = {
+    category: "book",
+    title: "Demian",
+    type: "Paperback",
+    language: "English",
+    genre: "Bildungsroman",
+    summary:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam eu fringilla nisi. Nullam in imperdiet eros. Praesent eget ultrices leo, ut congue orci. Mauris lorem felis, viverra quis neque ac, mollis venenatis elit. Mauris ultrices nibh nunc, ac auctor mi interdum a. Fusce lacus sem, gravida sit amet ligula mollis, molestie semper augue. Pellentesque vel quam id metus volutpat pharetra. Nulla quis sem interdum massa varius malesuada. Suspendisse hendrerit sodales congue. ",
+    publisher: "Penguin Classics",
+    shelfNumber: 1,
+    holdStart: "10-02-2025",
+    ready: false,
+    publicationDate: "2013",
+    author: { firstName: "Herman", lastName: "Hesse" },
+  };
+  const dummyDataH2 = {
+    category: "book",
+    title: "Demian",
+    type: "Paperback",
+    language: "English",
+    genre: "Bildungsroman",
+    summary:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam eu fringilla nisi. Nullam in imperdiet eros. Praesent eget ultrices leo, ut congue orci. Mauris lorem felis, viverra quis neque ac, mollis venenatis elit. Mauris ultrices nibh nunc, ac auctor mi interdum a. Fusce lacus sem, gravida sit amet ligula mollis, molestie semper augue. Pellentesque vel quam id metus volutpat pharetra. Nulla quis sem interdum massa varius malesuada. Suspendisse hendrerit sodales congue. ",
+    publisher: "Penguin Classics",
+    shelfNumber: 1,
+    holdStart: "10-02-2025",
+    ready: true,
+    publicationDate: "2013",
+    author: { firstName: "Herman", lastName: "Hesse" },
   };
   const dummyData2 = {
     category: "periodical",
@@ -81,10 +143,18 @@ export default function TestPage() {
         <SecondaryButton title={"Cancel"} />
         <PrimaryButton title={"Register"} />
       </div>
+      <h2>Tests for search view (patron)</h2>
       <Item itemData={dummyData1} />
       <Item itemData={dummyData2} />
       <Item itemData={dummyData3} />
       <Item itemData={dummyData4} />
+      <h2>Tests for search view (staff)</h2>
+      <h2>Tests for account view loan (patron)</h2>
+      <ItemLoan itemData={dummyDataL1} />
+      <ItemLoan itemData={dummyDataL2} />
+      <h2>Tests for account view hold (patron)</h2>
+      <ItemHold itemData={dummyDataH1} />
+      <ItemHold itemData={dummyDataH2} />
     </div>
   );
 }

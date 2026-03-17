@@ -42,6 +42,50 @@ export default function Item({ itemData }) {
   );
 }
 
+export function ItemLoan({ itemData }) {
+  return (
+    <div>
+      <div className="grid grid-cols-4 rounded-xl bg-white/2 px-3 py-1.5 outline-2 -outline-offset-1 outline-white/6">
+        <div className="col-span-3 m-2">
+          <ItemHolder data={itemData} />
+        </div>
+        {itemData.overdue ? (
+          <div className="col-span-1 grid grid-rows-2 items-center text-center">
+            <div>Due: {itemData.loanEnd}</div>
+            <div>Item Overdue</div>
+          </div>
+        ) : (
+          <div className="col-span-1 grid grid-rows-2 items-center text-center">
+            <div>Due: {itemData.loanEnd}</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+export function ItemHold({ itemData }) {
+  return (
+    <div>
+      <div className="grid grid-cols-4 rounded-xl bg-white/2 px-3 py-1.5 outline-2 -outline-offset-1 outline-white/6">
+        <div className="col-span-3 m-2">
+          <ItemHolder data={itemData} />
+        </div>
+        {itemData.ready ? (
+          <div className="col-span-1 grid grid-rows-2 items-center text-center">
+            <span>Item ready to pickup</span>
+            <PrimaryButton title="Cancel" />
+          </div>
+        ) : (
+          <div className="col-span-1 grid grid-rows-2 items-center text-center">
+            <span>Item not ready</span>
+            <PrimaryButton title="Cancel" />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function ItemHolder({ data }) {
   return (
     <div className="inline">
