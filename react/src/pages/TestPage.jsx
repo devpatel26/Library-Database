@@ -1,8 +1,39 @@
 import TestComponentNoData from "../components/TestComponentNoData";
 import PrimaryButton, { SecondaryButton } from "../components/Buttons";
 import Item, { ItemHold, ItemLoan } from "../components/Items";
+import Fine, { FineStaff } from "../components/Fine";
 
 export default function TestPage() {
+  // <Fine
+  //         amount={"1.50"}
+  //         date={"3/7/2026"}
+  //         paidStatus={true}
+  //         waiveStatus={false}
+  //       />
+  const dummyFine1 = {
+    amount: 1.5,
+    date: "10-02-2025",
+    paidStatus: true,
+    waiveStatus: false,
+  };
+  const dummyFine2 = {
+    amount: 2.5,
+    date: "10-12-2025",
+    paidStatus: true,
+    waiveStatus: true,
+  };
+  const dummyFine3 = {
+    amount: 1.0,
+    date: "09-13-2025",
+    paidStatus: false,
+    waiveStatus: false,
+  };
+  const dummyFine4 = {
+    amount: 1.25,
+    date: "10-14-2025",
+    paidStatus: false,
+    waiveStatus: true,
+  };
   const dummyData1 = {
     category: "book",
     title: "Demian",
@@ -136,23 +167,53 @@ export default function TestPage() {
         </p>
       </div>
       <TestComponentNoData />
-
+      <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
+        Button Tests
+      </p>
       <PrimaryButton title={"Primary Button"} />
       <SecondaryButton title={"Secondary Button"} />
       <div>
         <SecondaryButton title={"Cancel"} />
         <PrimaryButton title={"Register"} />
       </div>
-      <h2>Tests for search view (patron)</h2>
+      <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
+        Tests for fines (patron)
+      </p>
+
+      <div className="flex gap-4 flex-wrap justify-evenly mt-4">
+        <Fine data={dummyFine1} />
+        <Fine data={dummyFine2} />
+        <Fine data={dummyFine3} />
+        <Fine data={dummyFine4} />
+      </div>
+      <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
+        Tests for fines (staff)
+      </p>
+
+      <div className="flex gap-4 flex-wrap justify-evenly mt-4">
+        <FineStaff data={dummyFine1} />
+        <FineStaff data={dummyFine2} />
+        <FineStaff data={dummyFine3} />
+        <FineStaff data={dummyFine4} />
+      </div>
+      <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
+        Tests for search view (patron)
+      </p>
       <Item itemData={dummyData1} />
       <Item itemData={dummyData2} />
       <Item itemData={dummyData3} />
       <Item itemData={dummyData4} />
-      <h2>Tests for search view (staff)</h2>
-      <h2>Tests for account view loan (patron)</h2>
+      <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
+        Tests for search view (staff)
+      </p>
+      <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
+        Tests for account view loan (patron)
+      </p>
       <ItemLoan itemData={dummyDataL1} />
       <ItemLoan itemData={dummyDataL2} />
-      <h2>Tests for account view hold (patron)</h2>
+      <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
+        Tests for account view hold (patron)
+      </p>
       <ItemHold itemData={dummyDataH1} />
       <ItemHold itemData={dummyDataH2} />
     </div>
