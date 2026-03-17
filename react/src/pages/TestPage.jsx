@@ -1,15 +1,9 @@
 import TestComponentNoData from "../components/TestComponentNoData";
 import PrimaryButton, { SecondaryButton } from "../components/Buttons";
-import Item, { ItemHold, ItemLoan } from "../components/Items";
+import Item, { ItemHold, ItemLoan, ItemStaff } from "../components/Items";
 import Fine, { FineStaff } from "../components/Fine";
 
 export default function TestPage() {
-  // <Fine
-  //         amount={"1.50"}
-  //         date={"3/7/2026"}
-  //         paidStatus={true}
-  //         waiveStatus={false}
-  //       />
   const dummyFine1 = {
     amount: 1.5,
     date: "10-02-2025",
@@ -108,6 +102,7 @@ export default function TestPage() {
     publisher: "Penguin Classics",
     shelfNumber: 1,
     holdStart: "10-02-2025",
+    holdEnd: "10-04-2025",
     ready: true,
     publicationDate: "2013",
     author: { firstName: "Herman", lastName: "Hesse" },
@@ -151,6 +146,69 @@ export default function TestPage() {
     available: 0,
     onHold: 1,
     unavailable: 3,
+  };
+  const dummyDataIS1 = {
+    category: "book",
+    title: "Demian",
+    type: "Paperback",
+    language: "English",
+    summary:
+      "Lorem ipsum dolor sit amet. Nulla et luctus libero, nec lacinia est. Praesent eget nisi volutpat, tristique neque a, volutpat tellus. Mauris at lacus eget tortor cursus lacinia eu ut turpis. Maecenas dignissim erat id sapien interdum commodo. Praesent a placerat neque. Mauris vulputate tortor vitae cursus semper. Fusce volutpat magna ut lorem lacinia consequat.",
+    copy: 5,
+    genre: "Bildungsroman",
+    status: "Available",
+    publisher: "Penguin Classics",
+    shelfNumber: 1,
+    publicationDate: "2013",
+    author: { firstName: "Herman", lastName: "Hesse" },
+  };
+  const dummyDataIS2 = {
+    category: "periodical",
+    title: "People",
+    type: "Magazine",
+    vol: 23,
+    no: 5,
+    copy: 4,
+    language: "English",
+    summary:
+      "Lorem ipsum dolor sit amet. Nulla et luctus libero, nec lacinia est. Praesent eget nisi volutpat, tristique neque a, volutpat tellus. Mauris at lacus eget tortor cursus lacinia eu ut turpis. Maecenas dignissim erat id sapien interdum commodo. Praesent a placerat neque. Mauris vulputate tortor vitae cursus semper. Fusce volutpat magna ut lorem lacinia consequat.",
+    status: "Loaned",
+    loanEnd: "10-16-2025",
+    genre: "Psychological Horror",
+    publisher: "People Inc",
+    shelfNumber: 7,
+    publicationDate: "2018",
+  };
+  const dummyDataIS3 = {
+    category: "audiovisualmedia",
+    title: "Jaws",
+    type: "DVD",
+    runtime: 124,
+    copy: 3,
+    language: "English",
+    summary:
+      "Lorem ipsum dolor sit amet. Nulla et luctus libero, nec lacinia est. Praesent eget nisi volutpat, tristique neque a, volutpat tellus. Mauris at lacus eget tortor cursus lacinia eu ut turpis. Maecenas dignissim erat id sapien interdum commodo. Praesent a placerat neque. Mauris vulputate tortor vitae cursus semper. Fusce volutpat magna ut lorem lacinia consequat.",
+    genre: "Horror",
+    status: "On hold",
+    holdEnd: "10-04-2025",
+    publisher: "Universal Home Video",
+    shelfNumber: 4,
+    publicationDate: "2018",
+  };
+  const dummyDataIS4 = {
+    category: "audiovisualmedia",
+    title: "Jaws",
+    type: "DVD",
+    runtime: 124,
+    copy: 1,
+    language: "English",
+    summary:
+      "Lorem ipsum dolor sit amet. Nulla et luctus libero, nec lacinia est. Praesent eget nisi volutpat, tristique neque a, volutpat tellus. Mauris at lacus eget tortor cursus lacinia eu ut turpis. Maecenas dignissim erat id sapien interdum commodo. Praesent a placerat neque. Mauris vulputate tortor vitae cursus semper. Fusce volutpat magna ut lorem lacinia consequat.",
+    genre: "Horror",
+    status: "Missing",
+    publisher: "Universal Home Video",
+    shelfNumber: 4,
+    publicationDate: "2018",
   };
   return (
     <div className="space-y-6 rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
@@ -206,6 +264,10 @@ export default function TestPage() {
       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
         Tests for search view (staff)
       </p>
+      <ItemStaff itemData={dummyDataIS1} />
+      <ItemStaff itemData={dummyDataIS2} />
+      <ItemStaff itemData={dummyDataIS3} />
+      <ItemStaff itemData={dummyDataIS4} />
       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
         Tests for account view loan (patron)
       </p>

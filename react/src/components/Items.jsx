@@ -42,6 +42,52 @@ export default function Item({ itemData }) {
   );
 }
 
+export function ItemStaff({ itemData }) {
+  return (
+    <div>
+      <div className="grid grid-cols-4 rounded-xl bg-white/2 px-3 py-1.5 outline-2 -outline-offset-1 outline-white/6">
+        <div className="col-span-2 m-2">
+          <ItemHolder data={itemData} />
+        </div>
+        <div className="col-span-2 grid grid-cols-2 items-center m-2">
+          <div className="grid grid-rows-3 col-span-1">
+            <div>Copy number: {itemData.copy}</div>
+            <div>Item status: {itemData.status}</div>
+            {itemData.status == "Available" ? null : itemData.status ==
+              "On hold" ? (
+              <div>On hold until {itemData.holdEnd}</div>
+            ) : itemData.status == "Loaned" ? (
+              <div>Loaned until {itemData.loanEnd}</div>
+            ) : (
+              <div>Item Missing</div>
+            )}
+          </div>
+          <div className="col-span-1 items-center justify-items-center text-center">
+            {itemData.status == "On hold" ? (
+              <div>
+                <PrimaryButton title="Cancel hold" />
+              </div>
+            ) : itemData.status == "Loaned" ? (
+              <div>
+                <PrimaryButton title="Mark as missing" />
+              </div>
+            ) : null}
+          </div>
+
+          {/* {itemData.status == "Available" ? null : itemData.status ==
+            "On hold" ? (
+            <PrimaryButton title="Cancel hold" />
+          ) : itemData.status == "Loaned" ? (
+            <div>Loaned until {itemData.loanEnd}</div>
+          ) : (
+            <div>Item Missing</div>
+          )} */}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ItemLoan({ itemData }) {
   return (
     <div>
