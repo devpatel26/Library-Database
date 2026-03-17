@@ -1,24 +1,30 @@
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
-import Home from "./pages/Home.jsx";
-import Search from "./pages/Search.jsx";
 import Account from "./pages/Account.jsx";
+import Fines from "./pages/Fines.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
+import Home from "./pages/Home.jsx";
+import ItemEntry from "./pages/ItemEntry.jsx";
+import Loans from "./pages/Loans.jsx";
 import Login from "./pages/Login.jsx";
 import Registration from "./pages/Registration.jsx";
-import StaffRegistration from "./pages/StaffRegistration.jsx";
 import Report from "./pages/Report.jsx";
-import TestPage from "./pages/TestPage.jsx";
-import Fines from "./pages/Fines.jsx";
-import ItemEntry from "./pages/ItemEntry.jsx";
+import Search from "./pages/Search.jsx";
 import StaffFines from "./pages/StaffFines.jsx";
-import ForgotPassword from "./pages/ForgotPassword.jsx";
+import StaffRegistration from "./pages/StaffRegistration.jsx";
+import TestPage from "./pages/TestPage.jsx";
 
 const navLinks = [
   { to: "/", label: "Home" },
   { to: "/search", label: "Search" },
   { to: "/login", label: "Login" },
   { to: "/account", label: "Account" },
+  // Staff pages
   { to: "/itementry", label: "Item Entry (Staff)" },
+  // Admin pages
   { to: "/report", label: "Report (Admin)" },
+  { to: "/staffregistration", label: "Staff Registration (Admin)" },
+  // TESTING AFTER THIS - REMOVE LATER
+  { to: "/stafffines", label: "Staff Fines (Staff)" },
   { to: "/test", label: "Test Page" },
 ];
 
