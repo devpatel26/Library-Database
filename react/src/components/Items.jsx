@@ -3,7 +3,7 @@ import PrimaryButton, { SecondaryButton } from "./Buttons";
 
 export default function Item({ itemData }) {
   return (
-    <div>
+    <div className="w-full">
       <div className="grid grid-cols-4 rounded-xl bg-white/2 px-3 py-1.5 outline-2 -outline-offset-1 outline-white/6">
         <div className="col-span-3 m-2">
           <ItemHolder data={itemData} />
