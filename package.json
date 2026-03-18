@@ -1,0 +1,11 @@
+{
+  "name": "library-database",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "setup": "node scripts/setup.js",
+    "dev": "node scripts/dev.js",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix react run dev"
+  }
+}

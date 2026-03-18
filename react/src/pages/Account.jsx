@@ -1,14 +1,10 @@
-import { Routes, Route, Link } from "react-router-dom";
+import { Outlet, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import Fines from "./Fines";
-import StaffFines from "./StaffFines";
-import Loans from "./Loans";
-import StaffLoans from "./StaffLoans";
 
 const navLinks = [
-  { to: "/account", label: "Account" },
-  { to: "/fines", label: "Fines" },
-  { to: "/loans", label: "Loans" },
+  { to: ".", label: "Account" },
+  { to: "fines", label: "Fines" },
+  { to: "loans", label: "Loans" },
 ];
 
 export default function Account() {
@@ -22,7 +18,7 @@ export default function Account() {
 
   /*
   if (!account) {
-    return <div>Loading...</div>;
+    return <div>No Account</div>;
   }
   */
 
@@ -42,13 +38,10 @@ export default function Account() {
         </nav>
       </aside>
       <main className="flex-1 space-y-8 rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
-        <h1 className="text-3xl font-bold text-white">Account</h1>
-        <Routes>
-          <Route path="/fines" element={<Fines />} />
-          <Route path="/stafffines" element={<StaffFines />} />
-          <Route path="/loans" element={<Loans />} />
-          <Route path="/staffloans" element={<StaffLoans />} />
-        </Routes>
+        <h1 className="text-3xl font-bold text-white">
+          Account
+        </h1>
+        <Outlet />
       </main>
     </div>
   );
