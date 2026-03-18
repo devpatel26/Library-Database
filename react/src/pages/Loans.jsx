@@ -32,13 +32,13 @@ export default function Loans() {
 
       <div className="flex gap-4 flex-wrap justify-evenly mt-4">
         <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
-          Tests for account view loan (patron)
+          Loans
         </p>
         {dummyItemLoans.map((item, index) => (
           <ItemLoan key={index} itemData={item} />
         ))}
         <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
-          Tests for account view hold (patron)
+          Holds
         </p>
         {dummyItemHolds.map((item, index) => (
           <ItemHold key={index} itemData={item} />
