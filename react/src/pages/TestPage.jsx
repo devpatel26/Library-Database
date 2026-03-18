@@ -64,18 +64,6 @@ export default function TestPage() {
       {dummyBaseItemsStaff.map((item, index) => (
         <ItemStaff key={index} itemData={item} />
       ))}
-      <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
-        Tests for account view loan (patron)
-      </p>
-      {dummyItemLoans.map((item, index) => (
-        <ItemLoan key={index} itemData={item} />
-      ))}
-      <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
-        Tests for account view hold (patron)
-      </p>
-      {dummyItemHolds.map((item, index) => (
-        <ItemHold key={index} itemData={item} />
-      ))}
     </div>
   );
 }
