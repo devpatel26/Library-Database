@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 
 const navLinks = [
   { to: ".", label: "Account" },
+  { to: "accountinfo", label: "Account Info" },
   { to: "fines", label: "Fines" },
   { to: "loans", label: "Loans" },
 ];
@@ -38,9 +39,7 @@ export default function Account() {
         </nav>
       </aside>
       <main className="flex-1 space-y-8 rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
-        <h1 className="text-3xl font-bold text-white">
-          Account
-        </h1>
+        <h1 className="text-3xl font-bold text-white">Account</h1>
         <Outlet />
       </main>
     </div>

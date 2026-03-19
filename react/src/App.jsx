@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import Account from "./pages/Account.jsx";
+import AccountInfo from "./pages/AccountInfo.jsx";
 import Fines from "./pages/Fines.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import Home from "./pages/Home.jsx";
@@ -57,6 +58,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/test" element={<TestPage />} />
             <Route path="/account" element={<Account />}>
+              <Route path="accountinfo" element={<AccountInfo />} />
               <Route path="fines" element={<Fines />} />
               <Route path="loans" element={<Loans />} />
             </Route>
