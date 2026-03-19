@@ -22,7 +22,7 @@ export default function Equipment() {
       <div className="flex gap-4 flex-wrap justify-evenly mt-4">
         <form method="post">
           <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-x-6 ">
+            <div className="grid grid-cols-4 gap-x-6 ">
               <div className="col-span-2">
                 <label htmlFor="title">Equipment Name</label>
                 <div className="mt-2">
@@ -30,6 +30,18 @@ export default function Equipment() {
                     required
                     id="title"
                     name="title"
+                    className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                  />
+                </div>
+              </div>
+              <div className="sm:col-span-1">
+                <label htmlFor="copies">Copies</label>
+                <div className="mt-2">
+                  <input
+                    required
+                    type="number"
+                    id="copies"
+                    name="copies"
                     className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                   />
                 </div>
