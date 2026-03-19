@@ -4,6 +4,10 @@ import Fines from "./pages/Fines.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import Home from "./pages/Home.jsx";
 import ItemEntry from "./pages/ItemEntry.jsx";
+import Books from "./pages/Books.jsx";
+import Periodicals from "./pages/Periodicals.jsx";
+import AudiovisualMedia from "./pages/AudiovisualMedia.jsx";
+import Equipment from "./pages/Equipment.jsx";
 import Loans from "./pages/Loans.jsx";
 import Login from "./pages/Login.jsx";
 import Registration from "./pages/Registration.jsx";
@@ -58,7 +62,13 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/registration" element={<Registration />} />
             <Route path="/stafffines" element={<StaffFines />} />
-            <Route path="/itementry" element={<ItemEntry />} />
+
+            <Route path="/itementry" element={<ItemEntry />}>
+              <Route path="books" element={<Books />} />
+              <Route path="periodicals" element={<Periodicals />} />
+              <Route path="audiovisualmedia" element={<AudiovisualMedia />} />
+              <Route path="equipment" element={<Equipment />} />
+            </Route>
             <Route path="/staffregistration" element={<StaffRegistration />} />
             <Route path="/report" element={<Report />} />
             <Route path="/search" element={<Search />} />
