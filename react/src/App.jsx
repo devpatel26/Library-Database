@@ -7,6 +7,7 @@ import ItemEntry from "./pages/ItemEntry.jsx";
 import Books from "./pages/Books.jsx";
 import Periodicals from "./pages/Periodicals.jsx";
 import AudiovisualMedia from "./pages/AudiovisualMedia.jsx";
+import NewCopies from "./pages/NewCopies.jsx";
 import Equipment from "./pages/Equipment.jsx";
 import Loans from "./pages/Loans.jsx";
 import Login from "./pages/Login.jsx";
@@ -68,6 +69,7 @@ function App() {
               <Route path="periodicals" element={<Periodicals />} />
               <Route path="audiovisualmedia" element={<AudiovisualMedia />} />
               <Route path="equipment" element={<Equipment />} />
+              <Route path="newcopies" element={<NewCopies />} />
             </Route>
             <Route path="/staffregistration" element={<StaffRegistration />} />
             <Route path="/report" element={<Report />} />

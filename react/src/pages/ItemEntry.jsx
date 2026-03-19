@@ -7,6 +7,7 @@ const navLinks = [
   { to: "periodicals", label: "Periodicals" },
   { to: "audiovisualmedia", label: "Audiovisual Media" },
   { to: "equipment", label: "Equipment" },
+  { to: "newcopies", label: "New Copies" },
 ];
 
 export default function ItemEntry() {
