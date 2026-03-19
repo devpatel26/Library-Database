@@ -20,8 +20,9 @@ export default function AudiovisualMedia() {
     "Young Adult",
     "Adventure",
   ];
-  const formats = ["Hardback", "Paperback"];
+  const formats = ["CD", "DVD", "Blu-ray", "VHS"];
   const languages = [
+    "N/A",
     "English",
     "Spanish",
     "Chinese",
