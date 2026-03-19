@@ -1,14 +1,10 @@
-import PrimaryButton, {
-  SecondaryButton,
-  SubmitButton,
-} from "../components/Buttons";
+import PrimaryButton, { SecondaryButton, SubmitButton } from "../components/Buttons";
+import Item, { ItemHold, ItemLoan, ItemStaff } from "../components/Items";
 import dummyBaseItemsPatron, {
   dummyBaseItemsStaff,
   dummyItemLoans,
   dummyItemHolds,
 } from "../data/dummy/items";
-
-import Item, { ItemHold, ItemLoan, ItemStaff } from "../components/Items";
 
 export default function Search() {
   return (

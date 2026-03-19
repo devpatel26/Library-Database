@@ -16,9 +16,9 @@ import StaffLoans from "./pages/StaffLoans.jsx";
 
 const navLinks = [
   { to: "/", label: "Home" },
+  { to: "/account", label: "Account" },
   { to: "/search", label: "Search" },
   { to: "/login", label: "Login" },
-  { to: "/account", label: "Account" },
   // Staff pages
   { to: "/itementry", label: "Item Entry (Staff)" },
   // Admin pages

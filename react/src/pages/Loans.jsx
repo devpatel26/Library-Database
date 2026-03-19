@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { dummyItemLoans, dummyItemHolds } from "../data/dummy/items";
-
 import { ItemHold, ItemLoan } from "../components/Items";
 
 export default function Loans() {
