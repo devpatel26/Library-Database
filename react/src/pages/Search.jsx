@@ -1,15 +1,53 @@
-import PrimaryButton, {
-  SecondaryButton,
-  SubmitButton,
-} from "../components/Buttons";
-import Item, { ItemHold, ItemLoan, ItemStaff } from "../components/Items";
-import dummyBaseItemsPatron, {
-  dummyBaseItemsStaff,
-  dummyItemLoans,
-  dummyItemHolds,
-} from "../data/dummy/items";
+import { useState } from "react";
+import { SubmitButton } from "../components/Buttons";
+import Item from "../components/Items";
 
 export default function Search() {
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [hasSearched, setHasSearched] = useState(false);
+
+  async function HandleSubmit(event) {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+    const q = String(formData.get("q") ?? "").trim();
+
+    if (!q) {
+      setError("Enter a search term.");
+      setResults([]);
+      return;
+    }
+
+    const params = new URLSearchParams({
+      q,
+      category: String(formData.get("category") ?? "book"),
+      availableOnly: String(formData.get("availableOnly") === "on"),
+      limit: "20",
+    });
+
+    try {
+      setLoading(true);
+      setError("");
+      setHasSearched(true);
+
+      const response = await fetch(`/api/search?${params.toString()}`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error ?? "Search failed.");
+      }
+
+      setResults(data.results ?? []);
+    } catch (err) {
+      setResults([]);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <section className="rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
@@ -21,7 +59,7 @@ export default function Search() {
       <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
         This page is for book, author, and inventory search features.
       </p>
-      <form action="/search" method="GET">
+      <form onSubmit={HandleSubmit}>
         <div className="grid gap-x-6 gap-y-12 grid-cols-8 mt-2">
           <div className="sm:col-span-4">
             <label htmlFor="q">Search Term</label>
@@ -69,12 +107,16 @@ export default function Search() {
         </div>
       </form>
       <div id="results" className="flex gap-6 flex-wrap justify-evenly mt-6">
-        {/* {dummyBaseItemsPatron.map((item, index) => (
-          <Item key={index} itemData={item} />
-        ))} */}
-        {/* {res.results.map((item, index) => (
-          <Item key={index} itemData={item} />
-        ))} */}
+        {loading && <p className="text-slate-300">Searching...</p>}
+        {!loading && error && <p className="text-rose-300">{error}</p>}
+        {!loading && !error && hasSearched && results.length === 0 && (
+          <p className="text-slate-300">No results found.</p>
+        )}
+        {!loading &&
+          !error &&
+          results.map((item) => (
+            <Item key={`${item.category}-${item.itemId}`} itemData={item} />
+          ))}
       </div>
     </section>
   );

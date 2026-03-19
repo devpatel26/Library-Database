@@ -140,47 +140,42 @@ export function ItemHold({ itemData }) {
 }
 
 export function ItemHolder({ data }) {
+  const creator =
+    data.creator ??
+    (data.author ? `${data.author.lastName}, ${data.author.firstName}` : null);
+  const pubLine = [data.publisher, data.publicationDate]
+    .filter(Boolean)
+    .join(", ");
+  const metaLine = [data.type, data.language, data.genre]
+    .filter(Boolean)
+    .join(", ");
+
+  if (data.category === "equipment") {
+    return (
+      <div>
+        <h3 className="text-xl font-bold">{data.title}</h3>
+      </div>
+    );
+  }
+
   return (
     <div className="inline">
-      {data.category != "equipment" ? (
-        <div>
-          <h3 className="text-xl font-bold">{data.title}</h3>
-          {data.category == "book" ? (
-            <div>
-              <div className="text-lg font-semibold text-sky-300">
-                {data.author.lastName}, {data.author.firstName}
-              </div>
-              <div>
-                {data.publisher}, {data.publicationDate}
-              </div>
-            </div>
-          ) : data.category == "periodical" ? (
-            <div>
-              <div className="text-lg font-semibold text-sky-300">
-                Vol. {data.vol}, no. {data.no}
-              </div>
-              <div>
-                {data.publisher}, {data.publicationDate}
-              </div>
-            </div>
-          ) : (
-            <div>
-              {data.publisher}, {data.publicationDate}
-            </div>
-          )}
+      <div>
+        <h3 className="text-xl font-bold">{data.title}</h3>
+        {creator && (
+          <div className="text-lg font-semibold text-sky-300">{creator}</div>
+        )}
+        {pubLine && <div>{pubLine}</div>}
+        {metaLine && (
           <div>
-            {data.type}, {data.language}, {data.genre}
-            {data.category == "audiovisualmedia" ? (
-              <span>, {data.runtime} mins</span>
-            ) : null}
+            {metaLine}
+            {data.category === "audiovisualmedia" && data.runtime
+              ? `, ${data.runtime} mins`
+              : ""}
           </div>
-          <div>{data.summary}</div>
-        </div>
-      ) : (
-        <div>
-          <h3 className="text-xl font-bold">{data.title}</h3>
-        </div>
-      )}
+        )}
+        {data.summary && <div>{data.summary}</div>}
+      </div>
     </div>
   );
 }
