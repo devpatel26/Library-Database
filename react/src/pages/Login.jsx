@@ -41,7 +41,8 @@ export default function Login() {
             if (!response.ok) {
               throw new Error(data.error || "Login failed.");
             }
-
+            
+            localStorage.setItem("user", JSON.stringify(data.user));
             alert("Login successful!");
             navigate("/account");
           } catch (error) {
@@ -89,7 +90,7 @@ export default function Login() {
           Register
         </Link>
       </p>
-      
+
       <p className="mt-4 text-sm text-slate-400">
         Staff registration?{" "}
         <Link to="/staffregistration" className="text-sky-300 hover:text-sky-200">
