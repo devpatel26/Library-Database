@@ -89,6 +89,19 @@ export default function Login() {
           Register
         </Link>
       </p>
+      
+      <p className="mt-4 text-sm text-slate-400">
+        Staff registration?{" "}
+        <Link to="/staffregistration" className="text-sky-300 hover:text-sky-200">
+          Register
+        </Link>
+      </p>
+      <p className="mt-4 text-sm text-slate-400">
+        Forgot your password?{" "}
+        <Link to="/forgotpassword" className="text-sky-300 hover:text-sky-200">
+          Reset it
+        </Link>
+      </p>
     </section>
   );
 }
