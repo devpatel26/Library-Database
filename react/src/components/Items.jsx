@@ -52,27 +52,51 @@ export function ItemStaff({ itemData }) {
         <div className="col-span-2 grid grid-cols-2 items-center m-2">
           {itemData.status == "Available" ? (
             <div className="grid grid-rows-2 col-span-1">
-              <div>Copy number: {itemData.copy}</div>
-              <div>Item status: {itemData.status}</div>
+              <div>
+                Copy number: {itemData.copy}
+              </div>
+              <div>
+                Item status: {itemData.status}
+              </div>
             </div>
           ) : itemData.status == "On hold" ? (
             <div className="grid grid-rows-4 col-span-1">
-              <div>Copy number: {itemData.copy}</div>
-              <div>Item status: {itemData.status}</div>
-              <div>On hold until {itemData.holdEnd}</div>
-              <div>Held by user {itemData.userid}</div>
+              <div>
+                Copy number: {itemData.copy}
+              </div>
+              <div>
+                Item status: {itemData.status}
+              </div>
+              <div>
+                On hold until {itemData.holdEnd}
+              </div>
+              <div>
+                Held by user {itemData.userid}
+              </div>
             </div>
           ) : itemData.status == "Loaned" ? (
             <div className="grid grid-rows-4 col-span-1">
-              <div>Copy number: {itemData.copy}</div>
-              <div>Item status: {itemData.status}</div>
-              <div>Loaned until {itemData.loanEnd}</div>
-              <div>Loaned by user {itemData.userid}</div>
+              <div>
+                Copy number: {itemData.copy}
+              </div>
+              <div>
+                Item status: {itemData.status}
+              </div>
+              <div>
+                Loaned until {itemData.loanEnd}
+              </div>
+              <div>
+                Loaned by user {itemData.userid}
+              </div>
             </div>
           ) : (
             <div className="grid grid-rows-2 col-span-1">
-              <div>Copy number: {itemData.copy}</div>
-              <div>Item status: {itemData.status}</div>
+              <div>
+                Copy number: {itemData.copy}
+              </div>
+              <div>
+                Item status: {itemData.status}
+              </div>
             </div>
           )}
           <div className="col-span-1 items-center justify-items-center text-center">
@@ -104,12 +128,18 @@ export function ItemLoan({ itemData }) {
         </div>
         {itemData.overdue ? (
           <div className="col-span-1 grid grid-rows-2 items-center text-center">
-            <div>Due: {itemData.loanEnd}</div>
-            <div>Item Overdue</div>
+            <div>
+              Due: {itemData.loanEnd}
+            </div>
+            <div>
+              Item Overdue
+            </div>
           </div>
         ) : (
           <div className="col-span-1 grid grid-rows-2 items-center text-center">
-            <div>Due: {itemData.loanEnd}</div>
+            <div>
+              Due: {itemData.loanEnd}
+            </div>
           </div>
         )}
       </div>
@@ -125,12 +155,16 @@ export function ItemHold({ itemData }) {
         </div>
         {itemData.ready ? (
           <div className="col-span-1 grid grid-rows-2 items-center text-center">
-            <span>Item ready to pickup</span>
+            <span>
+              Item ready to pickup
+            </span>
             <PrimaryButton title="Cancel" />
           </div>
         ) : (
           <div className="col-span-1 grid grid-rows-2 items-center text-center">
-            <span>Item not ready</span>
+            <span>
+              Item not ready
+            </span>
             <PrimaryButton title="Cancel" />
           </div>
         )}

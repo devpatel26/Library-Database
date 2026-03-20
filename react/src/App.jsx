@@ -20,8 +20,6 @@ import StaffRegistration from "./pages/StaffRegistration.jsx";
 import TestPage from "./pages/TestPage.jsx";
 import StaffLoans from "./pages/StaffLoans.jsx";
 
-
-
 function App() {
   const user = JSON.parse(localStorage.getItem("user"));
   const roleCode = Number(user?.patron_role_code);
@@ -36,19 +34,18 @@ function App() {
   ? [{ to: "/itementry", label: "Item Entry (Staff)" }]
   : []),
   
+  ...(roleCode === 2 || roleCode === 3
+    ? [{ to: "/stafffines", label: "Staff Fines (Staff)" }]
+    : []),
 
-...(roleCode === 2 || roleCode === 3
-  ? [{ to: "/stafffines", label: "Staff Fines (Staff)" }]
-  : []),
+    // Admin pages
+  ...(roleCode === 3
+    ? [{ to: "/report", label: "Report (Admin)" }]
+    : []),
 
-  // Admin pages
-...(roleCode === 3
-  ? [{ to: "/report", label: "Report (Admin)" }]
-  : []),
-
-...(roleCode === 3
-  ? [{ to: "/staffregistration", label: "Staff Registration (Admin)" }]
-  : []),
+  ...(roleCode === 3
+    ? [{ to: "/staffregistration", label: "Staff Registration (Admin)" }]
+    : []),
   ];
 
   return (
@@ -80,7 +77,6 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/registration" element={<Registration />} />
             <Route path="/stafffines" element={<StaffFines />} />
-
             <Route path="/itementry" element={<ItemEntry />}>
               <Route path="books" element={<Books />} />
               <Route path="periodicals" element={<Periodicals />} />

@@ -9,7 +9,9 @@ export default function InputComponent({
   required,
 }) {
   return (
-    <h1>WIP</h1>
+    <h1>
+      WIP
+    </h1>
     // <div className="sm:col-span-3">
     //   <label htmlFor={name}>{fieldname}</label>
     //   <div>

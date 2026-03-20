@@ -24,7 +24,9 @@ export default function Equipment() {
           <div className="space-y-4">
             <div className="grid grid-cols-4 gap-x-6 ">
               <div className="col-span-2">
-                <label htmlFor="title">Equipment Name</label>
+                <label htmlFor="title">
+                  Equipment Name
+                </label>
                 <div className="mt-2">
                   <input
                     required
@@ -35,7 +37,9 @@ export default function Equipment() {
                 </div>
               </div>
               <div className="sm:col-span-1">
-                <label htmlFor="copies">Copies</label>
+                <label htmlFor="copies">
+                  Copies
+                </label>
                 <div className="mt-2">
                   <input
                     required

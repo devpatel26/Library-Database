@@ -44,12 +44,24 @@ export default function Home() {
           Team
         </p>
         <div className="mt-4 grid gap-3 text-sm text-slate-300 sm:grid-cols-2">
-          <p>Library System © TeamProject 2026 Spring</p>
-          <p>By Azan, Mehrab U</p>
-          <p>Lin, Evan</p>
-          <p>Chukwu, David David</p>
-          <p>Morin, Rainer Diamond</p>
-          <p>Patel, Devkumar</p>
+          <p>
+            Library System © TeamProject 2026 Spring
+          </p>
+          <p>
+            By Azan, Mehrab U
+          </p>
+          <p>
+            Lin, Evan
+          </p>
+          <p>
+            Chukwu, David David
+          </p>
+          <p>
+            Morin, Rainer Diamond
+          </p>
+          <p>
+            Patel, Devkumar
+          </p>
         </div>
       </footer>
     </div>

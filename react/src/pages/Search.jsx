@@ -62,7 +62,9 @@ export default function Search() {
       <form onSubmit={HandleSubmit}>
         <div className="grid gap-x-6 gap-y-12 grid-cols-8 mt-2">
           <div className="sm:col-span-4">
-            <label htmlFor="q">Search Term</label>
+            <label htmlFor="q">
+              Search Term
+            </label>
             <div className="mt-2">
               <input
                 required
@@ -73,24 +75,48 @@ export default function Search() {
             </div>
           </div>
           <div className="sm:col-span-2">
-            <label htmlFor="category">Category</label>
+            <label htmlFor="category">
+              Category
+            </label>
             <div className="mt-2">
               <select
                 required
                 id="category"
                 name="category"
-                className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                className="block w-full rounded-md bg-white/5 px-3 py-1.5 text-slate-100 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
               >
-                <option value="book">Book</option>
-                <option value="audiovisualmedia">Audiovisual Media</option>
-                <option value="periodical">Periodicals</option>
-                <option value="equipment">Equipment</option>
+                <option
+                  value="book"
+                  style={{ color: "#0f172a", backgroundColor: "#ffffff" }}
+                >
+                  Book
+                </option>
+                <option
+                  value="audiovisualmedia"
+                  style={{ color: "#0f172a", backgroundColor: "#ffffff" }}
+                >
+                  Audiovisual Media
+                </option>
+                <option
+                  value="periodical"
+                  style={{ color: "#0f172a", backgroundColor: "#ffffff" }}
+                >
+                  Periodicals
+                </option>
+                <option
+                  value="equipment"
+                  style={{ color: "#0f172a", backgroundColor: "#ffffff" }}
+                >
+                  Equipment
+                </option>
               </select>
             </div>
           </div>
 
           <div className="sm:col-span-1 grid">
-            <label htmlFor="availableOnly">Available Only</label>
+            <label htmlFor="availableOnly">
+              Available Only
+            </label>
             <div className="mt-2 mt-2 scale-150">
               <input
                 type="checkbox"

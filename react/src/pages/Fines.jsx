@@ -1,21 +1,34 @@
 import Fine from "../components/Fine";
-import dummyFines from "../data/dummy/fines";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function Fines() {
-  const [fines, setFines] = useState(null);
+  const [fines, setFines] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-  fetch("/api/fines", { credentials: "include" })
-    .then((res) => res.json())
-    .then((data) => setFines(data));
-  }, []);
+    async function LoadFines() {
+      try {
+        setLoading(true);
+        setError("");
 
-  /*
-  if (!fines) {
-    return <div>No Fines</div>;
-  }
-  */
+        const response = await fetch("/api/fines", { credentials: "include" });
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error ?? "Failed to load fines.");
+        }
+
+        setFines(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    LoadFines();
+  }, []);
 
   return (
     <section className="rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
@@ -28,11 +41,21 @@ export default function Fines() {
       <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
         Lists of fines can be found here.
       </p>
-      <div className="flex gap-4 flex-wrap justify-evenly mt-4">
-        {dummyFines.map((item, index) => (
-          <Fine key={index} data={item} />
-        ))}
-      </div>
+
+      {loading && <p className="mt-4 text-slate-300">Loading fines...</p>}
+      {!loading && error && <p className="mt-4 text-rose-300">{error}</p>}
+
+      {!loading && !error && (
+        <div className="mt-4 flex flex-wrap justify-evenly gap-4">
+          {fines.length === 0 ? (
+            <p className="text-slate-300">
+              No fines found.
+            </p>
+          ) : (
+            fines.map((item) => <Fine key={item.fineId} data={item} />)
+          )}
+        </div>
+      )}
     </section>
   );
 }
