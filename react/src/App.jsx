@@ -20,22 +20,37 @@ import StaffRegistration from "./pages/StaffRegistration.jsx";
 import TestPage from "./pages/TestPage.jsx";
 import StaffLoans from "./pages/StaffLoans.jsx";
 
-const navLinks = [
-  { to: "/", label: "Home" },
-  { to: "/account", label: "Account" },
-  { to: "/search", label: "Search" },
-  { to: "/login", label: "Login" },
-  // Staff pages
-  { to: "/itementry", label: "Item Entry (Staff)" },
-  // Admin pages
-  { to: "/report", label: "Report (Admin)" },
-  { to: "/staffregistration", label: "Staff Registration (Admin)" },
-  // TESTING AFTER THIS - REMOVE LATER
-  { to: "/stafffines", label: "Staff Fines (Staff)" },
-  { to: "/test", label: "Test Page" },
-];
+
 
 function App() {
+  const user = JSON.parse(localStorage.getItem("user"));
+  const roleCode = Number(user?.patron_role_code);
+
+  const navLinks = [
+    { to: "/", label: "Home" },
+    { to: "/account", label: "Account" },
+    { to: "/search", label: "Search" },
+    { to: "/login", label: "Login" },
+     // Staff pages
+    ...(roleCode === 2 || roleCode === 3
+  ? [{ to: "/itementry", label: "Item Entry (Staff)" }]
+  : []),
+  
+
+...(roleCode === 2 || roleCode === 3
+  ? [{ to: "/stafffines", label: "Staff Fines (Staff)" }]
+  : []),
+
+  // Admin pages
+...(roleCode === 3
+  ? [{ to: "/report", label: "Report (Admin)" }]
+  : []),
+
+...(roleCode === 3
+  ? [{ to: "/staffregistration", label: "Staff Registration (Admin)" }]
+  : []),
+  ];
+
   return (
     <BrowserRouter>
       <div className="min-h-screen min-w-80 bg-slate-950 text-slate-100 antialiased">
