@@ -2,6 +2,7 @@ import express from "express";
 import mysql from "mysql2";
 import dotenv from "dotenv";
 import cors from "cors";
+import bcrypt from "bcrypt";
 
 dotenv.config();
 
@@ -14,7 +15,8 @@ const pool = mysql.createPool({
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-});
+})
+.promise();
 
 const patronId = 1;
 
@@ -254,6 +256,42 @@ app.get("/search", async (req, res) => {
         console.error("Search error:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
+});
+// Registration endpoint
+app.post("/register", async (req, res) => {
+  try {
+    const { firstname, lastname, birthday, email, password } = req.body;
+
+    if (!firstname || !lastname || !email || !password) {
+      return res.status(400).json({ error: "Missing required fields." });
+    }
+
+    const [existingPatrons] = await pool.query(
+      "SELECT patron_id FROM patrons WHERE email = ?",
+      [email]
+    );
+
+    if (existingPatrons.length > 0) {
+      return res.status(409).json({ error: "Email already registered." });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    await pool.query(
+      `
+      INSERT INTO patrons
+        (patron_role_code, first_name, last_name, date_of_birth, email, password_hash, is_active)
+      VALUES
+        (?, ?, ?, ?, ?, ?, ?)
+      `,
+      [1, firstname, lastname, birthday || null, email, passwordHash, 1]
+    );
+
+    res.status(201).json({ message: "Registration successful." });
+  } catch (error) {
+    console.error("Register error:", error);
+    res.status(500).json({ error: "Registration failed." });
+  }
 });
 
 app.listen(port, () => {

@@ -24,7 +24,7 @@ export default function Registration() {
         Register an account with the below form:
       </p>
       <form
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
           const formData = new FormData(e.target);
 
@@ -36,8 +36,27 @@ export default function Registration() {
             password: formData.get("password"),
           };
 
-          console.log(registrationData);
-          alert("Registration submitted successfully!");
+          try {
+            const response = await fetch("/api/register", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(registrationData),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              throw new Error(data.error || "Registration failed.");
+            }
+
+            alert("Registration successful! Pleast go back to Login page to log in!");
+            console.log(data);
+          } catch (error) {
+            console.error(error);
+            alert(error.message || "Registration failed.");
+          }
         }}
       >
         <div className="space-y-4">
@@ -74,7 +93,7 @@ export default function Registration() {
                     required
                     id="birthday"
                     name="birthday"
-                    type="text"
+                    type="date"
                     className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                   />
                 </div>
