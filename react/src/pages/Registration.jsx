@@ -23,7 +23,23 @@ export default function Registration() {
       <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300 mb-2">
         Register an account with the below form:
       </p>
-      <form method="post">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          const formData = new FormData(e.target);
+
+          const registrationData = {
+            firstname: formData.get("firstname"),
+            lastname: formData.get("lastname"),
+            birthday: formData.get("birthday"),
+            email: formData.get("email"),
+            password: formData.get("password"),
+          };
+
+          console.log(registrationData);
+          alert("Registration submitted successfully!");
+        }}
+      >
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-9">
             <div className="sm:col-span-3">
