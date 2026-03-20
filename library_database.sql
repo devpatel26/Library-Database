@@ -293,8 +293,11 @@ CREATE TABLE IF NOT EXISTS `Library_Database`.`patrons` (
   `last_name` VARCHAR(20) NOT NULL,
   `date_of_birth` DATE NULL,
   `email` VARCHAR(40) NOT NULL,
+  `password_hash` VARCHAR(255) NOT NULL,
+  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (`patron_id`),
   UNIQUE INDEX `patron_id_UNIQUE` (`patron_id` ASC) VISIBLE,
+  UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE,
   INDEX `patron_role_code_idx` (`patron_role_code` ASC) VISIBLE,
   CONSTRAINT `patron_role_code`
     FOREIGN KEY (`patron_role_code`)
@@ -461,3 +464,12 @@ ENGINE = InnoDB;
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
+-- initial data for roles, 1 for patron, 2 for staff, 3 for admin
+INSERT INTO patron_roles (patron_role_code, patron_role, loan_period, fine)
+VALUES
+(1, 'patron', 14, 0.25),
+(2, 'staff', 30, 0.10),
+(3, 'admin', 60, 0.00)
+ON DUPLICATE KEY UPDATE
+patron_role = VALUES(patron_role);
