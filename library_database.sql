@@ -376,13 +376,15 @@ ENGINE = InnoDB;
 -- Table `Library_Database`.`loans`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `Library_Database`.`loans` (
+  `loan_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `item_id` INT UNSIGNED NOT NULL,
   `patron_id` INT UNSIGNED NOT NULL,
   `loan_origin_date` DATE NOT NULL,
   `loan_due_date` DATE NOT NULL,
   `patron_role_code` INT NOT NULL,
   `loan_status_code` INT NOT NULL,
-  PRIMARY KEY (`item_id`, `patron_id`),
+  PRIMARY KEY (`loan_id`),
+  INDEX `item_id_idx` (`item_id` ASC) VISIBLE,
   INDEX `patron_id_idx` (`patron_id` ASC) VISIBLE,
   INDEX `patron_code_idx` (`patron_role_code` ASC) VISIBLE,
   INDEX `loan_status_code_idx` (`loan_status_code` ASC) VISIBLE,
@@ -405,9 +407,9 @@ CREATE TABLE IF NOT EXISTS `Library_Database`.`loans` (
     FOREIGN KEY (`loan_status_code`)
     REFERENCES `Library_Database`.`loan_statuses` (`loan_status_code`)
     ON DELETE RESTRICT
-    ON UPDATE CASCADE)
+    ON UPDATE CASCADE
+)
 ENGINE = InnoDB;
-
 
 -- -----------------------------------------------------
 -- Table `Library_Database`.`hold_statuses`
@@ -424,13 +426,17 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `Library_Database`.`holds`
 -- -----------------------------------------------------
+
+
 CREATE TABLE IF NOT EXISTS `Library_Database`.`holds` (
+  `hold_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `item_id` INT UNSIGNED NOT NULL,
   `patron_id` INT UNSIGNED NOT NULL,
   `hold_origin_date` DATE NOT NULL,
   `hold_expiration_date` DATE NOT NULL,
   `hold_status_code` INT NOT NULL,
-  PRIMARY KEY (`item_id`, `patron_id`, `hold_status_code`),
+  PRIMARY KEY (`hold_id`),
+  INDEX `item_id_idx` (`item_id` ASC) VISIBLE,
   INDEX `patron_id_idx` (`patron_id` ASC) VISIBLE,
   INDEX `hold_status_code_idx` (`hold_status_code` ASC) VISIBLE,
   CONSTRAINT `holds_patron_id`
@@ -447,7 +453,8 @@ CREATE TABLE IF NOT EXISTS `Library_Database`.`holds` (
     FOREIGN KEY (`hold_status_code`)
     REFERENCES `Library_Database`.`hold_statuses` (`hold_status_code`)
     ON DELETE RESTRICT
-    ON UPDATE CASCADE)
+    ON UPDATE CASCADE
+)
 ENGINE = InnoDB;
 
 
