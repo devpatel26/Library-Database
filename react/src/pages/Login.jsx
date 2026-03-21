@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 
 export default function Login() {
+  // eslint-disable-next-line no-unused-vars
   const navigate = useNavigate();
 
   return (
@@ -44,7 +45,7 @@ export default function Login() {
             
             localStorage.setItem("user", JSON.stringify(data.user));
             alert("Login successful!");
-            navigate("/account");
+            window.location.href = "/account";
           } catch (error) {
             console.error("login error:", error);
             alert(error.message || "Login failed.");

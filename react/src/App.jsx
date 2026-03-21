@@ -26,10 +26,19 @@ function App() {
   const roleCode = Number(user?.patron_role_code);
 
   const navLinks = [
+    // Common pages always shown no matter what user status log in or not.
     { to: "/", label: "Home" },
-    { to: "/account", label: "Account" },
     { to: "/search", label: "Search" },
-    { to: "/login", label: "Login" },
+
+
+  // Links shown only when user is not logged in
+  ...(!user ? [{ to: "/login", label: "Login" }] : []),
+
+  // Links shown only when any user is logged in
+  ...(user ? [{ to: "/account", label: "Account" }] : []),
+  ...(user ? [{ to: "/logout", label: "Logout" }] : []),
+
+
      // Staff pages
     ...(roleCode === 2 || roleCode === 3
   ? [{ to: "/itementry", label: "Item Entry (Staff)" }]
@@ -47,8 +56,7 @@ function App() {
   ...(roleCode === 3
     ? [{ to: "/staffregistration", label: "Staff Registration (Admin)" }]
     : []),
-  //logout link only if user is logged in
-  ...(user ? [{ to: "/logout", label: "Logout" }] : []),
+  { to: "/test", label: "Test Page" },
   ];
 
   return (
