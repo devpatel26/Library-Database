@@ -20,44 +20,45 @@ import StaffRegistration from "./pages/StaffRegistration.jsx";
 import TestPage from "./pages/TestPage.jsx";
 import StaffLoans from "./pages/StaffLoans.jsx";
 import Logout from "./pages/Logout.jsx";
+import CreateSignupCode from "./pages/CreateSignupCode.jsx";
 
 function App() {
-  const user = JSON.parse(localStorage.getItem("user"));
-  const roleCode = Number(user?.patron_role_code);
+const user = JSON.parse(localStorage.getItem("user"));
+const userType = user?.user_type;
+const roleCode = Number(user?.role);
 
-  const navLinks = [
-    // Common pages always shown no matter what user status log in or not.
-    { to: "/", label: "Home" },
-    { to: "/search", label: "Search" },
+const navLinks = [
+  { to: "/", label: "Home" },
+  { to: "/search", label: "Search" },
 
-
-  // Links shown only when user is not logged in
   ...(!user ? [{ to: "/login", label: "Login" }] : []),
 
-  // Links shown only when any user is logged in
   ...(user ? [{ to: "/account", label: "Account" }] : []),
   ...(user ? [{ to: "/logout", label: "Logout" }] : []),
 
+  ...(userType === "staff" && roleCode === 2
+    ? [{ to: "/createsignupcode", label: "Create Signup Code" }]
+    : []),
 
-     // Staff pages
-    ...(roleCode === 2 || roleCode === 3
-  ? [{ to: "/itementry", label: "Item Entry (Staff)" }]
-  : []),
-  
-  ...(roleCode === 2 || roleCode === 3
+  ...(userType === "staff" && (roleCode === 1 || roleCode === 2)
+    ? [{ to: "/itementry", label: "Item Entry (Staff)" }]
+    : []),
+
+  ...(userType === "staff" && (roleCode === 1 || roleCode === 2)
     ? [{ to: "/stafffines", label: "Staff Fines (Staff)" }]
     : []),
 
-    // Admin pages
-  ...(roleCode === 3
+  ...(userType === "staff" && roleCode === 2
     ? [{ to: "/report", label: "Report (Admin)" }]
     : []),
 
-  ...(roleCode === 3
+  ...(userType === "staff" && roleCode === 2
     ? [{ to: "/staffregistration", label: "Staff Registration (Admin)" }]
     : []),
+
   { to: "/test", label: "Test Page" },
-  ];
+  
+];
 
   return (
     <BrowserRouter>
@@ -100,6 +101,7 @@ function App() {
             <Route path="/search" element={<Search />} />
             <Route path="/forgotpassword" element={<ForgotPassword />} />
             <Route path="/logout" element={<Logout />} />
+            <Route path="/createsignupcode" element={<CreateSignupCode />} />
           </Routes>
         </main>
       </div>

@@ -531,7 +531,7 @@ app.post("/login", async (req, res) => {
         user: {
           user_type: "patron",
           patron_id: user.patron_id,
-          patron_role_code: user.patron_role_code,
+          role: user.patron_role_code,
           email: user.email,
           first_name: user.first_name,
           last_name: user.last_name,
@@ -561,7 +561,7 @@ app.post("/login", async (req, res) => {
         user: {
           user_type: "staff",
           staff_id: user.staff_id,
-          staff_role_code: user.staff_role_code,
+          role: user.staff_role_code,
           email: user.email,
           first_name: user.first_name,
           last_name: user.last_name,
@@ -616,4 +616,150 @@ app.post("/register", async (req, res) => {
 
 app.listen(port, () => {
     console.log(`Server is running on port: ${port}`);
+});
+
+
+// Admin creates staff signup_code endpoint
+app.post("/staff-signup-codes", async (req, res) => {
+  try {
+    const { signup_code, staff_role_code, created_by_admin_id } = req.body;
+
+    if (!signup_code || !staff_role_code || !created_by_admin_id) {
+      return res.status(400).json({ error: "Missing required fields." });
+    }
+
+    // check if the creator is an admin
+    const [admins] = await pool.query(
+      "SELECT * FROM staff WHERE staff_id = ? AND staff_role_code = 2 AND is_active = 1",
+      [created_by_admin_id]
+    );
+
+    if (admins.length === 0) {
+      return res.status(403).json({ error: "Only admin can create signup codes." });
+    }
+
+    // check if the signup code already exists
+    const [existingCodes] = await pool.query(
+      "SELECT code_id FROM staff_signup_codes WHERE signup_code = ?",
+      [signup_code]
+    );
+
+    if (existingCodes.length > 0) {
+      return res.status(409).json({ error: "Signup code already exists." });
+    }
+
+    await pool.query(
+      `
+      INSERT INTO staff_signup_codes
+        (signup_code, staff_role_code, created_by_admin_id, is_used)
+      VALUES
+        (?, ?, ?, ?)
+      `,
+      [signup_code, staff_role_code, created_by_admin_id, 0]
+    );
+
+    res.status(201).json({ message: "Signup code created successfully." });
+  } catch (error) {
+    console.error("Create signup code error:", error);
+    res.status(500).json({ error: "Failed to create signup code." });
+  }
+});
+
+app.post("/staff/register", async (req, res) => {
+  try {
+    const {
+      firstname,
+      lastname,
+      birthday,
+      email,
+      password,
+      phone_number,
+      address,
+      signup_code,
+    } = req.body;
+
+    if (
+      !firstname ||
+      !lastname ||
+      !email ||
+      !password ||
+      !birthday ||
+      !address ||
+      !signup_code
+    ) {
+      return res.status(400).json({ error: "Missing required fields." });
+    }
+
+    //  check signup code
+    const [codes] = await pool.query(
+      `
+      SELECT *
+      FROM staff_signup_codes
+      WHERE signup_code = ? AND is_used = 0
+      `,
+      [signup_code]
+    );
+
+    if (codes.length === 0) {
+      return res.status(400).json({ error: "Invalid or already used signup code." });
+    }
+
+    const codeRecord = codes[0];
+
+    // check email
+    const [existingStaff] = await pool.query(
+      "SELECT staff_id FROM staff WHERE email = ?",
+      [email]
+    );
+
+    if (existingStaff.length > 0) {
+      return res.status(409).json({ error: "Email already registered." });
+    }
+
+    //create staff account
+    await pool.query(
+      `
+      INSERT INTO staff
+        (
+          staff_role_code,
+          first_name,
+          last_name,
+          date_of_birth,
+          email,
+          phone_number,
+          address,
+          password_hash,
+          is_active
+        )
+      VALUES
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      [
+        codeRecord.staff_role_code,
+        firstname,
+        lastname,
+        birthday,
+        email,
+        phone_number || null,
+        address,
+        password,
+        1,
+      ]
+    );
+
+    // mark the signup code as used
+    await pool.query(
+      `
+      UPDATE staff_signup_codes
+      SET is_used = 1
+      WHERE code_id = ?
+      `,
+      [codeRecord.code_id]
+    );
+
+    res.status(201).json({ message: "Staff registration successful." });
+  } catch (error) {
+    console.error("Staff registration error:", error);
+    res.status(500).json({ error: "Staff registration failed." });
+  }
 });

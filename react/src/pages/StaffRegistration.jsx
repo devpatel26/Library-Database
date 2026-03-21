@@ -15,7 +15,47 @@ export default function StaffRegistration() {
       <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300 mb-2">
         Register an account with the below form:
       </p>
-      <form className="w-full max-w-2xl" method="post">
+      <form
+          className="w-full max-w-2xl"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+
+            const staffData = {
+              firstname: formData.get("firstname"),
+              lastname: formData.get("lastname"),
+              birthday: formData.get("birthday"),
+              email: formData.get("email"),
+              password: formData.get("password"),
+              phone_number: formData.get("phonenumber"),
+              address: formData.get("address"),
+              signup_code: formData.get("signup_code"),
+            };
+
+            try {
+              const response = await fetch("/api/staff/register", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(staffData),
+              });
+
+              const data = await response.json();
+
+              if (!response.ok) {
+                throw new Error(data.error || "Staff registration failed.");
+              }
+
+              alert("Staff registration successful!");
+              console.log(data);
+              e.target.reset();
+            } catch (error) {
+              console.error(error);
+              alert(error.message || "Registration failed.");
+            }
+          }}
+        >
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-9">
             <div className="sm:col-span-3">
@@ -56,7 +96,7 @@ export default function StaffRegistration() {
                     required
                     id="birthday"
                     name="birthday"
-                    type="text"
+                    type="date"
                     className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                   />
                 </div>
@@ -126,6 +166,22 @@ export default function StaffRegistration() {
                 </div>
               </div>
             </div>
+            <div className="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-6">
+                <div className="sm:col-span-6">
+                  <label htmlFor="signup_code">
+                    Signup Code
+                  </label>
+                  <div className="mt-2">
+                    <input
+                      required
+                      id="signup_code"
+                      name="signup_code"
+                      type="text"
+                      className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                    />
+                  </div>
+                </div>
+              </div>
           </div>
           <div className="grid justify-center">
             <SubmitButton title={"Register"} value={"OK"} />
