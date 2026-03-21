@@ -509,37 +509,67 @@ app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const [users] = await pool.query(
+    // 1. try to find patrons first
+    const [patronUsers] = await pool.query(
       "SELECT * FROM patrons WHERE email = ?",
       [email]
     );
 
-    if (users.length === 0) {
-      return res.status(401).json({ error: "User not found" });
-    }
+    if (patronUsers.length > 0) {
+      const user = patronUsers[0];
 
-    const user = users[0];
+      if (!user.is_active) {
+        return res.status(403).json({ error: "Account is inactive" });
+      }
 
-    if (!user.is_active) {
-      return res.status(403).json({ error: "Account is inactive" });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password_hash);
-
-    if (!isMatch) {
+    if (password !== user.password_hash) {
       return res.status(401).json({ error: "Invalid password" });
     }
 
-    res.json({
-      message: "Login successful",
-      user: {
-        patron_id: user.patron_id,
-        patron_role_code: user.patron_role_code,
-        email: user.email,
-        first_name: user.first_name,
-        last_name: user.last_name,
-      },
-    });
+      return res.json({
+        message: "Login successful",
+        user: {
+          user_type: "patron",
+          patron_id: user.patron_id,
+          patron_role_code: user.patron_role_code,
+          email: user.email,
+          first_name: user.first_name,
+          last_name: user.last_name,
+        },
+      });
+    }
+
+    // 2. patrons not found, then find staff
+    const [staffUsers] = await pool.query(
+      "SELECT * FROM staff WHERE email = ?",
+      [email]
+    );
+
+    if (staffUsers.length > 0) {
+      const user = staffUsers[0];
+
+      if (!user.is_active) {
+        return res.status(403).json({ error: "Account is inactive" });
+      }
+
+      if (password !== user.password_hash) {
+        return res.status(401).json({ error: "Invalid password" });
+      }
+
+      return res.json({
+        message: "Login successful",
+        user: {
+          user_type: "staff",
+          staff_id: user.staff_id,
+          staff_role_code: user.staff_role_code,
+          email: user.email,
+          first_name: user.first_name,
+          last_name: user.last_name,
+        },
+      });
+    }
+
+    return res.status(401).json({ error: "User not found" });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ error: "Login failed" });
@@ -565,7 +595,7 @@ app.post("/register", async (req, res) => {
       return res.status(409).json({ error: "Email already registered." });
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash = password;
 
     await pool.query(
       `

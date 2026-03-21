@@ -328,9 +328,11 @@ CREATE TABLE IF NOT EXISTS `Library_Database`.`staff` (
   `first_name` VARCHAR(20) NOT NULL,
   `last_name` VARCHAR(20) NOT NULL,
   `date_of_birth` DATE NOT NULL,
-  `email` VARCHAR(40) NOT NULL,
+  UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE,
   `phone_number` VARCHAR(10) NULL,
   `address` VARCHAR(100) NOT NULL,
+  `password_hash` VARCHAR(255) NOT NULL,
+  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (`staff_id`),
   UNIQUE INDEX `patron_id_UNIQUE` (`staff_id` ASC) VISIBLE,
   INDEX `staff_role_code_idx` (`staff_role_code` ASC) VISIBLE,
@@ -473,3 +475,72 @@ VALUES
 (3, 'admin', 60, 0.00)
 ON DUPLICATE KEY UPDATE
 patron_role = VALUES(patron_role);
+
+-- -----------------------------------------------------
+-- Table `Library_Database`.`staff_signup_codes`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `Library_Database`.`staff_signup_codes` (
+  `code_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `signup_code` VARCHAR(50) NOT NULL,
+  `staff_role_code` INT NOT NULL,
+  `created_by_admin_id` INT UNSIGNED NULL,
+  `is_used` TINYINT(1) NOT NULL DEFAULT 0,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`code_id`),
+  UNIQUE INDEX `signup_code_UNIQUE` (`signup_code` ASC) VISIBLE,
+  INDEX `staff_role_code_idx` (`staff_role_code` ASC) VISIBLE,
+  INDEX `created_by_admin_id_idx` (`created_by_admin_id` ASC) VISIBLE,
+  CONSTRAINT `signup_codes_staff_role_code`
+    FOREIGN KEY (`staff_role_code`)
+    REFERENCES `Library_Database`.`staff_roles` (`staff_role_code`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+  CONSTRAINT `signup_codes_admin_id`
+    FOREIGN KEY (`created_by_admin_id`)
+    REFERENCES `Library_Database`.`staff` (`staff_id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Seed Data: Staff Roles
+-- -----------------------------------------------------
+INSERT INTO staff_roles (staff_role_code, staff_role)
+VALUES
+(1, 'staff'),
+(2, 'admin')
+ON DUPLICATE KEY UPDATE
+staff_role = VALUES(staff_role);
+
+-- -----------------------------------------------------
+-- Seed Data: Default Admin Account
+-- Email: admin@library.com
+-- Password: password
+-- -----------------------------------------------------
+INSERT INTO staff
+(staff_role_code, first_name, last_name, date_of_birth, email, phone_number, address, password_hash, is_active)
+VALUES
+(
+  2,
+  'Admin',
+  'User',
+  '1990-01-01',
+  'admin@library.com',
+  '1234567890',
+  '123 Admin Street',
+  'password',
+  1
+)
+ON DUPLICATE KEY UPDATE
+email = VALUES(email);
+
+-- -----------------------------------------------------
+-- Seed Data: Demo Staff Signup Codes
+-- -----------------------------------------------------
+INSERT INTO staff_signup_codes
+(signup_code, staff_role_code, created_by_admin_id, is_used)
+VALUES
+('STAFF2026', 1, 1, 0),
+('ADMIN2026', 2, 1, 0);
