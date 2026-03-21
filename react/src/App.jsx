@@ -19,6 +19,7 @@ import StaffFines from "./pages/StaffFines.jsx";
 import StaffRegistration from "./pages/StaffRegistration.jsx";
 import TestPage from "./pages/TestPage.jsx";
 import StaffLoans from "./pages/StaffLoans.jsx";
+import Logout from "./pages/Logout.jsx";
 
 function App() {
   const user = JSON.parse(localStorage.getItem("user"));
@@ -46,6 +47,8 @@ function App() {
   ...(roleCode === 3
     ? [{ to: "/staffregistration", label: "Staff Registration (Admin)" }]
     : []),
+  //logout link only if user is logged in
+  ...(user ? [{ to: "/logout", label: "Logout" }] : []),
   ];
 
   return (
@@ -88,6 +91,7 @@ function App() {
             <Route path="/report" element={<Report />} />
             <Route path="/search" element={<Search />} />
             <Route path="/forgotpassword" element={<ForgotPassword />} />
+            <Route path="/logout" element={<Logout />} />
           </Routes>
         </main>
       </div>
