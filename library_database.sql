@@ -325,6 +325,7 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `Library_Database`.`staff` (
   `staff_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `staff_role_code` INT NOT NULL,
+  `email` VARCHAR(100) NOT NULL,
   `first_name` VARCHAR(20) NOT NULL,
   `last_name` VARCHAR(20) NOT NULL,
   `date_of_birth` DATE NOT NULL,
@@ -334,7 +335,6 @@ CREATE TABLE IF NOT EXISTS `Library_Database`.`staff` (
   `password_hash` VARCHAR(255) NOT NULL,
   `is_active` TINYINT(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (`staff_id`),
-  UNIQUE INDEX `patron_id_UNIQUE` (`staff_id` ASC) VISIBLE,
   INDEX `staff_role_code_idx` (`staff_role_code` ASC) VISIBLE,
   CONSTRAINT `staff_role_code`
     FOREIGN KEY (`staff_role_code`)
@@ -467,14 +467,7 @@ SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 
--- initial data for roles, 1 for patron, 2 for staff, 3 for admin
-INSERT INTO patron_roles (patron_role_code, patron_role, loan_period, fine)
-VALUES
-(1, 'patron', 14, 0.25),
-(2, 'staff', 30, 0.10),
-(3, 'admin', 60, 0.00)
-ON DUPLICATE KEY UPDATE
-patron_role = VALUES(patron_role);
+
 
 -- -----------------------------------------------------
 -- Table `Library_Database`.`staff_signup_codes`
@@ -503,44 +496,3 @@ CREATE TABLE IF NOT EXISTS `Library_Database`.`staff_signup_codes` (
 )
 ENGINE = InnoDB;
 
-
--- -----------------------------------------------------
--- Seed Data: Staff Roles
--- -----------------------------------------------------
-INSERT INTO staff_roles (staff_role_code, staff_role)
-VALUES
-(1, 'staff'),
-(2, 'admin')
-ON DUPLICATE KEY UPDATE
-staff_role = VALUES(staff_role);
-
--- -----------------------------------------------------
--- Seed Data: Default Admin Account
--- Email: admin@library.com
--- Password: password
--- -----------------------------------------------------
-INSERT INTO staff
-(staff_role_code, first_name, last_name, date_of_birth, email, phone_number, address, password_hash, is_active)
-VALUES
-(
-  2,
-  'Admin',
-  'User',
-  '1990-01-01',
-  'admin@library.com',
-  '1234567890',
-  '123 Admin Street',
-  'password',
-  1
-)
-ON DUPLICATE KEY UPDATE
-email = VALUES(email);
-
--- -----------------------------------------------------
--- Seed Data: Demo Staff Signup Codes
--- -----------------------------------------------------
-INSERT INTO staff_signup_codes
-(signup_code, staff_role_code, created_by_admin_id, is_used)
-VALUES
-('STAFF2026', 1, 1, 0),
-('ADMIN2026', 2, 1, 0);
