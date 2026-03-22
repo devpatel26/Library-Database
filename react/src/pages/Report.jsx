@@ -11,6 +11,43 @@ export default function Report() {
         Reporting screens can live here for overdue items, activity summaries,
         and database insights.
       </p>
+      <div className="mt-6">
+  <h2 className="text-xl font-bold mb-2">Books</h2>
+  <table className="w-full border border-white/20">
+    <tr>
+      <th>ID</th>
+      <th>Title</th>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>Database Systems</td>
+    </tr>
+  </table>
+
+  <h2 className="text-xl font-bold mt-6 mb-2">Users</h2>
+  <table className="w-full border border-white/20">
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>David</td>
+    </tr>
+  </table>
+
+  <h2 className="text-xl font-bold mt-6 mb-2">Loans</h2>
+  <table className="w-full border border-white/20">
+    <tr>
+      <th>Loan ID</th>
+      <th>Book</th>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>Database Systems</td>
+    </tr>
+  </table>
+</div>
     </section>
   );
 }
