@@ -1,6 +1,7 @@
 import React from 'react';
 import AccountInfo from '../components/AccountInfo';
-import { dummyUsers } from '../data/dummy'; 
+//import { dummyUsers } from '../data/dummy'; 
+const dummyUsers = [];
 
 const AccountInfoPage = () => {
   const selectedUser = dummyUsers && dummyUsers.length > 0 ? dummyUsers[0] : null;
@@ -23,4 +24,3 @@ const AccountInfoPage = () => {
 };
 
 export default AccountInfoPage;
-
