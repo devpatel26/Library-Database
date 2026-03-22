@@ -1,5 +1,6 @@
 import { Link, useOutlet } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { FetchJson, GetErrorMessage } from "../api";
 
 const navLinks = [
   { to: ".", label: "Account" },
@@ -34,13 +35,7 @@ export default function Account() {
       try {
         setLoading(true);
         setError("");
-
-        const response = await fetch("/api/account");
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error ?? "Failed to load account.");
-        }
+        const data = await FetchJson("/api/account");
 
         if (isMounted) {
           setAccount(data);
@@ -48,7 +43,7 @@ export default function Account() {
       } catch (err) {
         if (isMounted) {
           setAccount(null);
-          setError(err.message);
+          setError(GetErrorMessage(err, "Failed to load account."));
         }
       } finally {
         if (isMounted) {

@@ -2,9 +2,12 @@ import express from "express";
 import mysql from "mysql2";
 import dotenv from "dotenv";
 import cors from "cors";
-import bcrypt from "bcrypt";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-dotenv.config();
+const backendDirectory = path.dirname(fileURLToPath(import.meta.url));
+
+dotenv.config({ path: path.resolve(backendDirectory, ".env") });
 
 const app = express();
 const port = Number(process.env.PORT) || 3000;
@@ -28,6 +31,35 @@ const searchSorts = {
 
 app.use(cors());
 app.use(express.json());
+
+function FormatServerError(error, fallbackMessage) {
+    if (process.env.NODE_ENV === "production") {
+        return fallbackMessage;
+    }
+
+    if (error instanceof Error && error.message) {
+        return error.message;
+    }
+
+    return fallbackMessage;
+}
+
+function SendServerError(res, error, fallbackMessage) {
+    console.error(error);
+    res.status(500).json({ error: FormatServerError(error, fallbackMessage) });
+}
+
+async function LogDatabaseConnectionStatus() {
+    try {
+        await pool.query("SELECT 1");
+        console.log(`Database connection established for "${process.env.DB_NAME}".`);
+    } catch (error) {
+        console.error(
+            `Database connection check failed for "${process.env.DB_NAME}":`,
+            error
+        );
+    }
+}
 
 function BuildSearchQuery({ q, category, availableOnly, sort, limit }) {
     const like = `%${q}%`;
@@ -184,7 +216,7 @@ function BuildSearchQuery({ q, category, availableOnly, sort, limit }) {
     };
 }
 
-app.get("/account", async (req, res) => {
+app.get(["/account", "/api/account"], async (req, res) => {
     try {
         const [rows] = await pool.query(
             "SELECT * FROM patrons WHERE patron_id = ?",
@@ -196,12 +228,11 @@ app.get("/account", async (req, res) => {
         }
         res.json(rows[0]);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Internal Server Error" });
+        SendServerError(res, error, "Internal Server Error");
     }
 });
 
-app.get("/fines", async (req, res) => {
+app.get(["/fines", "/api/fines"], async (req, res) => {
   try {
     const [rows] = await pool.query(
       `
@@ -225,12 +256,11 @@ app.get("/fines", async (req, res) => {
 
     res.json(rows);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    SendServerError(res, error, "Internal Server Error");
   }
 });
 
-app.get("/loans", async (req, res) => {
+app.get(["/loans", "/api/loans"], async (req, res) => {
   try {
     const [loans] = await pool.query(
       `
@@ -470,12 +500,11 @@ app.get("/loans", async (req, res) => {
 
     res.json({ loans, holds });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    SendServerError(res, error, "Internal Server Error");
   }
 });
 
-app.get("/search", async (req, res) => {
+app.get(["/search", "/api/search"], async (req, res) => {
     const q = String(req.query.q ?? "").trim();
     const category = String(req.query.category ?? "all").toLowerCase();
     const availableOnly = String(req.query.availableOnly ?? "false") === "true";
@@ -500,12 +529,14 @@ app.get("/search", async (req, res) => {
         });
     } catch (error) {
         console.error("Search error:", error);
-        res.status(500).json({ error: "Internal Server Error" });
+        res.status(500).json({
+            error: FormatServerError(error, "Internal Server Error"),
+        });
     }
 });
 
 // Login endpoint
-app.post("/login", async (req, res) => {
+app.post(["/login", "/api/login"], async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -572,13 +603,15 @@ app.post("/login", async (req, res) => {
     return res.status(401).json({ error: "User not found" });
   } catch (error) {
     console.error("Login error:", error);
-    res.status(500).json({ error: "Login failed" });
+    res.status(500).json({
+      error: FormatServerError(error, "Login failed"),
+    });
   }
 });
 
 
 // Registration endpoint
-app.post("/register", async (req, res) => {
+app.post(["/register", "/api/register"], async (req, res) => {
   try {
     const { firstname, lastname, birthday, email, password } = req.body;
 
@@ -610,17 +643,15 @@ app.post("/register", async (req, res) => {
     res.status(201).json({ message: "Registration successful." });
   } catch (error) {
     console.error("Register error:", error);
-    res.status(500).json({ error: "Registration failed." });
+    res.status(500).json({
+      error: FormatServerError(error, "Registration failed."),
+    });
   }
-});
-
-app.listen(port, () => {
-    console.log(`Server is running on port: ${port}`);
 });
 
 
 // Admin creates staff signup_code endpoint
-app.post("/staff-signup-codes", async (req, res) => {
+app.post(["/staff-signup-codes", "/api/staff-signup-codes"], async (req, res) => {
   try {
     const { signup_code, staff_role_code, created_by_admin_id } = req.body;
 
@@ -661,11 +692,13 @@ app.post("/staff-signup-codes", async (req, res) => {
     res.status(201).json({ message: "Signup code created successfully." });
   } catch (error) {
     console.error("Create signup code error:", error);
-    res.status(500).json({ error: "Failed to create signup code." });
+    res.status(500).json({
+      error: FormatServerError(error, "Failed to create signup code."),
+    });
   }
 });
 
-app.post("/staff/register", async (req, res) => {
+app.post(["/staff/register", "/api/staff/register"], async (req, res) => {
   try {
     const {
       firstname,
@@ -760,13 +793,15 @@ app.post("/staff/register", async (req, res) => {
     res.status(201).json({ message: "Staff registration successful." });
   } catch (error) {
     console.error("Staff registration error:", error);
-    res.status(500).json({ error: "Staff registration failed." });
+    res.status(500).json({
+      error: FormatServerError(error, "Staff registration failed."),
+    });
   }
 });
 
 
 // Place hold endpoint
-app.post("/holds", async (req, res) => {
+app.post(["/holds", "/api/holds"], async (req, res) => {
   try {
     const { item_id, patron_id } = req.body;
 
@@ -812,6 +847,14 @@ app.post("/holds", async (req, res) => {
     return res.status(201).json({ message: "Hold placed successfully." });
   } catch (error) {
     console.error("Place hold error:", error);
-    return res.status(500).json({ error: "Failed to place hold." });
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to place hold."),
+    });
   }
+});
+
+void LogDatabaseConnectionStatus();
+
+app.listen(port, () => {
+    console.log(`Server is running on port: ${port}`);
 });

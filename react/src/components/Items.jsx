@@ -1,5 +1,6 @@
 import React from "react";
 import PrimaryButton, { SecondaryButton } from "./Buttons";
+import { FetchJson, ReadStoredJson } from "../api";
 
 export default function Item({ itemData }) {
   return (
@@ -34,7 +35,7 @@ export default function Item({ itemData }) {
       <PrimaryButton
         title="Place Hold"
         onClick={async () => {
-          const user = JSON.parse(localStorage.getItem("user"));
+          const user = ReadStoredJson("user");
 
           if (!user) {
             alert("Please log in first.");
@@ -48,7 +49,7 @@ export default function Item({ itemData }) {
           }
 
           try {
-            const response = await fetch("http://localhost:3000/holds", {
+            await FetchJson("/api/holds", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -58,21 +59,6 @@ export default function Item({ itemData }) {
                 patron_id: user.patron_id,
               }),
             });
-
-            const text = await response.text();
-            console.log("holds status:", response.status);
-            console.log("holds raw response:", text);
-
-            let data;
-            try {
-              data = JSON.parse(text);
-            } catch {
-              throw new Error("Server did not return JSON.");
-            }
-
-            if (!response.ok) {
-              throw new Error(data.error || "Failed to place hold.");
-            }
             alert("Hold placed successfully!");
             window.location.reload();
           } catch (error) {

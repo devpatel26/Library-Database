@@ -1,4 +1,5 @@
 import { SubmitButton } from "../components/Buttons";
+import { FetchJson } from "../api";
 
 export default function StaffRegistration() {
   return (
@@ -33,19 +34,13 @@ export default function StaffRegistration() {
             };
 
             try {
-              const response = await fetch("/api/staff/register", {
+              const data = await FetchJson("/api/staff/register", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
                 },
                 body: JSON.stringify(staffData),
               });
-
-              const data = await response.json();
-
-              if (!response.ok) {
-                throw new Error(data.error || "Staff registration failed.");
-              }
 
               alert("Staff registration successful!");
               console.log(data);

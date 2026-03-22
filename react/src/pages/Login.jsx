@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import { FetchJson, WriteStoredJson } from "../api";
 
 export default function Login() {
   // eslint-disable-next-line no-unused-vars
@@ -28,22 +29,16 @@ export default function Login() {
           console.log("loginData:", loginData);
 
           try {
-            const response = await fetch("/api/login", {
+            const data = await FetchJson("/api/login", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
               },
               body: JSON.stringify(loginData),
             });
-
-            const data = await response.json();
             console.log("response data:", data);
-
-            if (!response.ok) {
-              throw new Error(data.error || "Login failed.");
-            }
             
-            localStorage.setItem("user", JSON.stringify(data.user));
+            WriteStoredJson("user", data.user);
             alert("Login successful!");
             window.location.href = "/account";
           } catch (error) {

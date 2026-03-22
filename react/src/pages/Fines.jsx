@@ -1,5 +1,6 @@
 import Fine from "../components/Fine";
 import { useEffect, useState } from "react";
+import { FetchJson, GetErrorMessage } from "../api";
 
 export default function Fines() {
   const [fines, setFines] = useState([]);
@@ -11,17 +12,11 @@ export default function Fines() {
       try {
         setLoading(true);
         setError("");
-
-        const response = await fetch("/api/fines", { credentials: "include" });
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error ?? "Failed to load fines.");
-        }
+        const data = await FetchJson("/api/fines", { credentials: "include" });
 
         setFines(data);
       } catch (err) {
-        setError(err.message);
+        setError(GetErrorMessage(err, "Failed to load fines."));
       } finally {
         setLoading(false);
       }

@@ -8,7 +8,7 @@ const npmCommand = isWindows ? "npm" : "npm";
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDirectory, "..");
 
-function runInstall(cwd) {
+function RunInstall(cwd) {
   return new Promise((resolve, reject) => {
     const child = spawn(npmCommand, ["install"], {
       cwd: path.resolve(repoRoot, cwd),
@@ -31,9 +31,9 @@ function runInstall(cwd) {
 
 try {
   console.log("Installing backend dependencies...");
-  await runInstall("backend");
+  await RunInstall("backend");
   console.log("Installing frontend dependencies...");
-  await runInstall("react");
+  await RunInstall("react");
 
   const envPath = path.resolve(repoRoot, "backend/.env");
   if (!fs.existsSync(envPath)) {

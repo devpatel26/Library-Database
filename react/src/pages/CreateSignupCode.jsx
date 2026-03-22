@@ -1,4 +1,5 @@
 import { SubmitButton } from "../components/Buttons";
+import { FetchJson, ReadStoredJson } from "../api";
 
 export default function CreateSignupCode() {
   return (
@@ -21,7 +22,7 @@ export default function CreateSignupCode() {
         onSubmit={async (e) => {
           e.preventDefault();
           const formData = new FormData(e.target);
-          const currentUser = JSON.parse(localStorage.getItem("user"));
+          const currentUser = ReadStoredJson("user");
 
           const signupCodeData = {
             signup_code: formData.get("signup_code"),
@@ -30,7 +31,7 @@ export default function CreateSignupCode() {
           };
 
           try {
-            const response = await fetch("/api/staff-signup-codes", {
+            await FetchJson("/api/staff-signup-codes", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -38,14 +39,7 @@ export default function CreateSignupCode() {
               body: JSON.stringify(signupCodeData),
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
-              throw new Error(data.error || "Failed to create signup code.");
-            }
-
             alert("Signup code created successfully!");
-            console.log(data);
             e.target.reset();
           } catch (error) {
             console.error(error);

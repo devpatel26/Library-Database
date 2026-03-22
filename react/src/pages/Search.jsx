@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { SubmitButton } from "../components/Buttons";
 import Item from "../components/Items";
+import { FetchJson } from "../api";
 
 export default function Search() {
   const [results, setResults] = useState([]);
@@ -31,13 +32,7 @@ export default function Search() {
       setLoading(true);
       setError("");
       setHasSearched(true);
-
-      const response = await fetch(`/api/search?${params.toString()}`);
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error ?? "Search failed.");
-      }
+      const data = await FetchJson(`/api/search?${params.toString()}`);
 
       setResults(data.results ?? []);
     } catch (err) {

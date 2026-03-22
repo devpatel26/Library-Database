@@ -20,9 +20,10 @@ import TestPage from "./pages/TestPage.jsx";
 import StaffLoans from "./pages/StaffLoans.jsx";
 import Logout from "./pages/Logout.jsx";
 import CreateSignupCode from "./pages/CreateSignupCode.jsx";
+import { ReadStoredJson } from "./api";
 
 function App() {
-const user = JSON.parse(localStorage.getItem("user"));
+const user = ReadStoredJson("user");
 const userType = user?.user_type;
 const roleCode = Number(user?.role);
 

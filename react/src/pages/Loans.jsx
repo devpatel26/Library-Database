@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ItemHold, ItemLoan } from "../components/Items";
+import { FetchJson, GetErrorMessage } from "../api";
 
 export default function Loans() {
   const [data, setData] = useState({ loans: [], holds: [] });
@@ -11,20 +12,14 @@ export default function Loans() {
       try {
         setLoading(true);
         setError("");
-
-        const response = await fetch("/api/loans", { credentials: "include" });
-        const payload = await response.json();
-
-        if (!response.ok) {
-          throw new Error(payload.error ?? "Failed to load loans.");
-        }
+        const payload = await FetchJson("/api/loans", { credentials: "include" });
 
         setData({
           loans: payload.loans ?? [],
           holds: payload.holds ?? [],
         });
       } catch (err) {
-        setError(err.message);
+        setError(GetErrorMessage(err, "Failed to load loans."));
       } finally {
         setLoading(false);
       }
