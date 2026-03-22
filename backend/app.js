@@ -763,3 +763,55 @@ app.post("/staff/register", async (req, res) => {
     res.status(500).json({ error: "Staff registration failed." });
   }
 });
+
+
+// Place hold endpoint
+app.post("/holds", async (req, res) => {
+  try {
+    const { item_id, patron_id } = req.body;
+
+    if (!item_id || !patron_id) {
+      return res.status(400).json({ error: "Missing required fields." });
+    }
+
+    const [items] = await pool.query(
+      "SELECT * FROM items WHERE item_id = ?",
+      [item_id]
+    );
+
+    if (items.length === 0) {
+      return res.status(404).json({ error: "Item not found." });
+    }
+
+    const item = items[0];
+
+    if (item.available < 1) {
+      return res.status(400).json({ error: "No available copies for hold." });
+    }
+
+    await pool.query(
+      `
+      INSERT INTO holds
+        (item_id, patron_id, hold_origin_date, hold_expiration_date, hold_status_code)
+      VALUES
+        (?, ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 7 DAY), ?)
+      `,
+      [item_id, patron_id, 1]
+    );
+
+    await pool.query(
+      `
+      UPDATE items
+      SET available = available - 1,
+          on_hold = on_hold + 1
+      WHERE item_id = ?
+      `,
+      [item_id]
+    );
+
+    return res.status(201).json({ message: "Hold placed successfully." });
+  } catch (error) {
+    console.error("Place hold error:", error);
+    return res.status(500).json({ error: "Failed to place hold." });
+  }
+});
