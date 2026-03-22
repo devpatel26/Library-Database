@@ -31,10 +31,59 @@ export default function Item({ itemData }) {
           </div>
           <div className="h-full justify-items-center grid">
             {itemData.available >= 1 ? (
-              <PrimaryButton title="Place Hold" />
-            ) : (
-              <SecondaryButton title={"Unavailable"} disabled={true} />
-            )}
+      <PrimaryButton
+        title="Place Hold"
+        onClick={async () => {
+          const user = JSON.parse(localStorage.getItem("user"));
+
+          if (!user) {
+            alert("Please log in first.");
+            window.location.href = "/login";
+            return;
+          }
+
+          if (user.user_type !== "patron") {
+            alert("Only patrons can place holds.");
+            return;
+          }
+
+          try {
+            const response = await fetch("http://localhost:3000/holds", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                item_id: itemData.itemId,
+                patron_id: user.patron_id,
+              }),
+            });
+
+            const text = await response.text();
+            console.log("holds status:", response.status);
+            console.log("holds raw response:", text);
+
+            let data;
+            try {
+              data = JSON.parse(text);
+            } catch {
+              throw new Error("Server did not return JSON.");
+            }
+
+            if (!response.ok) {
+              throw new Error(data.error || "Failed to place hold.");
+            }
+            alert("Hold placed successfully!");
+            window.location.reload();
+          } catch (error) {
+            console.error(error);
+            alert(error.message || "Failed to place hold.");
+          }
+        }}
+  />
+) : (
+  <SecondaryButton title="Unavailable" disabled={true} />
+)}
           </div>
         </div>
       </div>
