@@ -1,6 +1,5 @@
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
 import Account from "./pages/Account.jsx";
-import AccountInfo from "./pages/AccountInfo.jsx";
 import Fines from "./pages/Fines.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import Home from "./pages/Home.jsx";
@@ -30,10 +29,10 @@ const roleCode = Number(user?.role);
 const navLinks = [
   { to: "/", label: "Home" },
   { to: "/search", label: "Search" },
+  { to: "/account", label: "Account" },
 
   ...(!user ? [{ to: "/login", label: "Login" }] : []),
 
-  ...(user ? [{ to: "/account", label: "Account" }] : []),
   ...(user ? [{ to: "/logout", label: "Logout" }] : []),
 
   ...(userType === "staff" && roleCode === 2
@@ -82,7 +81,7 @@ const navLinks = [
             <Route path="/" element={<Home />} />
             <Route path="/test" element={<TestPage />} />
             <Route path="/account" element={<Account />}>
-              <Route path="accountinfo" element={<AccountInfo />} />
+              <Route path="accountinfo" element={<Navigate to="/account" replace />} />
               <Route path="fines" element={<Fines />} />
               <Route path="loans" element={<Loans />} />
             </Route>
