@@ -1,12 +1,6 @@
 import { Link, useOutlet } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { FetchJson, GetErrorMessage } from "../api";
-
-const navLinks = [
-  { to: ".", label: "Account" },
-  { to: "fines", label: "Fines" },
-  { to: "loans", label: "Loans" },
-];
+import { FetchJson, GetErrorMessage, ReadStoredJson } from "../api";
 
 function FormatDateOfBirth(dateOfBirth) {
   if (!dateOfBirth) {
@@ -27,11 +21,30 @@ export default function Account() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const outlet = useOutlet();
+  const user = ReadStoredJson("user");
+  const userKey = user
+    ? `${user.user_type ?? ""}:${user.patron_id ?? ""}:${user.staff_id ?? ""}`
+    : "";
+  const isPatron = user?.user_type === "patron";
+  const navLinks = isPatron
+    ? [
+        { to: ".", label: "Account" },
+        { to: "fines", label: "Fines" },
+        { to: "loans", label: "Loans" },
+      ]
+    : [{ to: ".", label: "Account" }];
 
   useEffect(() => {
     let isMounted = true;
 
     async function LoadAccount() {
+      if (!user) {
+        setAccount(null);
+        setError("Please log in to view your account.");
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
         setError("");
@@ -57,7 +70,7 @@ export default function Account() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [userKey]);
 
   return (
     <div className="flex flex-col gap-8 lg:flex-row">
@@ -93,6 +106,10 @@ export default function Account() {
             {!loading && !error && account && (
               <div className="space-y-2">
                 <p>
+                  <span className="font-semibold text-white">Account Type:</span>{" "}
+                  {account.user_type === "staff" ? "Staff" : "Patron"}
+                </p>
+                <p>
                   <span className="font-semibold text-white">Name:</span>{" "}
                   {account.first_name} {account.last_name}
                 </p>
@@ -101,8 +118,14 @@ export default function Account() {
                   {account.email}
                 </p>
                 <p>
-                  <span className="font-semibold text-white">Member ID:</span>{" "}
-                  {account.patron_id}
+                  <span className="font-semibold text-white">
+                    {account.user_type === "staff" ? "Staff ID:" : "Member ID:"}
+                  </span>{" "}
+                  {account.staff_id ?? account.patron_id}
+                </p>
+                <p>
+                  <span className="font-semibold text-white">Role Code:</span>{" "}
+                  {account.role}
                 </p>
                 <p>
                   <span className="font-semibold text-white">Status:</span>{" "}
@@ -112,6 +135,18 @@ export default function Account() {
                   <span className="font-semibold text-white">Date of Birth:</span>{" "}
                   {FormatDateOfBirth(account.date_of_birth)}
                 </p>
+                {account.phone_number && (
+                  <p>
+                    <span className="font-semibold text-white">Phone:</span>{" "}
+                    {account.phone_number}
+                  </p>
+                )}
+                {account.address && (
+                  <p>
+                    <span className="font-semibold text-white">Address:</span>{" "}
+                    {account.address}
+                  </p>
+                )}
               </div>
             )}
 

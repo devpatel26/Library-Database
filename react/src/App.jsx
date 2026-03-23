@@ -31,11 +31,13 @@ const roleCode = Number(user?.role);
 const navLinks = [
   { to: "/", label: "Home" },
   { to: "/search", label: "Search" },
-  { to: "/account", label: "Account" },
 
-  ...(!user ? [{ to: "/login", label: "Login" }] : []),
-
-  ...(user ? [{ to: "/logout", label: "Logout" }] : []),
+  ...(!user
+    ? [{ to: "/login", label: "Login" }]
+    : [
+        { to: "/account", label: "Account" },
+        { to: "/logout", label: "Logout" },
+      ]),
 
   ...(userType === "staff" && roleCode === 2
     ? [{ to: "/createsignupcode", label: "Create Signup Code" }]

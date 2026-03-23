@@ -21,8 +21,6 @@ const pool = mysql.createPool({
 })
 .promise();
 
-const patronId = 1;
-
 const searchSorts = {
     title: "title ASC",
     newest: "publicationDate DESC, title ASC",
@@ -49,7 +47,113 @@ function SendServerError(res, error, fallbackMessage) {
     res.status(500).json({ error: FormatServerError(error, fallbackMessage) });
 }
 
+function GetMissingDatabaseConfigKeys() {
+    return ["DB_HOST", "DB_USER", "DB_NAME"].filter((key) => {
+        const value = process.env[key];
+        return typeof value !== "string" || value.trim() === "";
+    });
+}
+
+function LogDatabaseConfigurationHelp() {
+    console.error(
+        'The backend reads "backend/.env", not "backend/.env.example".'
+    );
+    console.error(
+        'Check "backend/.env" and make sure DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, and DB_NAME match your local MySQL setup.'
+    );
+    if (!process.env.DB_PASSWORD) {
+        console.error(
+            'DB_PASSWORD is currently empty, so MySQL is being contacted without a password ("using password: NO").'
+        );
+    }
+    console.error(
+        'You can copy "backend/.env.example" to "backend/.env" and fill in your own MySQL credentials.'
+    );
+}
+
+function ParsePositiveInteger(value) {
+    const parsedValue = Number(value);
+
+    if (!Number.isInteger(parsedValue) || parsedValue < 1) {
+        return null;
+    }
+
+    return parsedValue;
+}
+
+function GetRequestUser(req) {
+    const userType = String(req.get("x-user-type") ?? "").trim().toLowerCase();
+
+    if (userType === "patron") {
+        const patronId = ParsePositiveInteger(req.get("x-patron-id"));
+
+        if (!patronId) {
+            return null;
+        }
+
+        return {
+            userType,
+            patronId,
+            roleCode: ParsePositiveInteger(req.get("x-role-code")),
+        };
+    }
+
+    if (userType === "staff") {
+        const staffId = ParsePositiveInteger(req.get("x-staff-id"));
+
+        if (!staffId) {
+            return null;
+        }
+
+        return {
+            userType,
+            staffId,
+            roleCode: ParsePositiveInteger(req.get("x-role-code")),
+        };
+    }
+
+    return null;
+}
+
+function RequireAuthenticatedUser(req, res) {
+    const user = GetRequestUser(req);
+
+    if (!user) {
+        res.status(401).json({ error: "Please log in to continue." });
+        return null;
+    }
+
+    return user;
+}
+
+function RequirePatronUser(req, res) {
+    const user = RequireAuthenticatedUser(req, res);
+
+    if (!user) {
+        return null;
+    }
+
+    if (user.userType !== "patron" || !user.patronId) {
+        res.status(403).json({
+            error: "This action is only available to patron accounts.",
+        });
+        return null;
+    }
+
+    return user;
+}
+
 async function LogDatabaseConnectionStatus() {
+    const missingConfigKeys = GetMissingDatabaseConfigKeys();
+
+    if (missingConfigKeys.length > 0) {
+        console.error(
+            `Database configuration is incomplete. Missing: ${missingConfigKeys.join(", ")}.`
+        );
+        LogDatabaseConfigurationHelp();
+        return;
+    }
+
     try {
         await pool.query("SELECT 1");
         console.log(`Database connection established for "${process.env.DB_NAME}".`);
@@ -58,6 +162,18 @@ async function LogDatabaseConnectionStatus() {
             `Database connection check failed for "${process.env.DB_NAME}":`,
             error
         );
+
+        if (
+            error &&
+            typeof error === "object" &&
+            "code" in error &&
+            error.code === "ER_ACCESS_DENIED_ERROR"
+        ) {
+            console.error(
+                "MySQL rejected the username/password from backend/.env."
+            );
+            LogDatabaseConfigurationHelp();
+        }
     }
 }
 
@@ -218,14 +334,64 @@ function BuildSearchQuery({ q, category, availableOnly, sort, limit }) {
 
 app.get(["/account", "/api/account"], async (req, res) => {
     try {
-        const [rows] = await pool.query(
-            "SELECT * FROM patrons WHERE patron_id = ?",
-            [patronId]
-        );
-        
-        if (rows.length === 0) {
-            return res.status(404).json({ error: "Patron not found" });
+        const user = RequireAuthenticatedUser(req, res);
+
+        if (!user) {
+            return;
         }
+
+        if (user.userType === "patron") {
+            const [rows] = await pool.query(
+                `
+                SELECT
+                    patron_id,
+                    NULL AS staff_id,
+                    patron_role_code AS role,
+                    'patron' AS user_type,
+                    first_name,
+                    last_name,
+                    date_of_birth,
+                    email,
+                    is_active,
+                    NULL AS phone_number,
+                    NULL AS address
+                FROM patrons
+                WHERE patron_id = ?
+                `,
+                [user.patronId]
+            );
+
+            if (rows.length === 0) {
+                return res.status(404).json({ error: "Patron not found" });
+            }
+
+            return res.json(rows[0]);
+        }
+
+        const [rows] = await pool.query(
+            `
+            SELECT
+                NULL AS patron_id,
+                staff_id,
+                staff_role_code AS role,
+                'staff' AS user_type,
+                first_name,
+                last_name,
+                date_of_birth,
+                email,
+                is_active,
+                phone_number,
+                address
+            FROM staff
+            WHERE staff_id = ?
+            `,
+            [user.staffId]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: "Staff account not found" });
+        }
+
         res.json(rows[0]);
     } catch (error) {
         SendServerError(res, error, "Internal Server Error");
@@ -234,6 +400,12 @@ app.get(["/account", "/api/account"], async (req, res) => {
 
 app.get(["/fines", "/api/fines"], async (req, res) => {
   try {
+    const user = RequirePatronUser(req, res);
+
+    if (!user) {
+      return;
+    }
+
     const [rows] = await pool.query(
       `
       SELECT
@@ -251,7 +423,7 @@ app.get(["/fines", "/api/fines"], async (req, res) => {
       WHERE patron_id = ?
       ORDER BY fine_date DESC, fine_id DESC
       `,
-      [patronId]
+      [user.patronId]
     );
 
     res.json(rows);
@@ -262,6 +434,12 @@ app.get(["/fines", "/api/fines"], async (req, res) => {
 
 app.get(["/loans", "/api/loans"], async (req, res) => {
   try {
+    const user = RequirePatronUser(req, res);
+
+    if (!user) {
+      return;
+    }
+
     const [loans] = await pool.query(
       `
       SELECT * FROM (
@@ -375,7 +553,7 @@ app.get(["/loans", "/api/loans"], async (req, res) => {
       ) AS patron_loans
       ORDER BY loanEnd ASC
       `,
-      [patronId, patronId, patronId, patronId]
+      [user.patronId, user.patronId, user.patronId, user.patronId]
     );
 
     const [holds] = await pool.query(
@@ -495,7 +673,7 @@ app.get(["/loans", "/api/loans"], async (req, res) => {
       ) AS patron_holds
       ORDER BY holdEnd ASC
       `,
-      [patronId, patronId, patronId, patronId]
+      [user.patronId, user.patronId, user.patronId, user.patronId]
     );
 
     res.json({ loans, holds });
@@ -804,11 +982,21 @@ app.post(["/staff/register", "/api/staff/register"], async (req, res) => {
 // Place hold endpoint
 app.post(["/holds", "/api/holds"], async (req, res) => {
   try {
+<<<<<<< Updated upstream
     await ClearExpiredHolds();
 
     const { item_id, patron_id } = req.body;
+=======
+    const user = RequirePatronUser(req, res);
+>>>>>>> Stashed changes
 
-    if (!item_id || !patron_id) {
+    if (!user) {
+      return;
+    }
+
+    const { item_id } = req.body;
+
+    if (!item_id) {
       return res.status(400).json({ error: "Missing required fields." });
     }
 
@@ -843,7 +1031,7 @@ app.post(["/holds", "/api/holds"], async (req, res) => {
       VALUES
         (?, ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 2 DAY), ?)
       `,
-      [item_id, patron_id, 1]
+      [item_id, user.patronId, 1]
     );
 
     await pool.query(

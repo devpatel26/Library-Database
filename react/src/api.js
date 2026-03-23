@@ -102,6 +102,45 @@ export function WriteStoredJson(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
+function BuildAuthenticatedHeaders(headers) {
+  const nextHeaders = new Headers(headers ?? {});
+
+  if (typeof window === "undefined") {
+    return nextHeaders;
+  }
+
+  const user = ReadStoredJson("user");
+
+  if (!user) {
+    return nextHeaders;
+  }
+
+  if (user.user_type) {
+    nextHeaders.set("x-user-type", String(user.user_type));
+  }
+
+  if (user.patron_id != null) {
+    nextHeaders.set("x-patron-id", String(user.patron_id));
+  }
+
+  if (user.staff_id != null) {
+    nextHeaders.set("x-staff-id", String(user.staff_id));
+  }
+
+  if (user.role != null) {
+    nextHeaders.set("x-role-code", String(user.role));
+  }
+
+  return nextHeaders;
+}
+
+function BuildRequestOptions(options) {
+  return {
+    ...options,
+    headers: BuildAuthenticatedHeaders(options?.headers),
+  };
+}
+
 export async function ReadJson(response) {
   const rawText = await response.text();
   const text = rawText.trim();
@@ -133,7 +172,7 @@ export async function ReadJson(response) {
 }
 
 async function FetchJsonOnce(url, options) {
-  const response = await fetch(url, options);
+  const response = await fetch(url, BuildRequestOptions(options));
   const data = await ReadJson(response);
 
   if (!response.ok) {

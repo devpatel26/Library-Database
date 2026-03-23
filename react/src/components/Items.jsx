@@ -47,6 +47,7 @@ export default function Item({ itemData }) {
 
                     const patronId = window.prompt("Enter patron id for hold:");
 
+<<<<<<< Updated upstream
                     if (!patronId) {
                       return;
                     }
@@ -147,6 +148,30 @@ export default function Item({ itemData }) {
             <SecondaryButton title="Unavailable" disabled={true} />
           )}
         </div>
+=======
+          try {
+            await FetchJson("/api/holds", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                item_id: itemData.itemId,
+              }),
+            });
+            alert("Hold placed successfully!");
+            window.location.reload();
+          } catch (error) {
+            console.error(error);
+            alert(error.message || "Failed to place hold.");
+          }
+        }}
+  />
+) : (
+  <SecondaryButton title="Unavailable" disabled={true} />
+)}
+          </div>
+>>>>>>> Stashed changes
         </div>
       </div>
     </div>

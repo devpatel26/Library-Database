@@ -20,7 +20,10 @@ export default function Books() {
     "Young Adult",
     "Adventure",
   ];
-  const formats = ["Hardback", "Paperback"];
+  const formats = [
+    "Hardback",
+    "Paperback"
+  ];
   const languages = [
     "English",
     "Spanish",
