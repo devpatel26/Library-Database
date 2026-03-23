@@ -512,6 +512,7 @@ app.get(["/search", "/api/search"], async (req, res) => {
     const limit = Math.min(Math.max(Number(req.query.limit) || 20, 1), 100);
 
     try {
+      await ClearExpiredHolds();
         const { sql, params } = BuildSearchQuery({
             q,
             category,
@@ -803,10 +804,21 @@ app.post(["/staff/register", "/api/staff/register"], async (req, res) => {
 // Place hold endpoint
 app.post(["/holds", "/api/holds"], async (req, res) => {
   try {
+    await ClearExpiredHolds();
+
     const { item_id, patron_id } = req.body;
 
     if (!item_id || !patron_id) {
       return res.status(400).json({ error: "Missing required fields." });
+    }
+
+    const [patrons] = await pool.query(
+      "SELECT patron_id FROM patrons WHERE patron_id = ?",
+      [patron_id]
+    );
+
+    if (patrons.length === 0) {
+      return res.status(404).json({ error: "Patron not found." });
     }
 
     const [items] = await pool.query(
@@ -829,7 +841,7 @@ app.post(["/holds", "/api/holds"], async (req, res) => {
       INSERT INTO holds
         (item_id, patron_id, hold_origin_date, hold_expiration_date, hold_status_code)
       VALUES
-        (?, ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 7 DAY), ?)
+        (?, ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 2 DAY), ?)
       `,
       [item_id, patron_id, 1]
     );
@@ -857,4 +869,286 @@ void LogDatabaseConnectionStatus();
 
 app.listen(port, () => {
     console.log(`Server is running on port: ${port}`);
+});
+
+// Function to clear expired holds and update item availability
+async function ClearExpiredHolds() {
+    const [expiredHolds] = await pool.query(
+        `
+        SELECT hold_id AS holdId, item_id AS itemId
+        FROM holds
+        WHERE hold_expiration_date < CURDATE()
+        `
+    );
+
+    for (const hold of expiredHolds) {
+        await pool.query(
+            `
+            UPDATE items
+            SET available = available + 1,
+                on_hold = CASE WHEN on_hold > 0 THEN on_hold - 1 ELSE 0 END
+            WHERE item_id = ?
+            `,
+            [hold.itemId]
+        );
+
+        await pool.query(
+            `
+            DELETE FROM holds
+            WHERE hold_id = ?
+            `,
+            [hold.holdId]
+        );
+    }
+}
+
+// Get current holds for staff view
+app.get(["/holds/current", "/api/holds/current"], async (req, res) => {
+  try {
+    await ClearExpiredHolds();
+
+    const [rows] = await pool.query(
+      `
+      SELECT
+        h.hold_id AS holdId,
+        h.item_id AS itemId,
+        h.patron_id AS patronId,
+        h.hold_origin_date AS holdStart,
+        h.hold_expiration_date AS holdEnd,
+        p.first_name,
+        p.last_name,
+        COALESCE(
+          b.title,
+          per.title,
+          am.title,
+          e.equipment_name
+        ) AS title,
+        COALESCE(
+          (
+            SELECT GROUP_CONCAT(CONCAT(a.first_name, ' ', a.last_name) SEPARATOR ', ')
+            FROM authors a
+            WHERE a.item_id = b.item_id
+          ),
+          (
+            SELECT GROUP_CONCAT(CONCAT(c.first_name, ' ', c.last_name) SEPARATOR ', ')
+            FROM contributors c
+            WHERE c.item_id = am.item_id
+          ),
+          NULL
+        ) AS creator
+      FROM holds h
+      JOIN patrons p ON p.patron_id = h.patron_id
+      LEFT JOIN books b ON b.item_id = h.item_id
+      LEFT JOIN periodicals per ON per.item_id = h.item_id
+      LEFT JOIN audiovisual_media am ON am.item_id = h.item_id
+      LEFT JOIN equipment e ON e.item_id = h.item_id
+      ORDER BY h.hold_expiration_date ASC, h.hold_id ASC
+      `
+    );
+
+    const formattedRows = rows.map((row) => ({
+      ...row,
+      patronName: `${row.first_name} ${row.last_name}`,
+    }));
+
+    return res.json(formattedRows);
+  } catch (error) {
+    console.error("Load current holds error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to load holds."),
+    });
+  }
+});
+
+// Cancel hold endpoint
+app.delete(["/holds/:holdId", "/api/holds/:holdId"], async (req, res) => {
+  try {
+    await ClearExpiredHolds();
+
+    const holdId = Number(req.params.holdId);
+
+    const [holds] = await pool.query(
+      `
+      SELECT hold_id AS holdId, item_id AS itemId
+      FROM holds
+      WHERE hold_id = ?
+      `,
+      [holdId]
+    );
+
+    if (holds.length === 0) {
+      return res.status(404).json({ error: "Hold not found." });
+    }
+
+    const hold = holds[0];
+
+    await pool.query(
+      `
+      DELETE FROM holds
+      WHERE hold_id = ?
+      `,
+      [holdId]
+    );
+
+    await pool.query(
+      `
+      UPDATE items
+      SET available = available + 1,
+          on_hold = CASE WHEN on_hold > 0 THEN on_hold - 1 ELSE 0 END
+      WHERE item_id = ?
+      `,
+      [hold.itemId]
+    );
+
+    return res.json({ message: "Hold cancelled successfully." });
+  } catch (error) {
+    console.error("Cancel hold error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to cancel hold."),
+    });
+  }
+});
+
+// Checkout hold endpoint
+app.post(["/holds/:holdId/checkout", "/api/holds/:holdId/checkout"], async (req, res) => {
+  try {
+    await ClearExpiredHolds();
+
+    const holdId = Number(req.params.holdId);
+
+    const [holds] = await pool.query(
+      `
+      SELECT
+        h.hold_id AS holdId,
+        h.item_id AS itemId,
+        h.patron_id AS patronId,
+        p.patron_role_code AS patronRoleCode,
+        pr.loan_period AS loanPeriod
+      FROM holds h
+      JOIN patrons p ON p.patron_id = h.patron_id
+      JOIN patron_roles pr ON pr.patron_role_code = p.patron_role_code
+      WHERE h.hold_id = ?
+      `,
+      [holdId]
+    );
+
+    if (holds.length === 0) {
+      return res.status(404).json({ error: "Hold not found." });
+    }
+
+    const hold = holds[0];
+
+    await pool.query(
+      `
+      INSERT INTO loans
+        (item_id, patron_id, loan_origin_date, loan_due_date, patron_role_code, loan_status_code)
+      VALUES
+        (?, ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL ? DAY), ?, ?)
+      `,
+      [hold.itemId, hold.patronId, hold.loanPeriod, hold.patronRoleCode, 1]
+    );
+
+    await pool.query(
+      `
+      DELETE FROM holds
+      WHERE hold_id = ?
+      `,
+      [holdId]
+    );
+
+    await pool.query(
+      `
+      UPDATE items
+      SET on_hold = CASE WHEN on_hold > 0 THEN on_hold - 1 ELSE 0 END,
+          unavailable = unavailable + 1
+      WHERE item_id = ?
+      `,
+      [hold.itemId]
+    );
+
+    return res.json({ message: "Hold checked out successfully." });
+  } catch (error) {
+    console.error("Checkout hold error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to check out hold."),
+    });
+  }
+});
+
+// Direct checkout endpoint (without hold)
+app.post(["/checkout", "/api/checkout"], async (req, res) => {
+  try {
+    await ClearExpiredHolds();
+
+    const { item_id, patron_id } = req.body;
+
+    if (!item_id || !patron_id) {
+      return res.status(400).json({ error: "Missing required fields." });
+    }
+
+    const [patrons] = await pool.query(
+      `
+      SELECT
+        p.patron_id AS patronId,
+        p.patron_role_code AS patronRoleCode,
+        pr.loan_period AS loanPeriod
+      FROM patrons p
+      JOIN patron_roles pr ON pr.patron_role_code = p.patron_role_code
+      WHERE p.patron_id = ?
+      `,
+      [patron_id]
+    );
+
+    if (patrons.length === 0) {
+      return res.status(404).json({ error: "Patron not found." });
+    }
+
+    const patron = patrons[0];
+
+    const [items] = await pool.query(
+      `
+      SELECT item_id AS itemId, available
+      FROM items
+      WHERE item_id = ?
+      `,
+      [item_id]
+    );
+
+    if (items.length === 0) {
+      return res.status(404).json({ error: "Item not found." });
+    }
+
+    const item = items[0];
+
+    if (item.available < 1) {
+      return res.status(400).json({ error: "No available copies for checkout." });
+    }
+
+    await pool.query(
+      `
+      INSERT INTO loans
+        (item_id, patron_id, loan_origin_date, loan_due_date, patron_role_code, loan_status_code)
+      VALUES
+        (?, ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL ? DAY), ?, ?)
+      `,
+      [item_id, patron.patronId, patron.loanPeriod, patron.patronRoleCode, 1]
+    );
+
+    await pool.query(
+      `
+      UPDATE items
+      SET available = available - 1,
+          unavailable = unavailable + 1
+      WHERE item_id = ?
+      `,
+      [item_id]
+    );
+
+    return res.status(201).json({ message: "Checkout successful." });
+  } catch (error) {
+    console.error("Direct checkout error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to check out item."),
+    });
+  }
 });

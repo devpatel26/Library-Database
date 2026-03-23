@@ -21,6 +21,7 @@ import StaffLoans from "./pages/StaffLoans.jsx";
 import Logout from "./pages/Logout.jsx";
 import CreateSignupCode from "./pages/CreateSignupCode.jsx";
 import { ReadStoredJson } from "./api";
+import Holds from "./pages/Holds.jsx";
 
 function App() {
 const user = ReadStoredJson("user");
@@ -43,6 +44,10 @@ const navLinks = [
   ...(userType === "staff" && (roleCode === 1 || roleCode === 2)
     ? [{ to: "/itementry", label: "Item Entry (Staff)" }]
     : []),
+  
+  ...(userType === "staff" && (roleCode === 1 || roleCode === 2)
+  ? [{ to: "/holds", label: "Holds (Staff)" }]
+  : []),
 
   ...(userType === "staff" && (roleCode === 1 || roleCode === 2)
     ? [{ to: "/stafffines", label: "Staff Fines (Staff)" }]
@@ -102,6 +107,7 @@ const navLinks = [
             <Route path="/forgotpassword" element={<ForgotPassword />} />
             <Route path="/logout" element={<Logout />} />
             <Route path="/createsignupcode" element={<CreateSignupCode />} />
+            <Route path="/holds" element={<Holds />} />
           </Routes>
         </main>
       </div>

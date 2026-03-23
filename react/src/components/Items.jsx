@@ -30,47 +30,123 @@ export default function Item({ itemData }) {
               </span>
             ) : null}
           </div>
-          <div className="h-full justify-items-center grid">
-            {itemData.available >= 1 ? (
-      <PrimaryButton
-        title="Place Hold"
-        onClick={async () => {
-          const user = ReadStoredJson("user");
+        <div className="h-full justify-items-center grid gap-2">
+          {itemData.available >= 1 ? (
+            ReadStoredJson("user")?.user_type === "staff" ? (
+              <>
+                <PrimaryButton
+                  title="Place Hold"
+                  onClick={async () => {
+                    const user = ReadStoredJson("user");
 
-          if (!user) {
-            alert("Please log in first.");
-            window.location.href = "/login";
-            return;
-          }
+                    if (!user) {
+                      alert("Please log in first.");
+                      window.location.href = "/login";
+                      return;
+                    }
 
-          if (user.user_type !== "patron") {
-            alert("Only patrons can place holds.");
-            return;
-          }
+                    const patronId = window.prompt("Enter patron id for hold:");
 
-          try {
-            await FetchJson("/api/holds", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                item_id: itemData.itemId,
-                patron_id: user.patron_id,
-              }),
-            });
-            alert("Hold placed successfully!");
-            window.location.reload();
-          } catch (error) {
-            console.error(error);
-            alert(error.message || "Failed to place hold.");
-          }
-        }}
-  />
-) : (
-  <SecondaryButton title="Unavailable" disabled={true} />
-)}
-          </div>
+                    if (!patronId) {
+                      return;
+                    }
+
+                    try {
+                      await FetchJson("/api/holds", {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                          item_id: itemData.itemId,
+                          patron_id: Number(patronId),
+                        }),
+                      });
+
+                      alert("Hold placed successfully!");
+                      window.location.reload();
+                    } catch (error) {
+                      console.error(error);
+                      alert(error.message || "Failed to place hold.");
+                    }
+                  }}
+                />
+
+                <PrimaryButton
+                  title="Check Out"
+                  onClick={async () => {
+                    const user = ReadStoredJson("user");
+
+                    if (!user) {
+                      alert("Please log in first.");
+                      window.location.href = "/login";
+                      return;
+                    }
+
+                    const patronId = window.prompt("Enter patron id for checkout:");
+
+                    if (!patronId) {
+                      return;
+                    }
+
+                    try {
+                      await FetchJson("/api/checkout", {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                          item_id: itemData.itemId,
+                          patron_id: Number(patronId),
+                        }),
+                      });
+
+                      alert("Checkout successful!");
+                      window.location.reload();
+                    } catch (error) {
+                      console.error(error);
+                      alert(error.message || "Failed to check out item.");
+                    }
+                  }}
+                />
+              </>
+            ) : (
+              <PrimaryButton
+                title="Place Hold"
+                onClick={async () => {
+                  const user = ReadStoredJson("user");
+
+                  if (!user) {
+                    alert("Please log in first.");
+                    window.location.href = "/login";
+                    return;
+                  }
+
+                  try {
+                    await FetchJson("/api/holds", {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({
+                        item_id: itemData.itemId,
+                        patron_id: user.patron_id,
+                      }),
+                    });
+
+                    alert("Hold placed successfully!");
+                    window.location.reload();
+                  } catch (error) {
+                    console.error(error);
+                    alert(error.message || "Failed to place hold.");
+                  }
+                }}
+              />
+            )
+          ) : (
+            <SecondaryButton title="Unavailable" disabled={true} />
+          )}
+        </div>
         </div>
       </div>
     </div>
