@@ -1152,3 +1152,117 @@ app.post(["/checkout", "/api/checkout"], async (req, res) => {
     });
   }
 });
+
+// Get current loans for staff view
+app.get(["/staff/loans/current", "/api/staff/loans/current"], async (req, res) => {
+  try {
+    await ClearExpiredHolds();
+
+    const [rows] = await pool.query(
+      `
+      SELECT
+        l.loan_id AS loanId,
+        l.item_id AS itemId,
+        l.patron_id AS patronId,
+        l.loan_origin_date AS loanStart,
+        l.loan_due_date AS loanEnd,
+        p.first_name,
+        p.last_name,
+        COALESCE(
+          b.title,
+          per.title,
+          am.title,
+          e.equipment_name
+        ) AS title,
+        COALESCE(
+          (
+            SELECT GROUP_CONCAT(CONCAT(a.first_name, ' ', a.last_name) SEPARATOR ', ')
+            FROM authors a
+            WHERE a.item_id = b.item_id
+          ),
+          (
+            SELECT GROUP_CONCAT(CONCAT(c.first_name, ' ', c.last_name) SEPARATOR ', ')
+            FROM contributors c
+            WHERE c.item_id = am.item_id
+          ),
+          NULL
+        ) AS creator
+      FROM loans l
+      JOIN patrons p ON p.patron_id = l.patron_id
+      LEFT JOIN books b ON b.item_id = l.item_id
+      LEFT JOIN periodicals per ON per.item_id = l.item_id
+      LEFT JOIN audiovisual_media am ON am.item_id = l.item_id
+      LEFT JOIN equipment e ON e.item_id = l.item_id
+      WHERE l.loan_status_code = 1
+      ORDER BY l.loan_due_date ASC, l.loan_id ASC
+      `
+    );
+
+    const formattedRows = rows.map((row) => ({
+      ...row,
+      patronName: `${row.first_name} ${row.last_name}`,
+    }));
+
+    return res.json(formattedRows);
+  } catch (error) {
+    console.error("Load current staff loans error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to load staff loans."),
+    });
+  }
+});
+
+// Return loan endpoint
+app.post(["/loans/:loanId/return", "/api/loans/:loanId/return"], async (req, res) => {
+  try {
+    const loanId = Number(req.params.loanId);
+
+    const [loans] = await pool.query(
+      `
+      SELECT
+        loan_id AS loanId,
+        item_id AS itemId,
+        loan_status_code AS loanStatusCode
+      FROM loans
+      WHERE loan_id = ?
+      `,
+      [loanId]
+    );
+
+    if (loans.length === 0) {
+      return res.status(404).json({ error: "Loan not found." });
+    }
+
+    const loan = loans[0];
+
+    if (loan.loanStatusCode !== 1) {
+      return res.status(400).json({ error: "Only active loans can be returned." });
+    }
+
+    await pool.query(
+      `
+      UPDATE loans
+      SET loan_status_code = 2
+      WHERE loan_id = ?
+      `,
+      [loanId]
+    );
+
+    await pool.query(
+      `
+      UPDATE items
+      SET unavailable = CASE WHEN unavailable > 0 THEN unavailable - 1 ELSE 0 END,
+          available = available + 1
+      WHERE item_id = ?
+      `,
+      [loan.itemId]
+    );
+
+    return res.json({ message: "Loan returned successfully." });
+  } catch (error) {
+    console.error("Return loan error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to return loan."),
+    });
+  }
+});

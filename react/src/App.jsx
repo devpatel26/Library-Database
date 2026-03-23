@@ -46,6 +46,10 @@ const navLinks = [
     : []),
   
   ...(userType === "staff" && (roleCode === 1 || roleCode === 2)
+  ? [{ to: "/staffloans", label: "Loans (Staff)" }]
+  : []),
+  
+  ...(userType === "staff" && (roleCode === 1 || roleCode === 2)
   ? [{ to: "/holds", label: "Holds (Staff)" }]
   : []),
 
@@ -108,6 +112,7 @@ const navLinks = [
             <Route path="/logout" element={<Logout />} />
             <Route path="/createsignupcode" element={<CreateSignupCode />} />
             <Route path="/holds" element={<Holds />} />
+            <Route path="/staffloans" element={<StaffLoans />} />
           </Routes>
         </main>
       </div>
