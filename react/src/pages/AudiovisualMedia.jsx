@@ -1,10 +1,4 @@
-import Fine from "../components/Fine";
-import dummyFines from "../data/dummy/fines";
-import { useState, useEffect } from "react";
-import PrimaryButton, {
-  SecondaryButton,
-  SubmitButton,
-} from "../components/Buttons";
+import { SubmitButton } from "../components/Buttons";
 import Dropdown from "../components/Dropdown";
 
 export default function AudiovisualMedia() {

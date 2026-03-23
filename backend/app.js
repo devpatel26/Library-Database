@@ -2,6 +2,7 @@ import express from "express";
 import mysql from "mysql2";
 import dotenv from "dotenv";
 import cors from "cors";
+import crypto from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -11,6 +12,25 @@ dotenv.config({ path: path.resolve(backendDirectory, ".env") });
 
 const app = express();
 const port = Number(process.env.PORT) || 3000;
+const sessionMaxAgeSeconds = Math.max(
+    Number(process.env.SESSION_MAX_AGE_SECONDS) || 60 * 60 * 12,
+    60
+);
+const sessionSecret =
+    process.env.SESSION_SECRET?.trim() ||
+    (process.env.NODE_ENV === "production"
+        ? ""
+        : "library-dev-session-secret-change-me");
+
+if (!sessionSecret) {
+    throw new Error("SESSION_SECRET must be set when NODE_ENV=production.");
+}
+
+if (!process.env.SESSION_SECRET && process.env.NODE_ENV !== "production") {
+    console.warn(
+        'SESSION_SECRET is not set in "backend/.env". Using a development fallback secret.'
+    );
+}
 
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
@@ -56,7 +76,7 @@ function GetMissingDatabaseConfigKeys() {
 
 function LogDatabaseConfigurationHelp() {
     console.error(
-        'The backend reads "backend/.env", not "backend/.env.example".'
+        'The backend reads "backend/.env".'
     );
     console.error(
         'Check "backend/.env" and make sure DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, and DB_NAME match your local MySQL setup.'
@@ -67,7 +87,7 @@ function LogDatabaseConfigurationHelp() {
         );
     }
     console.error(
-        'You can copy "backend/.env.example" to "backend/.env" and fill in your own MySQL credentials.'
+        'Create or update "backend/.env" with your local MySQL credentials.'
     );
 }
 
@@ -81,42 +101,225 @@ function ParsePositiveInteger(value) {
     return parsedValue;
 }
 
-function GetRequestUser(req) {
-    const userType = String(req.get("x-user-type") ?? "").trim().toLowerCase();
-
-    if (userType === "patron") {
-        const patronId = ParsePositiveInteger(req.get("x-patron-id"));
-
-        if (!patronId) {
-            return null;
-        }
-
-        return {
-            userType,
-            patronId,
-            roleCode: ParsePositiveInteger(req.get("x-role-code")),
-        };
-    }
-
-    if (userType === "staff") {
-        const staffId = ParsePositiveInteger(req.get("x-staff-id"));
-
-        if (!staffId) {
-            return null;
-        }
-
-        return {
-            userType,
-            staffId,
-            roleCode: ParsePositiveInteger(req.get("x-role-code")),
-        };
-    }
-
-    return null;
+function EncodeBase64Url(value) {
+    return Buffer.from(value, "utf8").toString("base64url");
 }
 
-function RequireAuthenticatedUser(req, res) {
-    const user = GetRequestUser(req);
+function DecodeBase64Url(value) {
+    try {
+        return Buffer.from(value, "base64url");
+    } catch {
+        return null;
+    }
+}
+
+function BuildSessionToken({ userType, patronId, staffId }) {
+    const issuedAt = Math.floor(Date.now() / 1000);
+    const subjectId = userType === "patron" ? patronId : staffId;
+    const payload = {
+        subjectType: userType,
+        subjectId,
+        issuedAt,
+        expiresAt: issuedAt + sessionMaxAgeSeconds,
+    };
+    const encodedPayload = EncodeBase64Url(JSON.stringify(payload));
+    const signature = crypto
+        .createHmac("sha256", sessionSecret)
+        .update(encodedPayload)
+        .digest("base64url");
+
+    return {
+        token: `${encodedPayload}.${signature}`,
+        expiresAt: new Date(payload.expiresAt * 1000).toISOString(),
+    };
+}
+
+function ReadSessionToken(req) {
+    const authorizationHeader = String(req.get("authorization") ?? "");
+    const match = authorizationHeader.match(/^Bearer\s+(.+)$/i);
+    return match ? match[1].trim() : "";
+}
+
+function ParseSessionToken(token) {
+    if (!token) {
+        return null;
+    }
+
+    const [encodedPayload, encodedSignature] = token.split(".");
+
+    if (!encodedPayload || !encodedSignature) {
+        return null;
+    }
+
+    const expectedSignature = crypto
+        .createHmac("sha256", sessionSecret)
+        .update(encodedPayload)
+        .digest();
+    const providedSignature = DecodeBase64Url(encodedSignature);
+
+    if (
+        !providedSignature ||
+        providedSignature.length !== expectedSignature.length ||
+        !crypto.timingSafeEqual(expectedSignature, providedSignature)
+    ) {
+        return null;
+    }
+
+    const payloadBuffer = DecodeBase64Url(encodedPayload);
+
+    if (!payloadBuffer) {
+        return null;
+    }
+
+    let payload;
+
+    try {
+        payload = JSON.parse(payloadBuffer.toString("utf8"));
+    } catch {
+        return null;
+    }
+
+    const expiresAt = Number(payload?.expiresAt);
+    const subjectId = ParsePositiveInteger(payload?.subjectId);
+    const subjectType =
+        payload?.subjectType === "patron" || payload?.subjectType === "staff"
+            ? payload.subjectType
+            : null;
+
+    if (!subjectType || !subjectId || !Number.isFinite(expiresAt)) {
+        return null;
+    }
+
+    if (expiresAt <= Math.floor(Date.now() / 1000)) {
+        return null;
+    }
+
+    return subjectType === "patron"
+        ? { userType: "patron", patronId: subjectId }
+        : { userType: "staff", staffId: subjectId };
+}
+
+function HashPassword(password) {
+    const normalizedPassword = String(password ?? "");
+    const salt = crypto.randomBytes(16).toString("hex");
+    const derivedKey = crypto
+        .scryptSync(normalizedPassword, salt, 64)
+        .toString("hex");
+
+    return `scrypt:${salt}:${derivedKey}`;
+}
+
+function IsScryptPasswordHash(value) {
+    return typeof value === "string" && value.startsWith("scrypt:");
+}
+
+function VerifyScryptPassword(password, storedPasswordHash) {
+    const [, salt, storedKeyHex] = String(storedPasswordHash).split(":");
+
+    if (!salt || !storedKeyHex) {
+        return false;
+    }
+
+    const storedKey = Buffer.from(storedKeyHex, "hex");
+    const derivedKey = crypto.scryptSync(String(password ?? ""), salt, 64);
+
+    return (
+        storedKey.length === derivedKey.length &&
+        crypto.timingSafeEqual(storedKey, derivedKey)
+    );
+}
+
+async function VerifyPassword(password, storedPasswordHash) {
+    if (!storedPasswordHash) {
+        return false;
+    }
+
+    if (IsScryptPasswordHash(storedPasswordHash)) {
+        return VerifyScryptPassword(password, storedPasswordHash);
+    }
+
+    return String(password ?? "") === storedPasswordHash;
+}
+
+async function UpgradeLegacyPasswordIfNeeded({
+    tableName,
+    idColumn,
+    idValue,
+    submittedPassword,
+    storedPasswordHash,
+}) {
+    if (IsScryptPasswordHash(storedPasswordHash)) {
+        return;
+    }
+
+    const upgradedPasswordHash = HashPassword(submittedPassword);
+
+    await pool.query(
+        `
+        UPDATE ${tableName}
+        SET password_hash = ?
+        WHERE ${idColumn} = ?
+        `,
+        [upgradedPasswordHash, idValue]
+    );
+}
+
+async function GetRequestUser(req) {
+    const sessionUser = ParseSessionToken(ReadSessionToken(req));
+
+    if (!sessionUser) {
+        return null;
+    }
+
+    if (sessionUser.userType === "patron") {
+        const [rows] = await pool.query(
+            `
+            SELECT
+                patron_id AS patronId,
+                patron_role_code AS roleCode,
+                is_active AS isActive
+            FROM patrons
+            WHERE patron_id = ?
+            `,
+            [sessionUser.patronId]
+        );
+
+        if (rows.length === 0 || !rows[0].isActive) {
+            return null;
+        }
+
+        return {
+            userType: "patron",
+            patronId: rows[0].patronId,
+            roleCode: rows[0].roleCode,
+        };
+    }
+
+    const [rows] = await pool.query(
+        `
+        SELECT
+            staff_id AS staffId,
+            staff_role_code AS roleCode,
+            is_active AS isActive
+        FROM staff
+        WHERE staff_id = ?
+        `,
+        [sessionUser.staffId]
+    );
+
+    if (rows.length === 0 || !rows[0].isActive) {
+        return null;
+    }
+
+    return {
+        userType: "staff",
+        staffId: rows[0].staffId,
+        roleCode: rows[0].roleCode,
+    };
+}
+
+async function RequireAuthenticatedUser(req, res) {
+    const user = await GetRequestUser(req);
 
     if (!user) {
         res.status(401).json({ error: "Please log in to continue." });
@@ -126,8 +329,8 @@ function RequireAuthenticatedUser(req, res) {
     return user;
 }
 
-function RequirePatronUser(req, res) {
-    const user = RequireAuthenticatedUser(req, res);
+async function RequirePatronUser(req, res) {
+    const user = await RequireAuthenticatedUser(req, res);
 
     if (!user) {
         return null;
@@ -137,6 +340,33 @@ function RequirePatronUser(req, res) {
         res.status(403).json({
             error: "This action is only available to patron accounts.",
         });
+        return null;
+    }
+
+    return user;
+}
+
+async function RequireStaffUser(req, res, { adminOnly = false } = {}) {
+    const user = await RequireAuthenticatedUser(req, res);
+
+    if (!user) {
+        return null;
+    }
+
+    if (user.userType !== "staff" || !user.staffId) {
+        res.status(403).json({
+            error: "This action is only available to staff accounts.",
+        });
+        return null;
+    }
+
+    if (![1, 2].includes(user.roleCode)) {
+        res.status(403).json({ error: "Your staff account does not have access." });
+        return null;
+    }
+
+    if (adminOnly && user.roleCode !== 2) {
+        res.status(403).json({ error: "Only admin accounts can perform this action." });
         return null;
     }
 
@@ -334,7 +564,7 @@ function BuildSearchQuery({ q, category, availableOnly, sort, limit }) {
 
 app.get(["/account", "/api/account"], async (req, res) => {
     try {
-        const user = RequireAuthenticatedUser(req, res);
+        const user = await RequireAuthenticatedUser(req, res);
 
         if (!user) {
             return;
@@ -400,7 +630,7 @@ app.get(["/account", "/api/account"], async (req, res) => {
 
 app.get(["/fines", "/api/fines"], async (req, res) => {
   try {
-    const user = RequirePatronUser(req, res);
+    const user = await RequirePatronUser(req, res);
 
     if (!user) {
       return;
@@ -434,7 +664,7 @@ app.get(["/fines", "/api/fines"], async (req, res) => {
 
 app.get(["/loans", "/api/loans"], async (req, res) => {
   try {
-    const user = RequirePatronUser(req, res);
+    const user = await RequirePatronUser(req, res);
 
     if (!user) {
       return;
@@ -732,12 +962,28 @@ app.post(["/login", "/api/login"], async (req, res) => {
         return res.status(403).json({ error: "Account is inactive" });
       }
 
-    if (password !== user.password_hash) {
-      return res.status(401).json({ error: "Invalid password" });
-    }
+      const passwordMatches = await VerifyPassword(password, user.password_hash);
+
+      if (!passwordMatches) {
+        return res.status(401).json({ error: "Invalid password" });
+      }
+
+      await UpgradeLegacyPasswordIfNeeded({
+        tableName: "patrons",
+        idColumn: "patron_id",
+        idValue: user.patron_id,
+        submittedPassword: password,
+        storedPasswordHash: user.password_hash,
+      });
+      const session = BuildSessionToken({
+        userType: "patron",
+        patronId: user.patron_id,
+      });
 
       return res.json({
         message: "Login successful",
+        sessionToken: session.token,
+        sessionExpiresAt: session.expiresAt,
         user: {
           user_type: "patron",
           patron_id: user.patron_id,
@@ -762,12 +1008,28 @@ app.post(["/login", "/api/login"], async (req, res) => {
         return res.status(403).json({ error: "Account is inactive" });
       }
 
-      if (password !== user.password_hash) {
+      const passwordMatches = await VerifyPassword(password, user.password_hash);
+
+      if (!passwordMatches) {
         return res.status(401).json({ error: "Invalid password" });
       }
 
+      await UpgradeLegacyPasswordIfNeeded({
+        tableName: "staff",
+        idColumn: "staff_id",
+        idValue: user.staff_id,
+        submittedPassword: password,
+        storedPasswordHash: user.password_hash,
+      });
+      const session = BuildSessionToken({
+        userType: "staff",
+        staffId: user.staff_id,
+      });
+
       return res.json({
         message: "Login successful",
+        sessionToken: session.token,
+        sessionExpiresAt: session.expiresAt,
         user: {
           user_type: "staff",
           staff_id: user.staff_id,
@@ -807,7 +1069,7 @@ app.post(["/register", "/api/register"], async (req, res) => {
       return res.status(409).json({ error: "Email already registered." });
     }
 
-    const passwordHash = password;
+    const passwordHash = HashPassword(password);
 
     await pool.query(
       `
@@ -832,20 +1094,21 @@ app.post(["/register", "/api/register"], async (req, res) => {
 // Admin creates staff signup_code endpoint
 app.post(["/staff-signup-codes", "/api/staff-signup-codes"], async (req, res) => {
   try {
-    const { signup_code, staff_role_code, created_by_admin_id } = req.body;
+    const user = await RequireStaffUser(req, res, { adminOnly: true });
 
-    if (!signup_code || !staff_role_code || !created_by_admin_id) {
+    if (!user) {
+      return;
+    }
+
+    const { signup_code, staff_role_code } = req.body;
+    const normalizedStaffRoleCode = ParsePositiveInteger(staff_role_code);
+
+    if (!signup_code || !normalizedStaffRoleCode) {
       return res.status(400).json({ error: "Missing required fields." });
     }
 
-    // check if the creator is an admin
-    const [admins] = await pool.query(
-      "SELECT * FROM staff WHERE staff_id = ? AND staff_role_code = 2 AND is_active = 1",
-      [created_by_admin_id]
-    );
-
-    if (admins.length === 0) {
-      return res.status(403).json({ error: "Only admin can create signup codes." });
+    if (![1, 2].includes(normalizedStaffRoleCode)) {
+      return res.status(400).json({ error: "staff_role_code must be 1 or 2." });
     }
 
     // check if the signup code already exists
@@ -865,7 +1128,7 @@ app.post(["/staff-signup-codes", "/api/staff-signup-codes"], async (req, res) =>
       VALUES
         (?, ?, ?, ?)
       `,
-      [signup_code, staff_role_code, created_by_admin_id, 0]
+      [signup_code, normalizedStaffRoleCode, user.staffId, 0]
     );
 
     res.status(201).json({ message: "Signup code created successfully." });
@@ -928,6 +1191,8 @@ app.post(["/staff/register", "/api/staff/register"], async (req, res) => {
       return res.status(409).json({ error: "Email already registered." });
     }
 
+    const passwordHash = HashPassword(password);
+
     //create staff account
     await pool.query(
       `
@@ -954,7 +1219,7 @@ app.post(["/staff/register", "/api/staff/register"], async (req, res) => {
         email,
         phone_number || null,
         address,
-        password,
+        passwordHash,
         1,
       ]
     );
@@ -982,27 +1247,51 @@ app.post(["/staff/register", "/api/staff/register"], async (req, res) => {
 // Place hold endpoint
 app.post(["/holds", "/api/holds"], async (req, res) => {
   try {
-<<<<<<< Updated upstream
     await ClearExpiredHolds();
-
-    const { item_id, patron_id } = req.body;
-=======
-    const user = RequirePatronUser(req, res);
->>>>>>> Stashed changes
+    const user = await RequireAuthenticatedUser(req, res);
 
     if (!user) {
       return;
     }
 
-    const { item_id } = req.body;
+    const itemId = ParsePositiveInteger(req.body?.item_id);
+    const requestedPatronId = ParsePositiveInteger(req.body?.patron_id);
 
-    if (!item_id) {
-      return res.status(400).json({ error: "Missing required fields." });
+    if (!itemId) {
+      return res.status(400).json({ error: "A valid item_id is required." });
+    }
+
+    let patronId = null;
+
+    if (user.userType === "patron") {
+      if (requestedPatronId && requestedPatronId !== user.patronId) {
+        return res.status(403).json({
+          error: "Patrons can only place holds for their own account.",
+        });
+      }
+
+      patronId = user.patronId;
+    } else if (user.userType === "staff" && [1, 2].includes(user.roleCode)) {
+      if (!requestedPatronId) {
+        return res.status(400).json({
+          error: "Staff must provide a patron_id when placing a hold.",
+        });
+      }
+
+      patronId = requestedPatronId;
+    } else {
+      return res.status(403).json({
+        error: "This action is only available to patron or staff accounts.",
+      });
     }
 
     const [patrons] = await pool.query(
-      "SELECT patron_id FROM patrons WHERE patron_id = ?",
-      [patron_id]
+      `
+      SELECT patron_id
+      FROM patrons
+      WHERE patron_id = ? AND is_active = 1
+      `,
+      [patronId]
     );
 
     if (patrons.length === 0) {
@@ -1011,7 +1300,7 @@ app.post(["/holds", "/api/holds"], async (req, res) => {
 
     const [items] = await pool.query(
       "SELECT * FROM items WHERE item_id = ?",
-      [item_id]
+      [itemId]
     );
 
     if (items.length === 0) {
@@ -1031,7 +1320,7 @@ app.post(["/holds", "/api/holds"], async (req, res) => {
       VALUES
         (?, ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 2 DAY), ?)
       `,
-      [item_id, user.patronId, 1]
+      [itemId, patronId, 1]
     );
 
     await pool.query(
@@ -1041,7 +1330,7 @@ app.post(["/holds", "/api/holds"], async (req, res) => {
           on_hold = on_hold + 1
       WHERE item_id = ?
       `,
-      [item_id]
+      [itemId]
     );
 
     return res.status(201).json({ message: "Hold placed successfully." });
@@ -1093,6 +1382,12 @@ async function ClearExpiredHolds() {
 // Get current holds for staff view
 app.get(["/holds/current", "/api/holds/current"], async (req, res) => {
   try {
+    const user = await RequireStaffUser(req, res);
+
+    if (!user) {
+      return;
+    }
+
     await ClearExpiredHolds();
 
     const [rows] = await pool.query(
@@ -1151,13 +1446,23 @@ app.get(["/holds/current", "/api/holds/current"], async (req, res) => {
 // Cancel hold endpoint
 app.delete(["/holds/:holdId", "/api/holds/:holdId"], async (req, res) => {
   try {
+    const user = await RequireAuthenticatedUser(req, res);
+
+    if (!user) {
+      return;
+    }
+
     await ClearExpiredHolds();
 
-    const holdId = Number(req.params.holdId);
+    const holdId = ParsePositiveInteger(req.params.holdId);
+
+    if (!holdId) {
+      return res.status(400).json({ error: "A valid holdId is required." });
+    }
 
     const [holds] = await pool.query(
       `
-      SELECT hold_id AS holdId, item_id AS itemId
+      SELECT hold_id AS holdId, item_id AS itemId, patron_id AS patronId
       FROM holds
       WHERE hold_id = ?
       `,
@@ -1169,6 +1474,16 @@ app.delete(["/holds/:holdId", "/api/holds/:holdId"], async (req, res) => {
     }
 
     const hold = holds[0];
+
+    if (user.userType === "patron" && hold.patronId !== user.patronId) {
+      return res.status(403).json({
+        error: "Patrons can only cancel their own holds.",
+      });
+    }
+
+    if (user.userType === "staff" && ![1, 2].includes(user.roleCode)) {
+      return res.status(403).json({ error: "Your staff account does not have access." });
+    }
 
     await pool.query(
       `
@@ -1200,9 +1515,19 @@ app.delete(["/holds/:holdId", "/api/holds/:holdId"], async (req, res) => {
 // Checkout hold endpoint
 app.post(["/holds/:holdId/checkout", "/api/holds/:holdId/checkout"], async (req, res) => {
   try {
+    const user = await RequireStaffUser(req, res);
+
+    if (!user) {
+      return;
+    }
+
     await ClearExpiredHolds();
 
-    const holdId = Number(req.params.holdId);
+    const holdId = ParsePositiveInteger(req.params.holdId);
+
+    if (!holdId) {
+      return res.status(400).json({ error: "A valid holdId is required." });
+    }
 
     const [holds] = await pool.query(
       `
@@ -1266,12 +1591,19 @@ app.post(["/holds/:holdId/checkout", "/api/holds/:holdId/checkout"], async (req,
 // Direct checkout endpoint (without hold)
 app.post(["/checkout", "/api/checkout"], async (req, res) => {
   try {
+    const user = await RequireStaffUser(req, res);
+
+    if (!user) {
+      return;
+    }
+
     await ClearExpiredHolds();
 
-    const { item_id, patron_id } = req.body;
+    const itemId = ParsePositiveInteger(req.body?.item_id);
+    const patronId = ParsePositiveInteger(req.body?.patron_id);
 
-    if (!item_id || !patron_id) {
-      return res.status(400).json({ error: "Missing required fields." });
+    if (!itemId || !patronId) {
+      return res.status(400).json({ error: "A valid item_id and patron_id are required." });
     }
 
     const [patrons] = await pool.query(
@@ -1282,9 +1614,9 @@ app.post(["/checkout", "/api/checkout"], async (req, res) => {
         pr.loan_period AS loanPeriod
       FROM patrons p
       JOIN patron_roles pr ON pr.patron_role_code = p.patron_role_code
-      WHERE p.patron_id = ?
+      WHERE p.patron_id = ? AND p.is_active = 1
       `,
-      [patron_id]
+      [patronId]
     );
 
     if (patrons.length === 0) {
@@ -1299,7 +1631,7 @@ app.post(["/checkout", "/api/checkout"], async (req, res) => {
       FROM items
       WHERE item_id = ?
       `,
-      [item_id]
+      [itemId]
     );
 
     if (items.length === 0) {
@@ -1319,7 +1651,7 @@ app.post(["/checkout", "/api/checkout"], async (req, res) => {
       VALUES
         (?, ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL ? DAY), ?, ?)
       `,
-      [item_id, patron.patronId, patron.loanPeriod, patron.patronRoleCode, 1]
+      [itemId, patron.patronId, patron.loanPeriod, patron.patronRoleCode, 1]
     );
 
     await pool.query(
@@ -1329,7 +1661,7 @@ app.post(["/checkout", "/api/checkout"], async (req, res) => {
           unavailable = unavailable + 1
       WHERE item_id = ?
       `,
-      [item_id]
+      [itemId]
     );
 
     return res.status(201).json({ message: "Checkout successful." });
@@ -1344,6 +1676,12 @@ app.post(["/checkout", "/api/checkout"], async (req, res) => {
 // Get current loans for staff view
 app.get(["/staff/loans/current", "/api/staff/loans/current"], async (req, res) => {
   try {
+    const user = await RequireStaffUser(req, res);
+
+    if (!user) {
+      return;
+    }
+
     await ClearExpiredHolds();
 
     const [rows] = await pool.query(
@@ -1403,7 +1741,17 @@ app.get(["/staff/loans/current", "/api/staff/loans/current"], async (req, res) =
 // Return loan endpoint
 app.post(["/loans/:loanId/return", "/api/loans/:loanId/return"], async (req, res) => {
   try {
-    const loanId = Number(req.params.loanId);
+    const user = await RequireStaffUser(req, res);
+
+    if (!user) {
+      return;
+    }
+
+    const loanId = ParsePositiveInteger(req.params.loanId);
+
+    if (!loanId) {
+      return res.status(400).json({ error: "A valid loanId is required." });
+    }
 
     const [loans] = await pool.query(
       `

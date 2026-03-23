@@ -1,41 +1,48 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import PrimaryButton from "../components/Buttons";
-import { FetchJson, ReadStoredJson } from "../api";
+import { FetchJson, ReadStoredUser } from "../api";
+
+async function FetchCurrentStaffLoans() {
+  return FetchJson("/api/staff/loans/current");
+}
 
 export default function StaffLoans() {
   const [loans, setLoans] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  async function LoadLoans() {
-    try {
-      setIsLoading(true);
-      const data = await FetchJson("/api/staff/loans/current");
-      setLoans(data);
-    } catch (error) {
-      console.error(error);
-      alert(error.message || "Failed to load loans.");
-    } finally {
-      setIsLoading(false);
-    }
-  }
+  const user = ReadStoredUser();
+  const userKey = user
+    ? `${user.user_type ?? ""}:${user.staff_id ?? ""}`
+    : "";
 
   useEffect(() => {
-    const user = ReadStoredJson("user");
+    const currentUser = ReadStoredUser();
 
-    if (!user) {
+    async function LoadLoans() {
+      try {
+        setIsLoading(true);
+        setLoans(await FetchCurrentStaffLoans());
+      } catch (error) {
+        console.error(error);
+        alert(error.message || "Failed to load loans.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    if (!currentUser) {
       alert("Please log in first.");
       window.location.href = "/login";
       return;
     }
 
-    if (user.user_type !== "staff") {
+    if (currentUser.user_type !== "staff") {
       alert("Only staff can access the staff loans page.");
       window.location.href = "/";
       return;
     }
 
     LoadLoans();
-  }, []);
+  }, [userKey]);
 
   async function ReturnLoan(loanId) {
     try {
@@ -44,10 +51,13 @@ export default function StaffLoans() {
       });
 
       alert("Loan returned successfully!");
-      await LoadLoans();
+      setIsLoading(true);
+      setLoans(await FetchCurrentStaffLoans());
     } catch (error) {
       console.error(error);
       alert(error.message || "Failed to return loan.");
+    } finally {
+      setIsLoading(false);
     }
   }
 

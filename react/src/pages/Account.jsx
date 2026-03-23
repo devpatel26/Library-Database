@@ -1,10 +1,26 @@
 import { Link, useOutlet } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { FetchJson, GetErrorMessage, ReadStoredJson } from "../api";
+import { FetchJson, GetErrorMessage, ReadStoredUser } from "../api";
 
 function FormatDateOfBirth(dateOfBirth) {
   if (!dateOfBirth) {
     return "Not provided";
+  }
+
+  const dateOnlyMatch =
+    typeof dateOfBirth === "string"
+      ? dateOfBirth.match(/^(\d{4})-(\d{2})-(\d{2})/)
+      : null;
+
+  if (dateOnlyMatch) {
+    const [, year, month, day] = dateOnlyMatch;
+    const parsedDate = new Date(Date.UTC(
+      Number(year),
+      Number(month) - 1,
+      Number(day),
+    ));
+
+    return new Intl.DateTimeFormat("en-US", { timeZone: "UTC" }).format(parsedDate);
   }
 
   const parsedDate = new Date(dateOfBirth);
@@ -13,7 +29,7 @@ function FormatDateOfBirth(dateOfBirth) {
     return dateOfBirth;
   }
 
-  return parsedDate.toLocaleDateString("en-US");
+  return new Intl.DateTimeFormat("en-US", { timeZone: "UTC" }).format(parsedDate);
 }
 
 export default function Account() {
@@ -21,7 +37,7 @@ export default function Account() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const outlet = useOutlet();
-  const user = ReadStoredJson("user");
+  const user = ReadStoredUser();
   const userKey = user
     ? `${user.user_type ?? ""}:${user.patron_id ?? ""}:${user.staff_id ?? ""}`
     : "";
@@ -36,9 +52,10 @@ export default function Account() {
 
   useEffect(() => {
     let isMounted = true;
+    const currentUser = ReadStoredUser();
 
     async function LoadAccount() {
-      if (!user) {
+      if (!currentUser) {
         setAccount(null);
         setError("Please log in to view your account.");
         setLoading(false);
@@ -76,9 +93,9 @@ export default function Account() {
     <div className="flex flex-col gap-8 lg:flex-row">
       <aside className="rounded-3xl border border-white/10 bg-slate-900/70 p-6 shadow-xl shadow-slate-950/30 lg:sticky lg:top-8 lg:w-72 lg:self-start">
         <nav className="space-y-2">
-          {navLinks.map((link, index) => (
+          {navLinks.map((link) => (
             <Link
-              key={index}
+              key={link.to}
               to={link.to}
               className="block rounded-md px-3 py-2 text-sm text-slate-200 transition hover:bg-slate-800 hover:text-white"
             >

@@ -1,4 +1,6 @@
 const localApiOrigin = "http://localhost:3000";
+const sessionStorageKey = "session";
+const userStorageKey = "user";
 
 function IsJsonLike(text, contentType) {
   if (contentType.includes("json")) {
@@ -79,6 +81,10 @@ export function GetErrorMessage(error, fallbackMessage) {
 }
 
 export function ReadStoredJson(key) {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
   const value = localStorage.getItem(key);
   const normalizedValue = value?.trim();
 
@@ -99,7 +105,67 @@ export function ReadStoredJson(key) {
 }
 
 export function WriteStoredJson(key, value) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
   localStorage.setItem(key, JSON.stringify(value));
+}
+
+export function ClearStoredAuth() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  localStorage.removeItem(userStorageKey);
+  localStorage.removeItem(sessionStorageKey);
+}
+
+export function ReadStoredSession() {
+  const session = ReadStoredJson(sessionStorageKey);
+
+  if (
+    !session ||
+    typeof session !== "object" ||
+    typeof session.token !== "string" ||
+    session.token.trim() === ""
+  ) {
+    if (session !== null) {
+      ClearStoredAuth();
+    }
+
+    return null;
+  }
+
+  if (session.expiresAt) {
+    const expiresAt = Date.parse(session.expiresAt);
+
+    if (Number.isFinite(expiresAt) && expiresAt <= Date.now()) {
+      ClearStoredAuth();
+      return null;
+    }
+  }
+
+  return {
+    token: session.token.trim(),
+    expiresAt: session.expiresAt ?? null,
+  };
+}
+
+export function ReadStoredUser() {
+  if (!ReadStoredSession()) {
+    return null;
+  }
+
+  return ReadStoredJson(userStorageKey);
+}
+
+export function WriteStoredAuth({ user, sessionToken, sessionExpiresAt }) {
+  WriteStoredJson(userStorageKey, user);
+  WriteStoredJson(sessionStorageKey, {
+    token: sessionToken,
+    expiresAt: sessionExpiresAt ?? null,
+  });
 }
 
 function BuildAuthenticatedHeaders(headers) {
@@ -109,27 +175,13 @@ function BuildAuthenticatedHeaders(headers) {
     return nextHeaders;
   }
 
-  const user = ReadStoredJson("user");
+  const session = ReadStoredSession();
 
-  if (!user) {
+  if (!session) {
     return nextHeaders;
   }
 
-  if (user.user_type) {
-    nextHeaders.set("x-user-type", String(user.user_type));
-  }
-
-  if (user.patron_id != null) {
-    nextHeaders.set("x-patron-id", String(user.patron_id));
-  }
-
-  if (user.staff_id != null) {
-    nextHeaders.set("x-staff-id", String(user.staff_id));
-  }
-
-  if (user.role != null) {
-    nextHeaders.set("x-role-code", String(user.role));
-  }
+  nextHeaders.set("Authorization", `Bearer ${session.token}`);
 
   return nextHeaders;
 }
@@ -174,6 +226,10 @@ export async function ReadJson(response) {
 async function FetchJsonOnce(url, options) {
   const response = await fetch(url, BuildRequestOptions(options));
   const data = await ReadJson(response);
+
+  if (response.status === 401) {
+    ClearStoredAuth();
+  }
 
   if (!response.ok) {
     const message =

@@ -20,11 +20,11 @@ import TestPage from "./pages/TestPage.jsx";
 import StaffLoans from "./pages/StaffLoans.jsx";
 import Logout from "./pages/Logout.jsx";
 import CreateSignupCode from "./pages/CreateSignupCode.jsx";
-import { ReadStoredJson } from "./api";
+import { ReadStoredUser } from "./api";
 import Holds from "./pages/Holds.jsx";
 
 function App() {
-const user = ReadStoredJson("user");
+const user = ReadStoredUser();
 const userType = user?.user_type;
 const roleCode = Number(user?.role);
 
@@ -64,7 +64,7 @@ const navLinks = [
     : []),
 
   ...(userType === "staff" && roleCode === 2
-    ? [{ to: "/staffregistration", label: "Staff Registration (Admin)" }]
+    ? [{ to: "/staffregistration", label: "Staff Signup" }]
     : []),
 
   { to: "/test", label: "Test Page" },

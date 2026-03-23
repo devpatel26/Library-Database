@@ -1,26 +1,37 @@
 import { useEffect, useState } from "react";
 import { ItemHold, ItemLoan } from "../components/Items";
-import { FetchJson, GetErrorMessage, ReadStoredJson } from "../api";
+import { FetchJson, GetErrorMessage, ReadStoredUser } from "../api";
+
+async function FetchCirculationData() {
+  const payload = await FetchJson("/api/loans");
+
+  return {
+    loans: payload.loans ?? [],
+    holds: payload.holds ?? [],
+  };
+}
 
 export default function Loans() {
   const [data, setData] = useState({ loans: [], holds: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const user = ReadStoredJson("user");
+  const user = ReadStoredUser();
   const userKey = user
     ? `${user.user_type ?? ""}:${user.patron_id ?? ""}:${user.staff_id ?? ""}`
     : "";
 
   useEffect(() => {
+    const currentUser = ReadStoredUser();
+
     async function LoadCirculation() {
-      if (!user) {
+      if (!currentUser) {
         setData({ loans: [], holds: [] });
         setError("Please log in to view loans.");
         setLoading(false);
         return;
       }
 
-      if (user.user_type !== "patron") {
+      if (currentUser.user_type !== "patron") {
         setData({ loans: [], holds: [] });
         setError("Loans are currently only available for patron accounts.");
         setLoading(false);
@@ -30,12 +41,7 @@ export default function Loans() {
       try {
         setLoading(true);
         setError("");
-        const payload = await FetchJson("/api/loans", { credentials: "include" });
-
-        setData({
-          loans: payload.loans ?? [],
-          holds: payload.holds ?? [],
-        });
+        setData(await FetchCirculationData());
       } catch (err) {
         setError(GetErrorMessage(err, "Failed to load loans."));
       } finally {
@@ -45,6 +51,22 @@ export default function Loans() {
 
     LoadCirculation();
   }, [userKey]);
+
+  async function CancelHold(holdId) {
+    try {
+      await FetchJson(`/api/holds/${holdId}`, {
+        method: "DELETE",
+      });
+
+      setLoading(true);
+      setError("");
+      setData(await FetchCirculationData());
+    } catch (err) {
+      setError(GetErrorMessage(err, "Failed to cancel hold."));
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <section className="rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
@@ -89,7 +111,11 @@ export default function Loans() {
                 </p>
               ) : (
                 data.holds.map((item) => (
-                  <ItemHold key={item.holdId} itemData={item} />
+                  <ItemHold
+                    key={item.holdId}
+                    itemData={item}
+                    onCancel={CancelHold}
+                  />
                 ))
               )}
             </div>

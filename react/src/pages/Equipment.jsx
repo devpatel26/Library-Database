@@ -1,11 +1,4 @@
-import Fine from "../components/Fine";
-import dummyFines from "../data/dummy/fines";
-import { useState, useEffect } from "react";
-import PrimaryButton, {
-  SecondaryButton,
-  SubmitButton,
-} from "../components/Buttons";
-import Dropdown from "../components/Dropdown";
+import { SubmitButton } from "../components/Buttons";
 
 export default function Equipment() {
   return (

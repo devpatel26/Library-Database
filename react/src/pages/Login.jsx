@@ -1,8 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
-import { FetchJson, WriteStoredJson } from "../api";
+import { FetchJson, WriteStoredAuth } from "../api";
 
 export default function Login() {
-  // eslint-disable-next-line no-unused-vars
   const navigate = useNavigate();
 
   return (
@@ -17,7 +16,6 @@ export default function Login() {
       <form
         onSubmit={async (e) => {
           e.preventDefault();
-          console.log("form submitted");
 
           const formData = new FormData(e.target);
 
@@ -25,8 +23,6 @@ export default function Login() {
             email: formData.get("email"),
             password: formData.get("password"),
           };
-
-          console.log("loginData:", loginData);
 
           try {
             const data = await FetchJson("/api/login", {
@@ -36,11 +32,13 @@ export default function Login() {
               },
               body: JSON.stringify(loginData),
             });
-            console.log("response data:", data);
-            
-            WriteStoredJson("user", data.user);
+            WriteStoredAuth({
+              user: data.user,
+              sessionToken: data.sessionToken,
+              sessionExpiresAt: data.sessionExpiresAt,
+            });
             alert("Login successful!");
-            window.location.href = "/account";
+            navigate("/account", { replace: true });
           } catch (error) {
             console.error("login error:", error);
             alert(error.message || "Login failed.");
@@ -88,7 +86,7 @@ export default function Login() {
       </p>
 
       <p className="mt-4 text-sm text-slate-400">
-        Staff registration?{" "}
+        Staff signup?{" "}
         <Link to="/staffregistration" className="text-sky-300 hover:text-sky-200">
           Register
         </Link>

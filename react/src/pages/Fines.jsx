@@ -1,26 +1,28 @@
 import Fine from "../components/Fine";
 import { useEffect, useState } from "react";
-import { FetchJson, GetErrorMessage, ReadStoredJson } from "../api";
+import { FetchJson, GetErrorMessage, ReadStoredUser } from "../api";
 
 export default function Fines() {
   const [fines, setFines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const user = ReadStoredJson("user");
+  const user = ReadStoredUser();
   const userKey = user
     ? `${user.user_type ?? ""}:${user.patron_id ?? ""}:${user.staff_id ?? ""}`
     : "";
 
   useEffect(() => {
+    const currentUser = ReadStoredUser();
+
     async function LoadFines() {
-      if (!user) {
+      if (!currentUser) {
         setFines([]);
         setError("Please log in to view fines.");
         setLoading(false);
         return;
       }
 
-      if (user.user_type !== "patron") {
+      if (currentUser.user_type !== "patron") {
         setFines([]);
         setError("Fines are currently only available for patron accounts.");
         setLoading(false);
@@ -30,7 +32,7 @@ export default function Fines() {
       try {
         setLoading(true);
         setError("");
-        const data = await FetchJson("/api/fines", { credentials: "include" });
+        const data = await FetchJson("/api/fines");
 
         setFines(data);
       } catch (err) {

@@ -34,7 +34,7 @@ export default function Registration() {
           };
 
           try {
-            const data = await FetchJson("/api/register", {
+            await FetchJson("/api/register", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -42,9 +42,8 @@ export default function Registration() {
               body: JSON.stringify(registrationData),
             });
 
-            alert("Registration successful! Pleast go back to Login page to log in!");
-            console.log(data);
-          } catch (error) {
+            alert("Registration successful! Please go back to the login page to sign in.");
+            } catch (error) {
             console.error(error);
             alert(error.message || "Registration failed.");
           }
@@ -61,7 +60,7 @@ export default function Registration() {
                   required
                   id="firstname"
                   name="firstname"
-                  type="firstname"
+                  type="text"
                   className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                 />
               </div>
@@ -75,7 +74,7 @@ export default function Registration() {
                   required
                   id="lastname"
                   name="lastname"
-                  type="lastname"
+                  type="text"
                   className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                 />
               </div>
