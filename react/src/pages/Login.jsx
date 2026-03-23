@@ -38,7 +38,8 @@ export default function Login() {
               sessionExpiresAt: data.sessionExpiresAt,
             });
             alert("Login successful!");
-            navigate("/account", { replace: true });
+            window.location.href = "account"
+            //navigate("/account", { replace: true });
           } catch (error) {
             console.error("login error:", error);
             alert(error.message || "Login failed.");

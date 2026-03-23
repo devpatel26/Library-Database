@@ -8,8 +8,9 @@ export default function Logout() {
 
   useEffect(() => {
     ClearStoredAuth();
-    navigate("/login", { replace: true });
-  }, [navigate]);
+    window.location.href = "/login"
+    //navigate("/login", { replace: true });
+  }, []);
 
   return <p>Logging out...</p>;
 }
