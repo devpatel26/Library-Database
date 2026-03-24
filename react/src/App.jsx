@@ -20,21 +20,27 @@ import TestPage from "./pages/TestPage.jsx";
 import StaffLoans from "./pages/StaffLoans.jsx";
 import Logout from "./pages/Logout.jsx";
 import CreateSignupCode from "./pages/CreateSignupCode.jsx";
-import { ReadStoredJson } from "./api";
+import { ReadStoredUser } from "./api";
+import Holds from "./pages/Holds.jsx";
+import MostBorrowedBooksReport from "./pages/MostBorrowedBooksReport.jsx";
+import PatronSummaryReport from "./pages/PatronSummaryReport.jsx";
+import TestingReport from "./pages/TestingReport.jsx";
 
 function App() {
-const user = ReadStoredJson("user");
+const user = ReadStoredUser();
 const userType = user?.user_type;
 const roleCode = Number(user?.role);
 
 const navLinks = [
   { to: "/", label: "Home" },
   { to: "/search", label: "Search" },
-  { to: "/account", label: "Account" },
 
-  ...(!user ? [{ to: "/login", label: "Login" }] : []),
-
-  ...(user ? [{ to: "/logout", label: "Logout" }] : []),
+  ...(!user
+    ? [{ to: "/login", label: "Login" }]
+    : [
+        { to: "/account", label: "Account" },
+        { to: "/logout", label: "Logout" },
+      ]),
 
   ...(userType === "staff" && roleCode === 2
     ? [{ to: "/createsignupcode", label: "Create Signup Code" }]
@@ -43,6 +49,14 @@ const navLinks = [
   ...(userType === "staff" && (roleCode === 1 || roleCode === 2)
     ? [{ to: "/itementry", label: "Item Entry (Staff)" }]
     : []),
+  
+  ...(userType === "staff" && (roleCode === 1 || roleCode === 2)
+  ? [{ to: "/staffloans", label: "Loans (Staff)" }]
+  : []),
+  
+  ...(userType === "staff" && (roleCode === 1 || roleCode === 2)
+  ? [{ to: "/holds", label: "Holds (Staff)" }]
+  : []),
 
   ...(userType === "staff" && (roleCode === 1 || roleCode === 2)
     ? [{ to: "/stafffines", label: "Staff Fines (Staff)" }]
@@ -53,7 +67,7 @@ const navLinks = [
     : []),
 
   ...(userType === "staff" && roleCode === 2
-    ? [{ to: "/staffregistration", label: "Staff Registration (Admin)" }]
+    ? [{ to: "/staffregistration", label: "Staff Signup" }]
     : []),
 
   { to: "/test", label: "Test Page" },
@@ -102,6 +116,11 @@ const navLinks = [
             <Route path="/forgotpassword" element={<ForgotPassword />} />
             <Route path="/logout" element={<Logout />} />
             <Route path="/createsignupcode" element={<CreateSignupCode />} />
+            <Route path="/holds" element={<Holds />} />
+            <Route path="/staffloans" element={<StaffLoans />} />
+            <Route path="/report/mostborrowedbooks" element={<MostBorrowedBooksReport />} />
+            <Route path="/report/patronsummary" element={<PatronSummaryReport />} />
+            <Route path="/report/testing" element={<TestingReport />} />
           </Routes>
         </main>
       </div>

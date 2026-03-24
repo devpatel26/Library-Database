@@ -37,7 +37,7 @@ VALUES
   'admin@library.com',
   '1234567890',
   '123 Admin Street',
-  'password',
+  'scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',
   1
 )
 ON DUPLICATE KEY UPDATE
@@ -125,10 +125,10 @@ VALUES
 INSERT INTO patrons
 (patron_role_code, first_name, last_name, date_of_birth, email, password_hash, is_active)
 VALUES
-(1,'John','Smith','1995-05-12','john@example.com','password',1),
-(1,'Emma','Johnson','1998-03-21','emma@example.com','password',1),
-(1,'Michael','Brown','1992-09-15','michael@example.com','password',1),
-(1,'Sophia','Davis','2000-11-02','sophia@example.com','password',1);
+(1,'John','Smith','1995-05-12','john@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Emma','Johnson','1998-03-21','emma@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Michael','Brown','1992-09-15','michael@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Sophia','Davis','2000-11-02','sophia@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1);
 
 -- -----------------------------------------------------
 -- Items Inventory
@@ -332,12 +332,12 @@ INSERT INTO authors (item_id,first_name,last_name) VALUES
 
 INSERT INTO patrons
 (patron_role_code,first_name,last_name,date_of_birth,email,password_hash,is_active) VALUES
-(1,'Daniel','Wilson','1996-07-08','daniel@example.com','password',1),
-(1,'Olivia','Taylor','1999-12-01','olivia@example.com','password',1),
-(1,'James','Anderson','1991-04-18','james@example.com','password',1),
-(1,'Isabella','Thomas','1994-02-10','isabella@example.com','password',1),
-(1,'William','Moore','1997-08-22','william@example.com','password',1),
-(1,'Mia','Martin','2001-06-30','mia@example.com','password',1);
+(1,'Daniel','Wilson','1996-07-08','daniel@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Olivia','Taylor','1999-12-01','olivia@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'James','Anderson','1991-04-18','james@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Isabella','Thomas','1994-02-10','isabella@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'William','Moore','1997-08-22','william@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Mia','Martin','2001-06-30','mia@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1);
 
 INSERT INTO loans
 (item_id,patron_id,loan_origin_date,loan_due_date,patron_role_code,loan_status_code) VALUES

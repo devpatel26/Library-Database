@@ -1,8 +1,26 @@
-import React from "react";
 import PrimaryButton, { SecondaryButton } from "./Buttons";
-import { FetchJson, ReadStoredJson } from "../api";
+import { FetchJson, ReadStoredUser } from "../api";
+
+function PromptForPatronId(message) {
+  const rawValue = window.prompt(message);
+
+  if (!rawValue) {
+    return null;
+  }
+
+  const patronId = Number(rawValue);
+
+  if (!Number.isInteger(patronId) || patronId < 1) {
+    alert("Enter a valid patron id.");
+    return null;
+  }
+
+  return patronId;
+}
 
 export default function Item({ itemData }) {
+  const user = ReadStoredUser();
+
   return (
     <div className="w-full">
       <div className="grid grid-cols-4 rounded-xl bg-white/2 px-3 py-1.5 outline-2 -outline-offset-1 outline-white/6">
@@ -23,53 +41,122 @@ export default function Item({ itemData }) {
               Unavailable: <br />
               {itemData.unavailable}
             </span>
-            {itemData.category != "equipment" ? (
+            {itemData.category !== "equipment" ? (
               <span>
                 Shelf: <br />
                 {itemData.shelfNumber}
               </span>
             ) : null}
           </div>
-          <div className="h-full justify-items-center grid">
+          <div className="grid h-full justify-items-center gap-2">
             {itemData.available >= 1 ? (
-      <PrimaryButton
-        title="Place Hold"
-        onClick={async () => {
-          const user = ReadStoredJson("user");
+              user?.user_type === "staff" ? (
+                <>
+                  <PrimaryButton
+                    title="Place Hold"
+                    onClick={async () => {
+                      if (!user) {
+                        alert("Please log in first.");
+                        window.location.href = "/login";
+                        return;
+                      }
 
-          if (!user) {
-            alert("Please log in first.");
-            window.location.href = "/login";
-            return;
-          }
+                      const patronId = PromptForPatronId("Enter patron id for hold:");
 
-          if (user.user_type !== "patron") {
-            alert("Only patrons can place holds.");
-            return;
-          }
+                      if (!patronId) {
+                        return;
+                      }
 
-          try {
-            await FetchJson("/api/holds", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                item_id: itemData.itemId,
-                patron_id: user.patron_id,
-              }),
-            });
-            alert("Hold placed successfully!");
-            window.location.reload();
-          } catch (error) {
-            console.error(error);
-            alert(error.message || "Failed to place hold.");
-          }
-        }}
-  />
-) : (
-  <SecondaryButton title="Unavailable" disabled={true} />
-)}
+                      try {
+                        await FetchJson("/api/holds", {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify({
+                            item_id: itemData.itemId,
+                            patron_id: patronId,
+                          }),
+                        });
+
+                        alert("Hold placed successfully!");
+                        window.location.reload();
+                      } catch (error) {
+                        console.error(error);
+                        alert(error.message || "Failed to place hold.");
+                      }
+                    }}
+                  />
+
+                  <PrimaryButton
+                    title="Check Out"
+                    onClick={async () => {
+                      if (!user) {
+                        alert("Please log in first.");
+                        window.location.href = "/login";
+                        return;
+                      }
+
+                      const patronId = PromptForPatronId("Enter patron id for checkout:");
+
+                      if (!patronId) {
+                        return;
+                      }
+
+                      try {
+                        await FetchJson("/api/checkout", {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify({
+                            item_id: itemData.itemId,
+                            patron_id: patronId,
+                          }),
+                        });
+
+                        alert("Checkout successful!");
+                        window.location.reload();
+                      } catch (error) {
+                        console.error(error);
+                        alert(error.message || "Failed to check out item.");
+                      }
+                    }}
+                  />
+                </>
+              ) : (
+                <PrimaryButton
+                  title="Place Hold"
+                  onClick={async () => {
+                    if (!user) {
+                      alert("Please log in first.");
+                      window.location.href = "/login";
+                      return;
+                    }
+
+                    try {
+                      await FetchJson("/api/holds", {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                          item_id: itemData.itemId,
+                        }),
+                      });
+
+                      alert("Hold placed successfully!");
+                      window.location.reload();
+                    } catch (error) {
+                      console.error(error);
+                      alert(error.message || "Failed to place hold.");
+                    }
+                  }}
+                />
+              )
+            ) : (
+              <SecondaryButton title="Unavailable" disabled={true} />
+            )}
           </div>
         </div>
       </div>
@@ -85,7 +172,7 @@ export function ItemStaff({ itemData }) {
           <ItemHolder data={itemData} />
         </div>
         <div className="col-span-2 grid grid-cols-2 items-center m-2">
-          {itemData.status == "Available" ? (
+          {itemData.status === "Available" ? (
             <div className="grid grid-rows-2 col-span-1">
               <div>
                 Copy number: {itemData.copy}
@@ -94,7 +181,7 @@ export function ItemStaff({ itemData }) {
                 Item status: {itemData.status}
               </div>
             </div>
-          ) : itemData.status == "On hold" ? (
+          ) : itemData.status === "On hold" ? (
             <div className="grid grid-rows-4 col-span-1">
               <div>
                 Copy number: {itemData.copy}
@@ -109,7 +196,7 @@ export function ItemStaff({ itemData }) {
                 Held by user {itemData.userid}
               </div>
             </div>
-          ) : itemData.status == "Loaned" ? (
+          ) : itemData.status === "Loaned" ? (
             <div className="grid grid-rows-4 col-span-1">
               <div>
                 Copy number: {itemData.copy}
@@ -135,16 +222,16 @@ export function ItemStaff({ itemData }) {
             </div>
           )}
           <div className="col-span-1 items-center justify-items-center text-center">
-            {itemData.status == "On hold" ? (
+            {itemData.status === "On hold" ? (
               <div>
                 <SecondaryButton title="Cancel hold" />
               </div>
-            ) : itemData.status == "Loaned" ? (
+            ) : itemData.status === "Loaned" ? (
               <div>
                 <PrimaryButton title="Mark as returned" />
                 <SecondaryButton title="Mark as missing" />
               </div>
-            ) : itemData.status == "Available" ? (
+            ) : itemData.status === "Available" ? (
               <SecondaryButton title="Mark as missing" />
             ) : null}
           </div>
@@ -181,7 +268,7 @@ export function ItemLoan({ itemData }) {
     </div>
   );
 }
-export function ItemHold({ itemData }) {
+export function ItemHold({ itemData, onCancel }) {
   return (
     <div>
       <div className="grid grid-cols-4 rounded-xl bg-white/2 px-3 py-1.5 outline-2 -outline-offset-1 outline-white/6">
@@ -193,14 +280,22 @@ export function ItemHold({ itemData }) {
             <span>
               Item ready to pickup
             </span>
-            <PrimaryButton title="Cancel" />
+            <PrimaryButton
+              title="Cancel"
+              disabledValue={!onCancel}
+              onClick={() => onCancel?.(itemData.holdId)}
+            />
           </div>
         ) : (
           <div className="col-span-1 grid grid-rows-2 items-center text-center">
             <span>
               Item not ready
             </span>
-            <PrimaryButton title="Cancel" />
+            <PrimaryButton
+              title="Cancel"
+              disabledValue={!onCancel}
+              onClick={() => onCancel?.(itemData.holdId)}
+            />
           </div>
         )}
       </div>
