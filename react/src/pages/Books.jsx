@@ -1,80 +1,32 @@
-import Fine from "../components/Fine";
-import dummyFines from "../data/dummy/fines";
-import { useState, useEffect } from "react";
-import PrimaryButton, {
-  SecondaryButton,
-  SubmitButton,
-} from "../components/Buttons";
-import Dropdown from "../components/Dropdown";
+import { SubmitButton } from "../components/Buttons";
+import { ObjectDropdown, DisabledDropdown } from "../components/Dropdown";
+import { FetchJson, GetErrorMessage } from "../api";
+import { useEffect, useState } from "react";
 
 export default function Books() {
-const [title, setTitle] = useState("");
-const [shelfNumber, setShelfNumber] = useState("");
-const [genre, setGenre] = useState("");
-const [language, setLanguage] = useState("");
-const [format, setFormat] = useState("");
-const [authorFirstName, setAuthorFirstName] = useState("");
-const [authorLastName, setAuthorLastName] = useState("");
-const [publisher, setPublisher] = useState("");
-const [publicationDate, setPublicationDate] = useState("");
-const [summary, setSummary] = useState("");
-const [errors, setErrors] = useState({});
-const [loading, setLoading] = useState(false);
-
-const handleSubmit = (e) => {
-e.preventDefault();
-
-const newErrors = {};
-
-if (!title.trim()) newErrors.title = "Book title is required";
-if (!shelfNumber) newErrors.shelfNumber = "Shelf number is required";
-if (!authorFirstName.trim()) newErrors.authorFirstName = "Author first name is required";
-if (!authorLastName.trim()) newErrors.authorLastName = "Author last name is required";
-if (!publisher.trim()) newErrors.publisher = "Publisher is required";
-if (!publicationDate) newErrors.publicationDate = "Publication date is required";
-if (!summary.trim()) newErrors.summary = "Summary is required";
-
-setErrors(newErrors);
-
-if (Object.keys(newErrors).length > 0) return;
-
-setLoading(true);
-
-setTimeout(() => {
-setLoading(false);
-alert("Book form submitted successfully");
-}, 1000);
-};
-
-
-  const genres = [
-    "Fantasy",
-    "Science Fiction",
-    "Mystery",
-    "Thriller",
-    "Romance",
-    "Horror",
-    "Historical Fiction",
-    "Nonfiction",
-    "Young Adult",
-    "Adventure",
-  ];
-  const formats = ["Hardback", "Paperback"];
-  const languages = [
-    "English",
-    "Spanish",
-    "Chinese",
-    "Japanese",
-    "French",
-    "Vietnamese",
-    "German",
-    "Portuguese",
-    "Italian",
-    "Dutch",
-    "Arabic",
-    "Swedish",
-    "Korean",
-  ];
+  const [languages, setLanguages] = useState([]);
+  const [genres, setGenres] = useState([]);
+  const [format, setFormat] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    async function LoadDropdowns() {
+      try {
+        setLoading(true);
+        const languageData = await FetchJson("/api/languages");
+        setLanguages(languageData);
+        const genreData = await FetchJson("/api/genres");
+        setGenres(genreData);
+        const formatData = await FetchJson("/api/book_types");
+        setFormat(formatData);
+      } catch (err) {
+        setError(GetErrorMessage(err, "Failed to load dropdowns."));
+      } finally {
+        setLoading(false);
+      }
+    }
+    LoadDropdowns();
+  }, []);
   return (
     <section className="rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
@@ -87,63 +39,115 @@ alert("Book form submitted successfully");
         Enter book information below.
       </p>
       <div className="flex gap-4 flex-wrap justify-evenly mt-4">
-        <form method="post" onSubmit={handleSubmit} >
+        <form
+          className="w-full"
+          onSubmit={async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+
+            const bookData = {
+              title: formData.get("title"),
+              available: formData.get("available"),
+              shelfnumber: formData.get("shelfnumber"),
+              genre: formData.get("genre"),
+              language: formData.get("language"),
+              format: formData.get("format"),
+              authorfirstname: formData.get("authorfirstname"),
+              authorlastname: formData.get("authorlastname"),
+              publisher: formData.get("publisher"),
+              publicationdate: formData.get("publicationdate"),
+              summary: formData.get("summary"),
+            };
+
+            try {
+              await FetchJson("/api/itementry/book", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(bookData),
+              });
+
+              alert("Book entry successful!");
+              e.target.reset();
+            } catch (error) {
+              console.error(error);
+              alert(error.message || "Book entry failed.");
+            }
+          }}
+        >
           <div className="space-y-4">
             <div className="grid grid-cols-1 grid-rows-6 gap-x-6 ">
-              <div className="grid grid-cols-3 gap-x-6">
+              <div className="grid grid-cols-4 gap-x-6">
                 <div className="sm:col-span-2">
-                  <label htmlFor="title">
-                    Book Title
-                  </label>
+                  <label htmlFor="title">Book Title</label>
                   <div className="mt-2">
                     <input
                       required
+                      pattern="(?=.*\S)[\s\S]{1,45}"
                       id="title"
                       name="title"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
                       className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                     />
-                    {errors.title &&(
-                      <p className= "mt-1 text-sm text-red-400">{errors.title}</p></p> 
-                    )}
                   </div>
                 </div>
                 <div className="sm:col-span-1">
-                  <label htmlFor="shelfnumber">
-                    Shelf Number
-                  </label>
+                  <label htmlFor="available">Copies</label>
                   <div className="mt-2">
                     <input
                       required
+                      min="1"
+                      max="100"
+                      type="number"
+                      id="available"
+                      name="available"
+                      className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                    />
+                  </div>
+                </div>
+                <div className="sm:col-span-1">
+                  <label htmlFor="shelfnumber">Shelf Number</label>
+                  <div className="mt-2">
+                    <input
+                      required
+                      min="1"
+                      max="100"
                       type="number"
                       id="shelfnumber"
                       name="shelfnumber"
-                      value={shelfNumber}
-                      onChange={(e) => setShelfNumber(e.target.value)}
                       className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                     />
-                    {errors.shelfNumber &&(
-                      <p className="mt-1 text-sm text-red-400">{errors.shelfNumber}</p>
-                                           )}
                   </div>
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-x-6">
-                <Dropdown name="genre" options={genres} value={genre} onChange={(e) => setGenre(e.target.value)}/>
+              {loading && !error && (
+                <div className="grid grid-cols-3 gap-x-6">
+                  <DisabledDropdown name="genre" />
+                  <DisabledDropdown name="language" />
+                  <DisabledDropdown name="format" />
+                </div>
+              )}
+              {!loading && error && (
+                <div className="grid grid-cols-3 gap-x-6">
+                  Error encountered; please reload.
+                </div>
+              )}
+              {!loading && !error && (
+                <div className="grid grid-cols-3 gap-x-6">
+                  <ObjectDropdown name="genre" options={genres} />
+                  <ObjectDropdown name="language" options={languages} />
+                  <ObjectDropdown name="format" options={format} />
+                </div>
+              )}
 
-                <Dropdown name="language" options={languages} value={language} onChange={(e) => setLanguage(e.target.value)}/>
-
-                <Dropdown name="format" options={formats} value={format} onChange={(e) => setFormat(e.target.value)} />
-              </div>
               <div className="grid grid-cols-2 gap-x-6">
                 <div>
-                  <label htmlFor="authorfirstname">
-                    Author First Name
-                  </label>
+                  <label htmlFor="authorfirstname">Author First Name</label>
                   <div className="mt-2">
                     <input
                       required
+                      pattern="(?=.*\S)[\s\S]{1,30}"
                       id="authorfirstname"
                       name="authorfirstname"
                       className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
@@ -151,91 +155,60 @@ alert("Book form submitted successfully");
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="authorlastname">
-                    Author Last Name
-                  </label>
+                  <label htmlFor="authorlastname">Author Last Name</label>
                   <div className="mt-2">
                     <input
                       required
+                      pattern="(?=.*\S)[\s\S]{1,30}"
                       id="authorlastname"
                       name="authorlastname"
-                      value={authorLastName}
-                      onChange={(e) => setAuthorLastName(e.target.value)}
                       className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                     />
-                    {errors.authorLastName && (
-                      <p className="mt-1 text-sm text-red-400">{errors.authorLastName}</p>
-                    )}
                   </div>
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-x-6">
                 <div className="col-span-2">
-                  <label htmlFor="publisher">
-                    Publisher
-                  </label>
+                  <label htmlFor="publisher">Publisher</label>
                   <div className="mt-2">
                     <input
                       required
+                      pattern="(?=.*\S)[\s\S]{1,50}"
                       id="publisher"
                       name="publisher"
-                      value={publisher}
-                      onChange={(e) => setPublisher(e.target.value)}
                       className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                     />
-                    {errors.publisher && (
-                      <p className="mt-1 text-sm text-red-400">{errors.publisher}</p>
-                    )}
                   </div>
                 </div>
                 <div className="col-span-1">
-                  <label htmlFor="publicationdate">
-                    Publication Date
-                  </label>
+                  <label htmlFor="publicationdate">Publication Date</label>
                   <div className="mt-2">
                     <input
                       required
                       id="publicationdate"
                       name="publicationdate"
                       type="date"
-                      value={publicationDate}
-                      onChange={(e) => setPublicationDate(e.target.value)}
                       className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                     />
-                    {errors.publicationDate && (
-                      <p className="mt-1 text-sm text-red-400">{errors.publicationDate}</p>
-                    )}
                   </div>
                 </div>
               </div>
               <div>
                 <div className="sm:col-span-3">
-                  <label htmlFor="summary">
-                    Summary
-                  </label>
+                  <label htmlFor="summary">Summary</label>
                   <div className="mt-2">
                     <textarea
                       required
+                      pattern="(?=.*\S)[\s\S]{1,1000}"
                       id="summary"
                       name="summary"
-                      value={summary}
-                      onChange={(e) => setSummary(e.target.value)}
                       className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                     />
-                    {errors.summary && (
-                      <p className="mt-1 text-sm text-red-400">{errors.summary}</p>
-                    )}
                   </div>
                 </div>
               </div>
               <div className="grid justify-center mt-4">
-                <button
-                type="submit"
-                disabled={loading}
-                className="rounded-md bg-violet-600 px-4 py-2 text-white disabled:opacity-50"
-                >
-                  {loading ? "Submitting..." : "Submit"}
-                </button>
+                <SubmitButton title={"Submit"} value={"OK"} />
               </div>
             </div>
           </div>

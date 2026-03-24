@@ -1,4 +1,3 @@
-import React from "react";
 import PrimaryButton, { SecondaryButton } from "./Buttons";
 
 export default function Fine({ data }) {
@@ -21,6 +20,10 @@ export default function Fine({ data }) {
 
 
 export function FineStaff({ data }) {
+  const isPaid = Boolean(data.paidStatus);
+  const isWaived = Boolean(data.waiveStatus);
+  const status = isWaived ? "Waived" : isPaid ? "Paid" : "Unpaid";
+
   return (
     <div className="text-center flex-2 basis-1/4 rounded-md bg-white/2 px-3 py-1.5 outline-2 -outline-offset-1 outline-white/6">
       {/* Fine amount */}
@@ -34,20 +37,21 @@ export function FineStaff({ data }) {
       {/* Fine paid/unpaid */}
       <p>
         Status:{" "}
-        {data.paidStatus ? (data.waiveStatus ? "Waived" : "Unpaid") : "Paid"}
+        {status}
       </p>
       <div className="">
         <SecondaryButton
           title={
-            data.waiveStatus
-              ? data.paidStatus
-                ? "Mark as waived"
-                : "Cannot mark as waived"
-              : "Mark as unwaived"
+            isWaived
+              ? "Mark as unwaived"
+              : isPaid
+                ? "Cannot mark as waived"
+                : "Mark as waived"
           }
+          disabled={isPaid}
         />
         <PrimaryButton
-          title={data.paidStatus ? "Mark as Paid" : "Mark as unpaid"}
+          title={isPaid ? "Mark as unpaid" : "Mark as Paid"}
         />
       </div>
     </div>
