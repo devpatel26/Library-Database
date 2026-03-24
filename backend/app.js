@@ -969,7 +969,198 @@ app.get(["/search", "/api/search"], async (req, res) => {
     }
 });
 
+// Item entry stuff
+// fetch languages
+app.get(["/languages", "/api/languages"], async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT * FROM languages ORDER BY language_code ASC`,
+    );
+    res.json(rows);
+  } catch (error) {
+    SendServerError(res, error, "Internal Server Error");
+  }
+});
+// fetch genres
+app.get(["/genres", "/api/genres"], async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT * FROM genres ORDER BY genre_code ASC`,
+    );
+    res.json(rows);
+  } catch (error) {
+    SendServerError(res, error, "Internal Server Error");
+  }
+});
+// fetch book formats
+app.get(["/book_types", "/api/book_types"], async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT * FROM book_types ORDER BY book_type_code ASC`,
+    );
+    res.json(rows);
+  } catch (error) {
+    SendServerError(res, error, "Internal Server Error");
+  }
+});
+// fetch avm formats
+app.get(
+  ["/audiovisual_media_types", "/api/audiovisual_media_types"],
+  async (req, res) => {
+    try {
+      const [rows] = await pool.query(
+        `SELECT * FROM audiovisual_media_types ORDER BY audiovisual_media_type_code ASC`,
+      );
+      res.json(rows);
+    } catch (error) {
+      SendServerError(res, error, "Internal Server Error");
+    }
+  },
+);
 
+// book entry
+app.post(["/itementry/book", "api/itementry/book"], async (req, res) => {
+  try {
+    const {
+      title,
+      available,
+      shelfnumber,
+      genre,
+      language,
+      format,
+      authorfirstname,
+      authorlastname,
+      publisher,
+      publicationdate,
+      summary,
+    } = req.body;
+    if (
+      !title ||
+      !available ||
+      !shelfnumber ||
+      !genre ||
+      !language ||
+      !format ||
+      !authorfirstname ||
+      !authorlastname ||
+      !publisher ||
+      !publicationdate ||
+      !summary
+    ) {
+      return res.status(400).json({ error: "Missing required fields." });
+    }
+    const trimmmedtitle = title.trim();
+    const trimmmedauthorfirstname = authorfirstname.trim();
+    const trimmmedauthorlastname = authorlastname.trim();
+    const trimmmedpublisher = publisher.trim();
+    const trimmmedsummary = summary.trim();
+    const TITLEPATTERN = /[\s\S]{1,45}/;
+    const PUBLISHERPATTERN = /[\s\S]{1,50}/;
+    const AUTHORPATTERN = /[\s\S]{1,30}/;
+    const SUMMARYPATTERN = /[\s\S]{1,1000}/;
+
+    // double-checking given data is proper format
+    if (
+      !(
+        TITLEPATTERN.test(trimmmedtitle) &&
+        PUBLISHERPATTERN.test(trimmmedpublisher) &&
+        AUTHORPATTERN.test(trimmmedauthorfirstname) &&
+        AUTHORPATTERN.test(trimmmedauthorlastname) &&
+        SUMMARYPATTERN.test(trimmmedsummary)
+      )
+    ) {
+      return res.status(400).json({ error: "Missing required fields." });
+    }
+
+    // insert base item
+    const [item] = await pool.query(
+      `INSERT INTO items (
+      available, on_hold, unavailable) VALUES(?,?,?)`,
+      [available, 0, 0],
+    );
+    const itemId = item.insertId;
+
+    await pool.query(
+      `
+      INSERT INTO books
+        (
+          item_id,
+          title,
+          shelf_number,
+          genre_code,
+          language_code,
+          book_type_code,
+          publisher,
+          publication_date,
+          summary
+        )
+      VALUES
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      [
+        itemId,
+        trimmmedtitle,
+        shelfnumber,
+        genre,
+        language,
+        format,
+        trimmmedpublisher,
+        publicationdate,
+        trimmmedsummary,
+      ],
+    );
+    await pool.query(
+      `INSERT INTO authors (item_id, first_name,last_name) VALUES(?,?,?)`,
+      [itemId, trimmmedauthorfirstname, trimmmedauthorlastname],
+    );
+    res.status(201).json({ message: "Book entry successful." });
+  } catch (error) {
+    console.error("Book entry error:", error);
+    res.status(500).json({
+      error: FormatServerError(error, "Book entry failed."),
+    });
+  }
+});
+
+// equipment entry
+app.post(
+  ["/itementry/equipment", "api/itementry/equipment"],
+  async (req, res) => {
+    try {
+      const { title, available } = req.body;
+      if (!title || !available) {
+        return res.status(400).json({ error: "Missing required fields." });
+      }
+
+      // insert base item
+      const [item] = await pool.query(
+        `INSERT INTO items (
+      available, on_hold, unavailable) VALUES(?,?,?)`,
+        [available, 0, 0],
+      );
+      const itemId = item.insertId;
+
+      await pool.query(
+        `
+      INSERT INTO equipment
+        (
+          item_id,
+          equipment_name
+        )
+      VALUES
+        (?, ?)
+      `,
+        [itemId, title],
+      );
+      res.status(201).json({ message: "Equipment entry successful." });
+    } catch (error) {
+      console.error("Equipment entry error:", error);
+      res.status(500).json({
+        error: FormatServerError(error, "Equipment entry failed."),
+      });
+    }
+  },
+);
 
 // Login endpoint
 app.post(["/login", "/api/login"], async (req, res) => {
