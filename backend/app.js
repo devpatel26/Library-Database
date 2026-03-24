@@ -2159,3 +2159,195 @@ app.post(["/fines/:fineId/waive", "/api/fines/:fineId/waive"], async (req, res) 
     });
   }
 });
+
+// Get most borrowed books report
+app.get(["/reports/most-borrowed-books", "/api/reports/most-borrowed-books"], async (req, res) => {
+  try {
+    const user = await RequireStaffUser(req, res);
+
+    if (!user) {
+      return;
+    }
+
+    const [rows] = await pool.query(
+      `
+      SELECT
+        b.item_id AS itemId,
+        b.title,
+        GROUP_CONCAT(CONCAT(a.first_name, ' ', a.last_name) SEPARATOR ', ') AS authors,
+        COUNT(l.loan_id) AS totalLoans
+      FROM books b
+      LEFT JOIN authors a
+        ON a.item_id = b.item_id
+      LEFT JOIN loans l
+        ON l.item_id = b.item_id
+      GROUP BY b.item_id, b.title
+      ORDER BY totalLoans DESC, b.title ASC
+      `
+    );
+
+    return res.json(rows);
+  } catch (error) {
+    console.error("Load most borrowed books report error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to load most borrowed books report."),
+    });
+  }
+});
+
+// Get patron summary report
+app.get(["/reports/patron-summary", "/api/reports/patron-summary"], async (req, res) => {
+  try {
+    const user = await RequireStaffUser(req, res);
+
+    if (!user) {
+      return;
+    }
+
+    const patronId = ParsePositiveInteger(req.query.patronId);
+
+    if (!patronId) {
+      return res.status(400).json({ error: "A valid patronId is required." });
+    }
+
+    const [patrons] = await pool.query(
+      `
+      SELECT
+        p.patron_id AS patronId,
+        p.first_name AS firstName,
+        p.last_name AS lastName,
+        p.email,
+        p.date_of_birth AS dateOfBirth,
+        p.is_active AS isActive,
+        pr.patron_role AS patronRole
+      FROM patrons p
+      JOIN patron_roles pr
+        ON pr.patron_role_code = p.patron_role_code
+      WHERE p.patron_id = ?
+      `,
+      [patronId]
+    );
+
+    if (patrons.length === 0) {
+      return res.status(404).json({ error: "Patron not found." });
+    }
+
+    const patron = patrons[0];
+
+    const [holds] = await pool.query(
+      `
+      SELECT
+        h.hold_id AS holdId,
+        h.item_id AS itemId,
+        h.hold_origin_date AS holdStart,
+        h.hold_expiration_date AS holdEnd,
+        COALESCE(
+          b.title,
+          per.title,
+          am.title,
+          e.equipment_name
+        ) AS title,
+        COALESCE(
+          (
+            SELECT GROUP_CONCAT(CONCAT(a.first_name, ' ', a.last_name) SEPARATOR ', ')
+            FROM authors a
+            WHERE a.item_id = b.item_id
+          ),
+          (
+            SELECT GROUP_CONCAT(CONCAT(c.first_name, ' ', c.last_name) SEPARATOR ', ')
+            FROM contributors c
+            WHERE c.item_id = am.item_id
+          ),
+          NULL
+        ) AS creator
+      FROM holds h
+      LEFT JOIN books b ON b.item_id = h.item_id
+      LEFT JOIN periodicals per ON per.item_id = h.item_id
+      LEFT JOIN audiovisual_media am ON am.item_id = h.item_id
+      LEFT JOIN equipment e ON e.item_id = h.item_id
+      WHERE h.patron_id = ?
+      ORDER BY h.hold_expiration_date ASC, h.hold_id ASC
+      `,
+      [patronId]
+    );
+
+    const [loans] = await pool.query(
+      `
+      SELECT
+        l.loan_id AS loanId,
+        l.item_id AS itemId,
+        l.loan_origin_date AS loanStart,
+        l.loan_due_date AS loanEnd,
+        l.loan_status_code AS loanStatusCode,
+        COALESCE(
+          b.title,
+          per.title,
+          am.title,
+          e.equipment_name
+        ) AS title,
+        COALESCE(
+          (
+            SELECT GROUP_CONCAT(CONCAT(a.first_name, ' ', a.last_name) SEPARATOR ', ')
+            FROM authors a
+            WHERE a.item_id = b.item_id
+          ),
+          (
+            SELECT GROUP_CONCAT(CONCAT(c.first_name, ' ', c.last_name) SEPARATOR ', ')
+            FROM contributors c
+            WHERE c.item_id = am.item_id
+          ),
+          NULL
+        ) AS creator
+      FROM loans l
+      LEFT JOIN books b ON b.item_id = l.item_id
+      LEFT JOIN periodicals per ON per.item_id = l.item_id
+      LEFT JOIN audiovisual_media am ON am.item_id = l.item_id
+      LEFT JOIN equipment e ON e.item_id = l.item_id
+      WHERE l.patron_id = ?
+      ORDER BY l.loan_due_date ASC, l.loan_id ASC
+      `,
+      [patronId]
+    );
+
+    const [fines] = await pool.query(
+      `
+      SELECT
+        f.fine_id AS fineId,
+        f.loan_id AS loanId,
+        f.fine_amount AS fineAmount,
+        f.paid_amount AS paidAmount,
+        ROUND(f.fine_amount - f.paid_amount, 2) AS remainingAmount,
+        f.fine_date AS fineDate,
+        f.paid_date AS paidDate,
+        f.waived_date AS waivedDate,
+        COALESCE(
+          b.title,
+          per.title,
+          am.title,
+          e.equipment_name
+        ) AS title
+      FROM fines f
+      LEFT JOIN loans l ON l.loan_id = f.loan_id
+      LEFT JOIN books b ON b.item_id = l.item_id
+      LEFT JOIN periodicals per ON per.item_id = l.item_id
+      LEFT JOIN audiovisual_media am ON am.item_id = l.item_id
+      LEFT JOIN equipment e ON e.item_id = l.item_id
+      WHERE f.patron_id = ?
+      ORDER BY f.fine_date DESC, f.fine_id DESC
+      `,
+      [patronId]
+    );
+
+    return res.json({
+      patron,
+      holds,
+      loans,
+      fines,
+    });
+  } catch (error) {
+    console.error("Load patron summary report error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to load patron summary report."),
+    });
+  }
+});
