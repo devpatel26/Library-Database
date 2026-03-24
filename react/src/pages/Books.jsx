@@ -100,8 +100,13 @@ alert("Book form submitted successfully");
                       required
                       id="title"
                       name="title"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
                       className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                     />
+                    {errors.title &&(
+                      <p className= "mt-1 text-sm text-red-400">{errors.title}</p></p> 
+                    )}
                   </div>
                 </div>
                 <div className="sm:col-span-1">
@@ -114,8 +119,13 @@ alert("Book form submitted successfully");
                       type="number"
                       id="shelfnumber"
                       name="shelfnumber"
+                      value={shelfNumber}
+                      onChange={(e) => setShelfNumber(e.target.value)}
                       className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                     />
+                    {errors.shelfNumber &&(
+                      <p className="mt-1 text-sm text-red-400">{errors.shelfNumber}</p>
+                                           )}
                   </div>
                 </div>
               </div>
@@ -149,8 +159,13 @@ alert("Book form submitted successfully");
                       required
                       id="authorlastname"
                       name="authorlastname"
+                      value={authorLastName}
+                      onChange={(e) => setAuthorLastName(e.target.value)}
                       className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                     />
+                    {errors.authorLastName && (
+                      <p className="mt-1 text-sm text-red-400">{errors.authorLastName}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -164,8 +179,13 @@ alert("Book form submitted successfully");
                       required
                       id="publisher"
                       name="publisher"
+                      value={publisher}
+                      onChange={(e) => setPublisher(e.target.value)}
                       className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                     />
+                    {errors.publisher && (
+                      <p className="mt-1 text-sm text-red-400">{errors.publisher}</p>
+                    )}
                   </div>
                 </div>
                 <div className="col-span-1">
@@ -178,8 +198,13 @@ alert("Book form submitted successfully");
                       id="publicationdate"
                       name="publicationdate"
                       type="date"
+                      value={publicationDate}
+                      onChange={(e) => setPublicationDate(e.target.value)}
                       className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                     />
+                    {errors.publicationDate && (
+                      <p className="mt-1 text-sm text-red-400">{errors.publicationDate}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -193,13 +218,24 @@ alert("Book form submitted successfully");
                       required
                       id="summary"
                       name="summary"
+                      value={summary}
+                      onChange={(e) => setSummary(e.target.value)}
                       className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                     />
+                    {errors.summary && (
+                      <p className="mt-1 text-sm text-red-400">{errors.summary}</p>
+                    )}
                   </div>
                 </div>
               </div>
               <div className="grid justify-center mt-4">
-                <SubmitButton title={"Submit"} value={"OK"} />
+                <button
+                type="submit"
+                disabled={loading}
+                className="rounded-md bg-violet-600 px-4 py-2 text-white disabled:opacity-50"
+                >
+                  {loading ? "Submitting..." : "Submit"}
+                </button>
               </div>
             </div>
           </div>

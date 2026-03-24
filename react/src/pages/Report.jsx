@@ -8,55 +8,46 @@ export default function Report() {
         Report Page
       </h1>
       <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
-        Select one of the available report options below.
-      </p >
+        Reporting screens can live here for overdue items, activity summaries,
+        and database insights.
+      </p>
+      <div className="mt-6">
+  <h2 className="text-xl font-bold mb-2">Books</h2>
+  <table className="w-full border border-white/20">
+    <tr>
+      <th>ID</th>
+      <th>Title</th>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>Database Systems</td>
+    </tr>
+  </table>
 
-      <div className="mt-8 grid w-full max-w-3xl grid-cols-1 gap-6 md:grid-cols-3">
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-left">
-          <h2 className="text-xl font-semibold text-white">
-            Most Borrowed Books
-          </h2>
-          <p className="mt-3 text-sm leading-6 text-slate-300">
-            View the books with the highest total number of loans.
-          </p >
-          <div className="mt-6 flex justify-center">
-            <PrimaryButton
-              title="Open Report"
-              onClick={() => navigate("/report/mostborrowedbooks")}
-            />
-          </div>
-        </div>
+  <h2 className="text-xl font-bold mt-6 mb-2">Users</h2>
+  <table className="w-full border border-white/20">
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>David</td>
+    </tr>
+  </table>
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-left">
-          <h2 className="text-xl font-semibold text-white">
-            Patron Information
-          </h2>
-          <p className="mt-3 text-sm leading-6 text-slate-300">
-            Look up a patron by ID and view their holds, loans, and fines.
-          </p >
-          <div className="mt-6 flex justify-center">
-            <PrimaryButton
-              title="Open Report"
-              onClick={() => navigate("/report/patronsummary")}
-            />
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-left">
-          <h2 className="text-xl font-semibold text-white">
-            Testing
-          </h2>
-          <p className="mt-3 text-sm leading-6 text-slate-300">
-            Temporary placeholder report page for testing future report ideas.
-          </p >
-          <div className="mt-6 flex justify-center">
-            <PrimaryButton
-              title="Open Report"
-              onClick={() => navigate("/report/testing")}
-            />
-          </div>
-        </div>
-      </div>
+  <h2 className="text-xl font-bold mt-6 mb-2">Loans</h2>
+  <table className="w-full border border-white/20">
+    <tr>
+      <th>Loan ID</th>
+      <th>Book</th>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>Database Systems</td>
+    </tr>
+  </table>
+</div>
     </section>
   );
 }
