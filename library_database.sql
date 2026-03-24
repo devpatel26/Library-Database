@@ -496,3 +496,10 @@ CREATE TABLE IF NOT EXISTS `Library_Database`.`staff_signup_codes` (
 )
 ENGINE = InnoDB;
 
+
+
+ALTER TABLE fines
+ADD COLUMN loan_id INT UNSIGNED NULL;
+
+ALTER TABLE fines
+ADD COLUMN paid_amount FLOAT NOT NULL DEFAULT 0;
