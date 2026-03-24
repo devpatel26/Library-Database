@@ -969,8 +969,9 @@ app.get(["/search", "/api/search"], async (req, res) => {
     }
 });
 
-// Item entry stuff
-// fetch languages
+// Item insertion stuff
+// get values for dropdowns
+// get languages
 app.get(["/languages", "/api/languages"], async (req, res) => {
   try {
     const [rows] = await pool.query(
@@ -981,7 +982,7 @@ app.get(["/languages", "/api/languages"], async (req, res) => {
     SendServerError(res, error, "Internal Server Error");
   }
 });
-// fetch genres
+// get genres
 app.get(["/genres", "/api/genres"], async (req, res) => {
   try {
     const [rows] = await pool.query(
@@ -992,7 +993,7 @@ app.get(["/genres", "/api/genres"], async (req, res) => {
     SendServerError(res, error, "Internal Server Error");
   }
 });
-// fetch book formats
+// get book formats
 app.get(["/book_types", "/api/book_types"], async (req, res) => {
   try {
     const [rows] = await pool.query(
@@ -1003,7 +1004,7 @@ app.get(["/book_types", "/api/book_types"], async (req, res) => {
     SendServerError(res, error, "Internal Server Error");
   }
 });
-// fetch avm formats
+// get avm formats
 app.get(
   ["/audiovisual_media_types", "/api/audiovisual_media_types"],
   async (req, res) => {
@@ -1018,7 +1019,8 @@ app.get(
   },
 );
 
-// book entry
+// item insertion
+// book insertion
 app.post(["/itementry/book", "api/itementry/book"], async (req, res) => {
   try {
     const {
@@ -1069,7 +1071,7 @@ app.post(["/itementry/book", "api/itementry/book"], async (req, res) => {
         SUMMARYPATTERN.test(trimmmedsummary)
       )
     ) {
-      return res.status(400).json({ error: "Missing required fields." });
+      return res.status(400).json({ error: "Error with form data." });
     }
 
     // insert base item
@@ -1113,22 +1115,22 @@ app.post(["/itementry/book", "api/itementry/book"], async (req, res) => {
       `INSERT INTO authors (item_id, first_name,last_name) VALUES(?,?,?)`,
       [itemId, trimmmedauthorfirstname, trimmmedauthorlastname],
     );
-    res.status(201).json({ message: "Book entry successful." });
+    res.status(201).json({ message: "Book insertion successful." });
   } catch (error) {
-    console.error("Book entry error:", error);
+    console.error("Book insertion error:", error);
     res.status(500).json({
-      error: FormatServerError(error, "Book entry failed."),
+      error: FormatServerError(error, "Book insertion failed."),
     });
   }
 });
 
-// equipment entry
+// equipment insertion
 app.post(
   ["/itementry/equipment", "api/itementry/equipment"],
   async (req, res) => {
     try {
       const { title, available } = req.body;
-      if (!title || !available) {
+      if (!title || !available ) {
         return res.status(400).json({ error: "Missing required fields." });
       }
 
@@ -1152,11 +1154,11 @@ app.post(
       `,
         [itemId, title],
       );
-      res.status(201).json({ message: "Equipment entry successful." });
+      res.status(201).json({ message: "Equipment insertion successful." });
     } catch (error) {
-      console.error("Equipment entry error:", error);
+      console.error("Equipment insertion error:", error);
       res.status(500).json({
-        error: FormatServerError(error, "Equipment entry failed."),
+        error: FormatServerError(error, "Equipment insertion failed."),
       });
     }
   },
