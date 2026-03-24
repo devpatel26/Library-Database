@@ -5,6 +5,8 @@ import Fine, { FineStaff } from "../components/Fine";
 import dummyFines from "../data/dummy/fines";
 import dummyBaseItemsPatron, {
   dummyBaseItemsStaff,
+  dummyItemLoans,
+  dummyItemHolds,
 } from "../data/dummy/items";
 
 export default function TestPage() {
