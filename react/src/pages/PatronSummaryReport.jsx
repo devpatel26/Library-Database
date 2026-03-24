@@ -41,7 +41,7 @@ export default function PatronSummaryReport() {
   }
 
   return (
-    <section className="mx-auto flex w-full max-w-6xl flex-col rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
+    <section className="mx-auto flex w-full max-w-7xl flex-col rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
         Report
       </p >
@@ -49,7 +49,7 @@ export default function PatronSummaryReport() {
         Patron Summary
       </h1>
       <p className="mt-4 text-base leading-7 text-slate-300">
-        Enter a patron ID to view that patron&apos;s current holds, loans, and fines.
+        Enter a patron ID to view that patron&apos;s holds, loans, and fines.
       </p >
 
       <div className="mt-6 flex flex-col gap-4 md:flex-row md:items-center">
@@ -70,7 +70,7 @@ export default function PatronSummaryReport() {
         <div className="mt-8 space-y-8">
           <div className="rounded-2xl bg-white/5 p-6 outline outline-1 outline-white/10">
             <h2 className="text-2xl font-semibold text-white">Patron Information</h2>
-            <div className="mt-4 space-y-2 text-slate-300">
+            <div className="mt-4 grid grid-cols-1 gap-3 text-slate-300 md:grid-cols-2">
               <div>Patron ID: {reportData.patron.patronId}</div>
               <div>
                 Name: {reportData.patron.firstName} {reportData.patron.lastName}
@@ -78,91 +78,168 @@ export default function PatronSummaryReport() {
               <div>Email: {reportData.patron.email}</div>
               <div>Role: {reportData.patron.patronRole}</div>
               <div>Status: {reportData.patron.isActive ? "Active" : "Inactive"}</div>
+              <div>Date of Birth: {reportData.patron.dateOfBirth || "N/A"}</div>
             </div>
           </div>
 
           <div className="rounded-2xl bg-white/5 p-6 outline outline-1 outline-white/10">
-            <h2 className="text-2xl font-semibold text-white">Current Holds</h2>
-            <div className="mt-4 space-y-3">
+            <h2 className="text-2xl font-semibold text-yellow-300">Current Holds</h2>
+            <div className="mt-4 overflow-x-auto">
               {reportData.holds.length === 0 ? (
                 <div className="text-slate-300">No current holds found.</div>
               ) : (
-                reportData.holds.map((hold) => (
-                  <div key={hold.holdId} className="rounded-xl bg-slate-950/40 p-4">
-                    <div className="text-lg font-semibold text-white">{hold.title}</div>
-                    {hold.creator ? (
-                      <div className="text-sky-300">{hold.creator}</div>
-                    ) : null}
-                    <div className="mt-2 text-slate-300">
-                      Hold Date: {hold.holdStart}
-                    </div>
-                    <div className="text-slate-300">
-                      Expiration Date: {hold.holdEnd}
-                    </div>
-                  </div>
-                ))
+                <table className="min-w-full border-collapse overflow-hidden rounded-xl">
+                  <thead>
+                    <tr className="bg-slate-800 text-left text-sm text-slate-200">
+                      <th className="px-4 py-3">Hold ID</th>
+                      <th className="px-4 py-3">Title</th>
+                      <th className="px-4 py-3">Creator</th>
+                      <th className="px-4 py-3">Hold Date</th>
+                      <th className="px-4 py-3">Expiration Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reportData.holds.map((hold) => (
+                      <tr
+                        key={hold.holdId}
+                        className="border-t border-white/10 bg-slate-950/30 text-slate-300"
+                      >
+                        <td className="px-4 py-3">{hold.holdId}</td>
+                        <td className="px-4 py-3 text-white">{hold.title}</td>
+                        <td className="px-4 py-3">{hold.creator || "N/A"}</td>
+                        <td className="px-4 py-3">{hold.holdStart}</td>
+                        <td className="px-4 py-3">{hold.holdEnd}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               )}
             </div>
           </div>
 
           <div className="rounded-2xl bg-white/5 p-6 outline outline-1 outline-white/10">
-            <h2 className="text-2xl font-semibold text-white">Loans</h2>
-            <div className="mt-4 space-y-3">
-              {reportData.loans.length === 0 ? (
-                <div className="text-slate-300">No loans found.</div>
+            <h2 className="text-2xl font-semibold text-emerald-300">Active Loans</h2>
+            <div className="mt-4 overflow-x-auto">
+              {reportData.activeLoans.length === 0 ? (
+                <div className="text-slate-300">No active loans found.</div>
               ) : (
-                reportData.loans.map((loan) => (
-                  <div key={loan.loanId} className="rounded-xl bg-slate-950/40 p-4">
-                    <div className="text-lg font-semibold text-white">{loan.title}</div>
-                    {loan.creator ? (
-                      <div className="text-sky-300">{loan.creator}</div>
-                    ) : null}
-                    <div className="mt-2 text-slate-300">
-                      Loan Date: {loan.loanStart}
-                    </div>
-                    <div className="text-slate-300">
-                      Due Date: {loan.loanEnd}
-                    </div>
-                    <div className="text-slate-300">
-                      Status Code: {loan.loanStatusCode}
-                    </div>
-                  </div>
-                ))
+                <table className="min-w-full border-collapse overflow-hidden rounded-xl">
+                  <thead>
+                    <tr className="bg-slate-800 text-left text-sm text-slate-200">
+                      <th className="px-4 py-3">Loan ID</th>
+                      <th className="px-4 py-3">Title</th>
+                      <th className="px-4 py-3">Creator</th>
+                      <th className="px-4 py-3">Loan Date</th>
+                      <th className="px-4 py-3">Due Date</th>
+                      <th className="px-4 py-3">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reportData.activeLoans.map((loan) => (
+                      <tr
+                        key={loan.loanId}
+                        className="border-t border-white/10 bg-slate-950/30 text-slate-300"
+                      >
+                        <td className="px-4 py-3">{loan.loanId}</td>
+                        <td className="px-4 py-3 text-white">{loan.title}</td>
+                        <td className="px-4 py-3">{loan.creator || "N/A"}</td>
+                        <td className="px-4 py-3">{loan.loanStart}</td>
+                        <td className="px-4 py-3">{loan.loanEnd}</td>
+                        <td className="px-4 py-3 font-semibold text-emerald-300">
+                          Active
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               )}
             </div>
           </div>
 
           <div className="rounded-2xl bg-white/5 p-6 outline outline-1 outline-white/10">
-            <h2 className="text-2xl font-semibold text-white">Fines</h2>
-            <div className="mt-4 space-y-3">
+            <h2 className="text-2xl font-semibold text-sky-300">Completed Loans</h2>
+            <div className="mt-4 overflow-x-auto">
+              {reportData.completedLoans.length === 0 ? (
+                <div className="text-slate-300">No completed loans found.</div>
+              ) : (
+                <table className="min-w-full border-collapse overflow-hidden rounded-xl">
+                  <thead>
+                    <tr className="bg-slate-800 text-left text-sm text-slate-200">
+                      <th className="px-4 py-3">Loan ID</th>
+                      <th className="px-4 py-3">Title</th>
+                      <th className="px-4 py-3">Creator</th>
+                      <th className="px-4 py-3">Loan Date</th>
+                      <th className="px-4 py-3">Due Date</th>
+                      <th className="px-4 py-3">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reportData.completedLoans.map((loan) => (
+                      <tr
+                        key={loan.loanId}
+                        className="border-t border-white/10 bg-slate-950/30 text-slate-300"
+                      >
+                        <td className="px-4 py-3">{loan.loanId}</td>
+                        <td className="px-4 py-3 text-white">{loan.title}</td>
+                        <td className="px-4 py-3">{loan.creator || "N/A"}</td>
+                        <td className="px-4 py-3">{loan.loanStart}</td>
+                        <td className="px-4 py-3">{loan.loanEnd}</td>
+                        <td className="px-4 py-3 font-semibold text-sky-300">
+                          Completed
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-2xl bg-white/5 p-6 outline outline-1 outline-white/10">
+            <h2 className="text-2xl font-semibold text-red-300">Fines</h2>
+            <div className="mt-4 overflow-x-auto">
               {reportData.fines.length === 0 ? (
                 <div className="text-slate-300">No fines found.</div>
               ) : (
-                reportData.fines.map((fine) => (
-                  <div key={fine.fineId} className="rounded-xl bg-slate-950/40 p-4">
-                    <div className="text-lg font-semibold text-white">
-                      {fine.title || "No linked title"}
-                    </div>
-                    <div className="mt-2 text-slate-300">
-                      Fine Amount: ${Number(fine.fineAmount ?? 0).toFixed(2)}
-                    </div>
-                    <div className="text-slate-300">
-                      Paid Amount: ${Number(fine.paidAmount ?? 0).toFixed(2)}
-                    </div>
-                    <div className="text-slate-300">
-                      Remaining Amount: ${Number(fine.remainingAmount ?? 0).toFixed(2)}
-                    </div>
-                    <div className="text-slate-300">
-                      Fine Date: {fine.fineDate}
-                    </div>
-                    <div className="text-slate-300">
-                      Paid Date: {fine.paidDate || "Not paid"}
-                    </div>
-                    <div className="text-slate-300">
-                      Waived Date: {fine.waivedDate || "Not waived"}
-                    </div>
-                  </div>
-                ))
+                <table className="min-w-full border-collapse overflow-hidden rounded-xl">
+                  <thead>
+                    <tr className="bg-slate-800 text-left text-sm text-slate-200">
+                      <th className="px-4 py-3">Fine ID</th>
+                      <th className="px-4 py-3">Title</th>
+                      <th className="px-4 py-3">Fine Amount</th>
+                      <th className="px-4 py-3">Paid Amount</th>
+                      <th className="px-4 py-3">Remaining</th>
+                      <th className="px-4 py-3">Fine Date</th>
+                      <th className="px-4 py-3">Paid Date</th>
+                      <th className="px-4 py-3">Waived Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reportData.fines.map((fine) => (
+                      <tr
+                        key={fine.fineId}
+                        className="border-t border-white/10 bg-slate-950/30 text-slate-300"
+                      >
+                        <td className="px-4 py-3">{fine.fineId}</td>
+                        <td className="px-4 py-3 text-white">
+                          {fine.title || "No linked title"}
+                        </td>
+                        <td className="px-4 py-3 text-red-300">
+                          ${Number(fine.fineAmount ?? 0).toFixed(2)}
+                        </td>
+                        <td className="px-4 py-3">
+                          ${Number(fine.paidAmount ?? 0).toFixed(2)}
+                        </td>
+                        <td className="px-4 py-3 font-semibold text-red-300">
+                          ${Number(fine.remainingAmount ?? 0).toFixed(2)}
+                        </td>
+                        <td className="px-4 py-3">{fine.fineDate}</td>
+                        <td className="px-4 py-3">{fine.paidDate || "Not paid"}</td>
+                        <td className="px-4 py-3">{fine.waivedDate || "Not waived"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               )}
             </div>
           </div>

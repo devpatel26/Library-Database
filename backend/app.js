@@ -2271,43 +2271,83 @@ app.get(["/reports/patron-summary", "/api/reports/patron-summary"], async (req, 
       [patronId]
     );
 
-    const [loans] = await pool.query(
-      `
-      SELECT
-        l.loan_id AS loanId,
-        l.item_id AS itemId,
-        l.loan_origin_date AS loanStart,
-        l.loan_due_date AS loanEnd,
-        l.loan_status_code AS loanStatusCode,
-        COALESCE(
-          b.title,
-          per.title,
-          am.title,
-          e.equipment_name
-        ) AS title,
-        COALESCE(
-          (
-            SELECT GROUP_CONCAT(CONCAT(a.first_name, ' ', a.last_name) SEPARATOR ', ')
-            FROM authors a
-            WHERE a.item_id = b.item_id
-          ),
-          (
-            SELECT GROUP_CONCAT(CONCAT(c.first_name, ' ', c.last_name) SEPARATOR ', ')
-            FROM contributors c
-            WHERE c.item_id = am.item_id
-          ),
-          NULL
-        ) AS creator
-      FROM loans l
-      LEFT JOIN books b ON b.item_id = l.item_id
-      LEFT JOIN periodicals per ON per.item_id = l.item_id
-      LEFT JOIN audiovisual_media am ON am.item_id = l.item_id
-      LEFT JOIN equipment e ON e.item_id = l.item_id
-      WHERE l.patron_id = ?
-      ORDER BY l.loan_due_date ASC, l.loan_id ASC
-      `,
-      [patronId]
-    );
+  const [activeLoans] = await pool.query(
+    `
+    SELECT
+      l.loan_id AS loanId,
+      l.item_id AS itemId,
+      l.loan_origin_date AS loanStart,
+      l.loan_due_date AS loanEnd,
+      l.loan_status_code AS loanStatusCode,
+      COALESCE(
+        b.title,
+        per.title,
+        am.title,
+        e.equipment_name
+      ) AS title,
+      COALESCE(
+        (
+          SELECT GROUP_CONCAT(CONCAT(a.first_name, ' ', a.last_name) SEPARATOR ', ')
+          FROM authors a
+          WHERE a.item_id = b.item_id
+        ),
+        (
+          SELECT GROUP_CONCAT(CONCAT(c.first_name, ' ', c.last_name) SEPARATOR ', ')
+          FROM contributors c
+          WHERE c.item_id = am.item_id
+        ),
+        NULL
+      ) AS creator
+    FROM loans l
+    LEFT JOIN books b ON b.item_id = l.item_id
+    LEFT JOIN periodicals per ON per.item_id = l.item_id
+    LEFT JOIN audiovisual_media am ON am.item_id = l.item_id
+    LEFT JOIN equipment e ON e.item_id = l.item_id
+    WHERE l.patron_id = ?
+      AND l.loan_status_code = 1
+    ORDER BY l.loan_due_date ASC, l.loan_id ASC
+    `,
+    [patronId]
+  );
+
+  const [completedLoans] = await pool.query(
+    `
+    SELECT
+      l.loan_id AS loanId,
+      l.item_id AS itemId,
+      l.loan_origin_date AS loanStart,
+      l.loan_due_date AS loanEnd,
+      l.loan_status_code AS loanStatusCode,
+      COALESCE(
+        b.title,
+        per.title,
+        am.title,
+        e.equipment_name
+      ) AS title,
+      COALESCE(
+        (
+          SELECT GROUP_CONCAT(CONCAT(a.first_name, ' ', a.last_name) SEPARATOR ', ')
+          FROM authors a
+          WHERE a.item_id = b.item_id
+        ),
+        (
+          SELECT GROUP_CONCAT(CONCAT(c.first_name, ' ', c.last_name) SEPARATOR ', ')
+          FROM contributors c
+          WHERE c.item_id = am.item_id
+        ),
+        NULL
+      ) AS creator
+    FROM loans l
+    LEFT JOIN books b ON b.item_id = l.item_id
+    LEFT JOIN periodicals per ON per.item_id = l.item_id
+    LEFT JOIN audiovisual_media am ON am.item_id = l.item_id
+    LEFT JOIN equipment e ON e.item_id = l.item_id
+    WHERE l.patron_id = ?
+      AND l.loan_status_code <> 1
+    ORDER BY l.loan_due_date DESC, l.loan_id DESC
+    `,
+    [patronId]
+  );
 
     const [fines] = await pool.query(
       `
@@ -2341,7 +2381,8 @@ app.get(["/reports/patron-summary", "/api/reports/patron-summary"], async (req, 
     return res.json({
       patron,
       holds,
-      loans,
+      activeLoans,
+      completedLoans,
       fines,
     });
   } catch (error) {
