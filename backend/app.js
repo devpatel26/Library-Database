@@ -628,15 +628,22 @@ app.get(["/account", "/api/account"], async (req, res) => {
     }
 });
 
+// Fines endpoint
 app.get(["/fines", "/api/fines"], async (req, res) => {
   try {
-    const user = await RequirePatronUser(req, res);
+    const user = await RequireAuthenticatedUser(req, res);
 
     if (!user) {
       return;
     }
 
-    const [rows] = await pool.query(
+    if (user.userType !== "patron") {
+      return res.status(403).json({ error: "Only patrons can access fines." });
+    }
+
+    const currentFineRows = await GetCurrentFineRows(user.patronId);
+
+    const [recordedFines] = await pool.query(
       `
       SELECT
         fine_id AS fineId,
@@ -648,7 +655,11 @@ app.get(["/fines", "/api/fines"], async (req, res) => {
           WHEN waived_date IS NOT NULL THEN 'waived'
           WHEN paid_date IS NOT NULL THEN 'paid'
           ELSE 'unpaid'
-        END AS status
+        END AS status,
+        NULL AS title,
+        NULL AS daysOverdue,
+        NULL AS dailyFine,
+        NULL AS loanId
       FROM fines
       WHERE patron_id = ?
       ORDER BY fine_date DESC, fine_id DESC
@@ -656,12 +667,26 @@ app.get(["/fines", "/api/fines"], async (req, res) => {
       [user.patronId]
     );
 
-    res.json(rows);
+    const currentFines = currentFineRows.map((row) => ({
+      fineId: null,
+      amount: row.currentFine,
+      assignedDate: row.loanDueDate,
+      paidDate: null,
+      waivedDate: null,
+      status: "current",
+      title: row.title,
+      daysOverdue: row.daysOverdue,
+      dailyFine: row.dailyFine,
+      loanId: row.loanId,
+    }));
+
+    return res.json([...currentFines, ...recordedFines]);
   } catch (error) {
     SendServerError(res, error, "Internal Server Error");
   }
 });
 
+// Loans and Holds endpoint
 app.get(["/loans", "/api/loans"], async (req, res) => {
   try {
     const user = await RequirePatronUser(req, res);
@@ -943,6 +968,8 @@ app.get(["/search", "/api/search"], async (req, res) => {
         });
     }
 });
+
+
 
 // Login endpoint
 app.post(["/login", "/api/login"], async (req, res) => {
@@ -1677,6 +1704,7 @@ app.post(["/checkout", "/api/checkout"], async (req, res) => {
 app.get(["/staff/loans/current", "/api/staff/loans/current"], async (req, res) => {
   try {
     const user = await RequireStaffUser(req, res);
+    
 
     if (!user) {
       return;
@@ -1756,11 +1784,15 @@ app.post(["/loans/:loanId/return", "/api/loans/:loanId/return"], async (req, res
     const [loans] = await pool.query(
       `
       SELECT
-        loan_id AS loanId,
-        item_id AS itemId,
-        loan_status_code AS loanStatusCode
-      FROM loans
-      WHERE loan_id = ?
+        l.loan_id AS loanId,
+        l.item_id AS itemId,
+        l.patron_id AS patronId,
+        l.loan_status_code AS loanStatusCode,
+        l.loan_due_date AS loanDueDate,
+        pr.fine AS dailyFine
+      FROM loans l
+      JOIN patron_roles pr ON pr.patron_role_code = l.patron_role_code
+      WHERE l.loan_id = ?
       `,
       [loanId]
     );
@@ -1773,6 +1805,28 @@ app.post(["/loans/:loanId/return", "/api/loans/:loanId/return"], async (req, res
 
     if (loan.loanStatusCode !== 1) {
       return res.status(400).json({ error: "Only active loans can be returned." });
+    }
+
+    const [daysOverdueRows] = await pool.query(
+      `
+      SELECT GREATEST(DATEDIFF(CURDATE(), ?), 0) AS daysOverdue
+      `,
+      [loan.loanDueDate]
+    );
+
+    const daysOverdue = Number(daysOverdueRows[0]?.daysOverdue ?? 0);
+    const fineAmount = Number((daysOverdue * Number(loan.dailyFine)).toFixed(2));
+
+    if (fineAmount > 0) {
+      await pool.query(
+        `
+        INSERT INTO fines
+          (patron_id, fine_amount, fine_date)
+        VALUES
+          (?, ?, CURDATE())
+        `,
+        [loan.patronId, fineAmount]
+      );
     }
 
     await pool.query(
@@ -1794,11 +1848,92 @@ app.post(["/loans/:loanId/return", "/api/loans/:loanId/return"], async (req, res
       [loan.itemId]
     );
 
-    return res.json({ message: "Loan returned successfully." });
+    return res.json({
+      message: "Loan returned successfully.",
+      fineAmount,
+      daysOverdue,
+    });
   } catch (error) {
     console.error("Return loan error:", error);
     return res.status(500).json({
       error: FormatServerError(error, "Failed to return loan."),
+    });
+  }
+});
+
+// Get current fines for a specific patron (used for both staff and patron views)
+async function GetCurrentFineRows(optionalPatronId = null) {
+  const patronClause = optionalPatronId ? " AND l.patron_id = ?" : "";
+
+  const [rows] = await pool.query(
+    `
+    SELECT
+      l.loan_id AS loanId,
+      l.item_id AS itemId,
+      l.patron_id AS patronId,
+      l.loan_origin_date AS loanStart,
+      l.loan_due_date AS loanDueDate,
+      p.first_name AS firstName,
+      p.last_name AS lastName,
+      pr.fine AS dailyFine,
+      DATEDIFF(CURDATE(), l.loan_due_date) AS daysOverdue,
+      ROUND(DATEDIFF(CURDATE(), l.loan_due_date) * pr.fine, 2) AS currentFine,
+      COALESCE(
+        b.title,
+        per.title,
+        am.title,
+        e.equipment_name
+      ) AS title,
+      COALESCE(
+        (
+          SELECT GROUP_CONCAT(CONCAT(a.first_name, ' ', a.last_name) SEPARATOR ', ')
+          FROM authors a
+          WHERE a.item_id = b.item_id
+        ),
+        (
+          SELECT GROUP_CONCAT(CONCAT(c.first_name, ' ', c.last_name) SEPARATOR ', ')
+          FROM contributors c
+          WHERE c.item_id = am.item_id
+        ),
+        NULL
+      ) AS creator
+    FROM loans l
+    JOIN patrons p ON p.patron_id = l.patron_id
+    JOIN patron_roles pr ON pr.patron_role_code = l.patron_role_code
+    LEFT JOIN books b ON b.item_id = l.item_id
+    LEFT JOIN periodicals per ON per.item_id = l.item_id
+    LEFT JOIN audiovisual_media am ON am.item_id = l.item_id
+    LEFT JOIN equipment e ON e.item_id = l.item_id
+    WHERE l.loan_status_code = 1
+      AND l.loan_due_date < CURDATE()
+      AND pr.fine > 0
+      ${patronClause}
+    ORDER BY currentFine DESC, l.loan_due_date ASC, l.loan_id ASC
+    `,
+    optionalPatronId ? [optionalPatronId] : []
+  );
+
+  return rows.map((row) => ({
+    ...row,
+    patronName: `${row.firstName} ${row.lastName}`,
+  }));
+}
+
+// Get current fines for staff view
+app.get(["/staff/fines/current", "/api/staff/fines/current"], async (req, res) => {
+  try {
+    const user = await RequireStaffUser(req, res);
+
+    if (!user) {
+      return;
+    }
+
+    const rows = await GetCurrentFineRows();
+    return res.json(rows);
+  } catch (error) {
+    console.error("Load current staff fines error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to load current fines."),
     });
   }
 });
