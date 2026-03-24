@@ -1919,6 +1919,64 @@ async function GetCurrentFineRows(optionalPatronId = null) {
   }));
 }
 
+
+
+// Get current fines for patron view
+async function SyncCurrentFines() {
+  const [rows] = await pool.query(
+    `
+    SELECT
+      l.loan_id AS loanId,
+      l.patron_id AS patronId,
+      ROUND(DATEDIFF(CURDATE(), l.loan_due_date) * pr.fine, 2) AS currentFine
+    FROM loans l
+    JOIN patron_roles pr ON pr.patron_role_code = l.patron_role_code
+    WHERE l.loan_status_code = 1
+      AND l.loan_due_date < CURDATE()
+      AND pr.fine > 0
+    `
+  );
+
+  for (const row of rows) {
+    const [existingFines] = await pool.query(
+      `
+      SELECT fine_id AS fineId, waived_date AS waivedDate
+      FROM fines
+      WHERE loan_id = ?
+      `,
+      [row.loanId]
+    );
+
+    if (existingFines.length === 0) {
+      await pool.query(
+        `
+        INSERT INTO fines
+          (patron_id, loan_id, fine_amount, paid_amount, fine_date)
+        VALUES
+          (?, ?, ?, 0, CURDATE())
+        `,
+        [row.patronId, row.loanId, row.currentFine]
+      );
+      continue;
+    }
+
+    const fine = existingFines[0];
+
+    if (fine.waivedDate) {
+      continue;
+    }
+
+    await pool.query(
+      `
+      UPDATE fines
+      SET fine_amount = ?
+      WHERE fine_id = ?
+      `,
+      [row.currentFine, fine.fineId]
+    );
+  }
+}
+
 // Get current fines for staff view
 app.get(["/staff/fines/current", "/api/staff/fines/current"], async (req, res) => {
   try {
@@ -1928,12 +1986,176 @@ app.get(["/staff/fines/current", "/api/staff/fines/current"], async (req, res) =
       return;
     }
 
-    const rows = await GetCurrentFineRows();
-    return res.json(rows);
+    await SyncCurrentFines();
+
+    const [rows] = await pool.query(
+      `
+      SELECT
+        f.fine_id AS fineId,
+        f.loan_id AS loanId,
+        f.patron_id AS patronId,
+        f.fine_amount AS fineAmount,
+        f.paid_amount AS paidAmount,
+        ROUND(f.fine_amount - f.paid_amount, 2) AS remainingAmount,
+        f.fine_date AS fineDate,
+        f.paid_date AS paidDate,
+        f.waived_date AS waivedDate,
+        l.item_id AS itemId,
+        l.loan_due_date AS loanDueDate,
+        p.first_name AS firstName,
+        p.last_name AS lastName,
+        pr.fine AS dailyFine,
+        DATEDIFF(CURDATE(), l.loan_due_date) AS daysOverdue
+      FROM fines f
+      JOIN loans l ON l.loan_id = f.loan_id
+      JOIN patrons p ON p.patron_id = f.patron_id
+      JOIN patron_roles pr ON pr.patron_role_code = l.patron_role_code
+      WHERE l.loan_status_code = 1
+      AND l.loan_due_date < CURDATE()
+      AND pr.fine > 0
+      AND f.waived_date IS NULL
+      ORDER BY remainingAmount DESC;
+      `
+    );
+
+    const formattedRows = rows.map((row) => ({
+      ...row,
+      patronName: `${row.firstName} ${row.lastName}`,
+    }));
+
+    return res.json(formattedRows);
   } catch (error) {
     console.error("Load current staff fines error:", error);
     return res.status(500).json({
       error: FormatServerError(error, "Failed to load current fines."),
+    });
+  }
+});
+
+// Pay fine endpoint
+app.post(["/fines/:fineId/pay", "/api/fines/:fineId/pay"], async (req, res) => {
+  try {
+    const user = await RequireStaffUser(req, res);
+
+    if (!user) {
+      return;
+    }
+
+    await SyncCurrentFines();
+
+    const fineId = ParsePositiveInteger(req.params.fineId);
+    const amount = Number(req.body?.amount);
+
+    if (!fineId) {
+      return res.status(400).json({ error: "A valid fineId is required." });
+    }
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return res.status(400).json({ error: "A valid payment amount is required." });
+    }
+
+    const [fines] = await pool.query(
+      `
+      SELECT
+        fine_id AS fineId,
+        fine_amount AS fineAmount,
+        paid_amount AS paidAmount,
+        waived_date AS waivedDate
+      FROM fines
+      WHERE fine_id = ?
+      `,
+      [fineId]
+    );
+
+    if (fines.length === 0) {
+      return res.status(404).json({ error: "Fine not found." });
+    }
+
+    const fine = fines[0];
+
+    if (fine.waivedDate) {
+      return res.status(400).json({ error: "This fine has already been waived." });
+    }
+
+    const remainingAmount = Number((fine.fineAmount - fine.paidAmount).toFixed(2));
+
+    if (amount > remainingAmount) {
+      return res.status(400).json({ error: "Payment amount cannot exceed the current fine." });
+    }
+
+    const newPaidAmount = Number((fine.paidAmount + amount).toFixed(2));
+    const isFullyPaid = newPaidAmount >= fine.fineAmount;
+
+    await pool.query(
+      `
+      UPDATE fines
+      SET paid_amount = ?,
+          paid_date = CASE WHEN ? THEN CURDATE() ELSE paid_date END
+      WHERE fine_id = ?
+      `,
+      [newPaidAmount, isFullyPaid, fineId]
+    );
+
+    return res.json({
+      message: "Fine payment recorded successfully.",
+      paidAmount: newPaidAmount,
+    });
+  } catch (error) {
+    console.error("Pay fine error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to pay fine."),
+    });
+  }
+});
+
+// Waive fine endpoint
+app.post(["/fines/:fineId/waive", "/api/fines/:fineId/waive"], async (req, res) => {
+  try {
+    const user = await RequireStaffUser(req, res);
+
+    if (!user) {
+      return;
+    }
+
+    const fineId = ParsePositiveInteger(req.params.fineId);
+
+    if (!fineId) {
+      return res.status(400).json({ error: "A valid fineId is required." });
+    }
+
+    const [fines] = await pool.query(
+      `
+      SELECT fine_id AS fineId, waived_date AS waivedDate
+      FROM fines
+      WHERE fine_id = ?
+      `,
+      [fineId]
+    );
+
+    if (fines.length === 0) {
+      return res.status(404).json({ error: "Fine not found." });
+    }
+
+    const fine = fines[0];
+
+    if (fine.waivedDate) {
+      return res.status(400).json({ error: "This fine has already been waived." });
+    }
+
+    await pool.query(
+      `
+      UPDATE fines
+      SET waived_date = CURDATE()
+      WHERE fine_id = ?
+      `,
+      [fineId]
+    );
+
+    return res.json({ message: "Fine waived successfully." });
+  } catch (error) {
+    console.error("Waive fine error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to waive fine."),
     });
   }
 });
