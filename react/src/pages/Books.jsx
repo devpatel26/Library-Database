@@ -8,6 +8,45 @@ import PrimaryButton, {
 import Dropdown from "../components/Dropdown";
 
 export default function Books() {
+const [title, setTitle] = useState("");
+const [shelfNumber, setShelfNumber] = useState("");
+const [genre, setGenre] = useState("");
+const [language, setLanguage] = useState("");
+const [format, setFormat] = useState("");
+const [authorFirstName, setAuthorFirstName] = useState("");
+const [authorLastName, setAuthorLastName] = useState("");
+const [publisher, setPublisher] = useState("");
+const [publicationDate, setPublicationDate] = useState("");
+const [summary, setSummary] = useState("");
+const [errors, setErrors] = useState({});
+const [loading, setLoading] = useState(false);
+
+const handleSubmit = (e) => {
+e.preventDefault();
+
+const newErrors = {};
+
+if (!title.trim()) newErrors.title = "Book title is required";
+if (!shelfNumber) newErrors.shelfNumber = "Shelf number is required";
+if (!authorFirstName.trim()) newErrors.authorFirstName = "Author first name is required";
+if (!authorLastName.trim()) newErrors.authorLastName = "Author last name is required";
+if (!publisher.trim()) newErrors.publisher = "Publisher is required";
+if (!publicationDate) newErrors.publicationDate = "Publication date is required";
+if (!summary.trim()) newErrors.summary = "Summary is required";
+
+setErrors(newErrors);
+
+if (Object.keys(newErrors).length > 0) return;
+
+setLoading(true);
+
+setTimeout(() => {
+setLoading(false);
+alert("Book form submitted successfully");
+}, 1000);
+};
+
+
   const genres = [
     "Fantasy",
     "Science Fiction",
@@ -48,7 +87,7 @@ export default function Books() {
         Enter book information below.
       </p>
       <div className="flex gap-4 flex-wrap justify-evenly mt-4">
-        <form method="post">
+        <form method="post" onSubmit={handleSubmit} >
           <div className="space-y-4">
             <div className="grid grid-cols-1 grid-rows-6 gap-x-6 ">
               <div className="grid grid-cols-3 gap-x-6">
@@ -61,8 +100,13 @@ export default function Books() {
                       required
                       id="title"
                       name="title"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
                       className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                     />
+                    {errors.title &&(
+                      <p className= "mt-1 text-sm text-red-400">{errors.title}</p></p> 
+                    )}
                   </div>
                 </div>
                 <div className="sm:col-span-1">
@@ -75,17 +119,22 @@ export default function Books() {
                       type="number"
                       id="shelfnumber"
                       name="shelfnumber"
+                      value={shelfNumber}
+                      onChange={(e) => setShelfNumber(e.target.value)}
                       className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                     />
+                    {errors.shelfNumber &&(
+                      <p className="mt-1 text-sm text-red-400">{errors.shelfNumber}</p>
+                                           )}
                   </div>
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-x-6">
-                <Dropdown name="genre" options={genres} />
+                <Dropdown name="genre" options={genres} value={genre} onChange={(e) => setGenre(e.target.value)}/>
 
-                <Dropdown name="language" options={languages} />
+                <Dropdown name="language" options={languages} value={language} onChange={(e) => setLanguage(e.target.value)}/>
 
-                <Dropdown name="format" options={formats} />
+                <Dropdown name="format" options={formats} value={format} onChange={(e) => setFormat(e.target.value)} />
               </div>
               <div className="grid grid-cols-2 gap-x-6">
                 <div>
@@ -110,8 +159,13 @@ export default function Books() {
                       required
                       id="authorlastname"
                       name="authorlastname"
+                      value={authorLastName}
+                      onChange={(e) => setAuthorLastName(e.target.value)}
                       className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                     />
+                    {errors.authorLastName && (
+                      <p className="mt-1 text-sm text-red-400">{errors.authorLastName}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -125,8 +179,13 @@ export default function Books() {
                       required
                       id="publisher"
                       name="publisher"
+                      value={publisher}
+                      onChange={(e) => setPublisher(e.target.value)}
                       className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                     />
+                    {errors.publisher && (
+                      <p className="mt-1 text-sm text-red-400">{errors.publisher}</p>
+                    )}
                   </div>
                 </div>
                 <div className="col-span-1">
@@ -138,8 +197,14 @@ export default function Books() {
                       required
                       id="publicationdate"
                       name="publicationdate"
+                      type="date"
+                      value={publicationDate}
+                      onChange={(e) => setPublicationDate(e.target.value)}
                       className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                     />
+                    {errors.publicationDate && (
+                      <p className="mt-1 text-sm text-red-400">{errors.publicationDate}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -153,13 +218,24 @@ export default function Books() {
                       required
                       id="summary"
                       name="summary"
+                      value={summary}
+                      onChange={(e) => setSummary(e.target.value)}
                       className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                     />
+                    {errors.summary && (
+                      <p className="mt-1 text-sm text-red-400">{errors.summary}</p>
+                    )}
                   </div>
                 </div>
               </div>
               <div className="grid justify-center mt-4">
-                <SubmitButton title={"Submit"} value={"OK"} />
+                <button
+                type="submit"
+                disabled={loading}
+                className="rounded-md bg-violet-600 px-4 py-2 text-white disabled:opacity-50"
+                >
+                  {loading ? "Submitting..." : "Submit"}
+                </button>
               </div>
             </div>
           </div>
