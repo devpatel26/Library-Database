@@ -1,39 +1,68 @@
-import { useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import { ReadStoredUser } from "../api";
+import PrimaryButton from "../components/Buttons";
 
 export default function Report() {
   const navigate = useNavigate();
-  const user = ReadStoredUser();
-  const userKey = user
-    ? `${user.user_type ?? ""}:${user.staff_id ?? ""}:${user.role ?? ""}`
-    : "";
-
-  useEffect(() => {
-    const currentUser = ReadStoredUser();
-
-    if (!currentUser) {
-      navigate("/login", { replace: true });
-      return;
-    }
-
-    if (currentUser.user_type !== "staff" || Number(currentUser.role) !== 2) {
-      navigate("/", { replace: true });
-    }
-  }, [navigate, userKey]);
 
   return (
-    <section className="rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
+    <section className="mx-auto flex w-full max-w-4xl flex-col items-center rounded-3xl border border-white/10 bg-slate-900/70 p-8 text-center shadow-xl shadow-slate-950/30 sm:p-10">
       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
-        Reporting
-      </p>
+        Admin Reports
+      </p >
       <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">
-        Report Page
+        Reports
       </h1>
       <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
-        Reporting screens are reserved for admin users and still need to be
-        wired to live reporting queries.
-      </p>
+        Select one of the available report options below.
+      </p >
+
+      <div className="mt-8 grid w-full max-w-3xl grid-cols-1 gap-6 md:grid-cols-3">
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-left">
+          <h2 className="text-xl font-semibold text-white">
+            Most Borrowed Books
+          </h2>
+          <p className="mt-3 text-sm leading-6 text-slate-300">
+            View the books with the highest total number of loans.
+          </p >
+          <div className="mt-6 flex justify-center">
+            <PrimaryButton
+              title="Open Report"
+              onClick={() => navigate("/report/mostborrowedbooks")}
+            />
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-left">
+          <h2 className="text-xl font-semibold text-white">
+            Patron Information
+          </h2>
+          <p className="mt-3 text-sm leading-6 text-slate-300">
+            Look up a patron by ID and view their holds, loans, and fines.
+          </p >
+          <div className="mt-6 flex justify-center">
+            <PrimaryButton
+              title="Open Report"
+              onClick={() => navigate("/report/patronsummary")}
+            />
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-left">
+          <h2 className="text-xl font-semibold text-white">
+            Testing
+          </h2>
+          <p className="mt-3 text-sm leading-6 text-slate-300">
+            Temporary placeholder report page for testing future report ideas.
+          </p >
+          <div className="mt-6 flex justify-center">
+            <PrimaryButton
+              title="Open Report"
+              onClick={() => navigate("/report/testing")}
+            />
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
