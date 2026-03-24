@@ -1,6 +1,5 @@
-import { Outlet, Link, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
-import { ReadStoredUser } from "../api";
+import { Outlet, Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 const navLinks = [
   { to: ".", label: "Item Entry" },
@@ -12,32 +11,13 @@ const navLinks = [
 ];
 
 export default function ItemEntry() {
-  const navigate = useNavigate();
-  const user = ReadStoredUser();
-  const userKey = user
-    ? `${user.user_type ?? ""}:${user.staff_id ?? ""}`
-    : "";
-
-  useEffect(() => {
-    const currentUser = ReadStoredUser();
-
-    if (!currentUser) {
-      navigate("/login", { replace: true });
-      return;
-    }
-
-    if (currentUser.user_type !== "staff") {
-      navigate("/", { replace: true });
-    }
-  }, [navigate, userKey]);
-
   return (
     <div className="flex flex-col gap-8 lg:flex-row">
       <aside className="rounded-3xl border border-white/10 bg-slate-900/70 p-6 shadow-xl shadow-slate-950/30 lg:sticky lg:top-8 lg:w-72 lg:self-start">
         <nav className="space-y-2">
-          {navLinks.map((link) => (
+          {navLinks.map((link, index) => (
             <Link
-              key={link.to}
+              key={index}
               to={link.to}
               className="block rounded-md px-3 py-2 text-sm text-slate-200 transition hover:bg-slate-800 hover:text-white"
             >

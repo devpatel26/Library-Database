@@ -1,28 +1,7 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { SubmitButton } from "../components/Buttons";
-import { FetchJson, ReadStoredUser } from "../api";
+import { FetchJson, ReadStoredJson } from "../api";
 
 export default function CreateSignupCode() {
-  const navigate = useNavigate();
-  const user = ReadStoredUser();
-  const userKey = user
-    ? `${user.user_type ?? ""}:${user.staff_id ?? ""}:${user.role ?? ""}`
-    : "";
-
-  useEffect(() => {
-    const currentUser = ReadStoredUser();
-
-    if (!currentUser) {
-      navigate("/login", { replace: true });
-      return;
-    }
-
-    if (currentUser.user_type !== "staff" || Number(currentUser.role) !== 2) {
-      navigate("/", { replace: true });
-    }
-  }, [navigate, userKey]);
-
   return (
     <section className="mx-auto flex w-full max-w-3xl flex-col items-center rounded-3xl border border-white/10 bg-slate-900/70 p-8 text-center shadow-xl shadow-slate-950/30 sm:p-10">
       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
@@ -43,10 +22,12 @@ export default function CreateSignupCode() {
         onSubmit={async (e) => {
           e.preventDefault();
           const formData = new FormData(e.target);
+          const currentUser = ReadStoredJson("user");
 
           const signupCodeData = {
             signup_code: formData.get("signup_code"),
             staff_role_code: Number(formData.get("staff_role_code")),
+            created_by_admin_id: currentUser?.staff_id,
           };
 
           try {

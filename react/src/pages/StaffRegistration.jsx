@@ -11,7 +11,7 @@ export default function StaffRegistration() {
         Staff Registration
       </h1>
       <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
-        Register a staff account with a valid signup code.
+        Admin page for registering staff accounts.
       </p>
       <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300 mb-2">
         Register an account with the below form:
@@ -34,7 +34,7 @@ export default function StaffRegistration() {
             };
 
             try {
-              await FetchJson("/api/staff/register", {
+              const data = await FetchJson("/api/staff/register", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
@@ -43,6 +43,7 @@ export default function StaffRegistration() {
               });
 
               alert("Staff registration successful!");
+              console.log(data);
               e.target.reset();
             } catch (error) {
               console.error(error);
@@ -61,7 +62,7 @@ export default function StaffRegistration() {
                   required
                   id="firstname"
                   name="firstname"
-                  type="text"
+                  type="firstname"
                   className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                 />
               </div>
@@ -75,7 +76,7 @@ export default function StaffRegistration() {
                   required
                   id="lastname"
                   name="lastname"
-                  type="text"
+                  type="lastname"
                   className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                 />
               </div>
@@ -107,7 +108,7 @@ export default function StaffRegistration() {
                   required
                   id="address"
                   name="address"
-                  type="text"
+                  type="address"
                   className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                 />
               </div>
@@ -122,7 +123,7 @@ export default function StaffRegistration() {
                     required
                     id="phonenumber"
                     name="phonenumber"
-                    type="tel"
+                    type="phonenumber"
                     className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                   />
                 </div>

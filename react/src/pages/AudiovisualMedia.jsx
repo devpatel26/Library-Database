@@ -1,8 +1,47 @@
-import { SubmitButton } from "../components/Buttons";
+import Fine from "../components/Fine";
+import dummyFines from "../data/dummy/fines";
+import { useState, useEffect } from "react";
+import PrimaryButton, {
+  SecondaryButton,
+  SubmitButton,
+} from "../components/Buttons";
 import Dropdown from "../components/Dropdown";
-import languages, { avmformats, genres } from "../data/dummy/formdropdowns";
 
 export default function AudiovisualMedia() {
+  const genres = [
+    "Fantasy",
+    "Science Fiction",
+    "Mystery",
+    "Thriller",
+    "Romance",
+    "Horror",
+    "Historical Fiction",
+    "Nonfiction",
+    "Young Adult",
+    "Adventure",
+  ];
+  const formats = [
+    "CD",
+    "DVD",
+    "Blu-ray",
+    "VHS"
+  ];
+  const languages = [
+    "N/A",
+    "English",
+    "Spanish",
+    "Chinese",
+    "Japanese",
+    "French",
+    "Vietnamese",
+    "German",
+    "Portuguese",
+    "Italian",
+    "Dutch",
+    "Arabic",
+    "Swedish",
+    "Korean",
+  ];
   return (
     <section className="rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
@@ -20,7 +59,9 @@ export default function AudiovisualMedia() {
             <div className="grid grid-cols-1 grid-rows-5 gap-x-6 ">
               <div className="grid grid-cols-4 gap-x-6">
                 <div className="sm:col-span-2">
-                  <label htmlFor="title">Title</label>
+                  <label htmlFor="title">
+                    Title
+                  </label>
                   <div className="mt-2">
                     <input
                       required
@@ -31,7 +72,9 @@ export default function AudiovisualMedia() {
                   </div>
                 </div>
                 <div className="sm:col-span-1">
-                  <label htmlFor="shelfnumber">Shelf Number</label>
+                  <label htmlFor="shelfnumber">
+                    Shelf Number
+                  </label>
                   <div className="mt-2">
                     <input
                       required
@@ -44,7 +87,9 @@ export default function AudiovisualMedia() {
                 </div>
 
                 <div className="sm:col-span-1">
-                  <label htmlFor="runtime">Runtime</label>
+                  <label htmlFor="runtime">
+                    Runtime
+                  </label>
                   <div className="mt-2">
                     <input
                       required
@@ -61,9 +106,11 @@ export default function AudiovisualMedia() {
 
                 <Dropdown name="language" options={languages} />
 
-                <Dropdown name="format" options={avmformats} />
+                <Dropdown name="format" options={formats} />
                 <div className="sm:col-span-1">
-                  <label htmlFor="copies">Copies</label>
+                  <label htmlFor="copies">
+                    Copies
+                  </label>
                   <div className="mt-2">
                     <input
                       required
@@ -77,7 +124,9 @@ export default function AudiovisualMedia() {
               </div>
               <div className="grid grid-cols-3 gap-x-6">
                 <div className="col-span-2">
-                  <label htmlFor="publisher">Publisher</label>
+                  <label htmlFor="publisher">
+                    Publisher
+                  </label>
                   <div className="mt-2">
                     <input
                       required
@@ -88,7 +137,9 @@ export default function AudiovisualMedia() {
                   </div>
                 </div>
                 <div className="col-span-1">
-                  <label htmlFor="publicationdate">Publication Date</label>
+                  <label htmlFor="publicationdate">
+                    Publication Date
+                  </label>
                   <div className="mt-2">
                     <input
                       required
@@ -101,7 +152,9 @@ export default function AudiovisualMedia() {
               </div>
               <div>
                 <div className="sm:col-span-3">
-                  <label htmlFor="summary">Summary</label>
+                  <label htmlFor="summary">
+                    Summary
+                  </label>
                   <div className="mt-2">
                     <textarea
                       required

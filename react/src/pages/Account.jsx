@@ -1,26 +1,16 @@
 import { Link, useOutlet } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { FetchJson, GetErrorMessage, ReadStoredUser } from "../api";
+import { FetchJson, GetErrorMessage } from "../api";
+
+const navLinks = [
+  { to: ".", label: "Account" },
+  { to: "fines", label: "Fines" },
+  { to: "loans", label: "Loans" },
+];
 
 function FormatDateOfBirth(dateOfBirth) {
   if (!dateOfBirth) {
     return "Not provided";
-  }
-
-  const dateOnlyMatch =
-    typeof dateOfBirth === "string"
-      ? dateOfBirth.match(/^(\d{4})-(\d{2})-(\d{2})/)
-      : null;
-
-  if (dateOnlyMatch) {
-    const [, year, month, day] = dateOnlyMatch;
-    const parsedDate = new Date(Date.UTC(
-      Number(year),
-      Number(month) - 1,
-      Number(day),
-    ));
-
-    return new Intl.DateTimeFormat("en-US", { timeZone: "UTC" }).format(parsedDate);
   }
 
   const parsedDate = new Date(dateOfBirth);
@@ -29,7 +19,7 @@ function FormatDateOfBirth(dateOfBirth) {
     return dateOfBirth;
   }
 
-  return new Intl.DateTimeFormat("en-US", { timeZone: "UTC" }).format(parsedDate);
+  return parsedDate.toLocaleDateString("en-US");
 }
 
 export default function Account() {
@@ -37,31 +27,11 @@ export default function Account() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const outlet = useOutlet();
-  const user = ReadStoredUser();
-  const userKey = user
-    ? `${user.user_type ?? ""}:${user.patron_id ?? ""}:${user.staff_id ?? ""}`
-    : "";
-  const isPatron = user?.user_type === "patron";
-  const navLinks = isPatron
-    ? [
-        { to: ".", label: "Account" },
-        { to: "fines", label: "Fines" },
-        { to: "loans", label: "Loans" },
-      ]
-    : [{ to: ".", label: "Account" }];
 
   useEffect(() => {
     let isMounted = true;
-    const currentUser = ReadStoredUser();
 
     async function LoadAccount() {
-      if (!currentUser) {
-        setAccount(null);
-        setError("Please log in to view your account.");
-        setLoading(false);
-        return;
-      }
-
       try {
         setLoading(true);
         setError("");
@@ -87,15 +57,15 @@ export default function Account() {
     return () => {
       isMounted = false;
     };
-  }, [userKey]);
+  }, []);
 
   return (
     <div className="flex flex-col gap-8 lg:flex-row">
       <aside className="rounded-3xl border border-white/10 bg-slate-900/70 p-6 shadow-xl shadow-slate-950/30 lg:sticky lg:top-8 lg:w-72 lg:self-start">
         <nav className="space-y-2">
-          {navLinks.map((link) => (
+          {navLinks.map((link, index) => (
             <Link
-              key={link.to}
+              key={index}
               to={link.to}
               className="block rounded-md px-3 py-2 text-sm text-slate-200 transition hover:bg-slate-800 hover:text-white"
             >
@@ -123,10 +93,6 @@ export default function Account() {
             {!loading && !error && account && (
               <div className="space-y-2">
                 <p>
-                  <span className="font-semibold text-white">Account Type:</span>{" "}
-                  {account.user_type === "staff" ? "Staff" : "Patron"}
-                </p>
-                <p>
                   <span className="font-semibold text-white">Name:</span>{" "}
                   {account.first_name} {account.last_name}
                 </p>
@@ -135,14 +101,8 @@ export default function Account() {
                   {account.email}
                 </p>
                 <p>
-                  <span className="font-semibold text-white">
-                    {account.user_type === "staff" ? "Staff ID:" : "Member ID:"}
-                  </span>{" "}
-                  {account.staff_id ?? account.patron_id}
-                </p>
-                <p>
-                  <span className="font-semibold text-white">Role Code:</span>{" "}
-                  {account.role}
+                  <span className="font-semibold text-white">Member ID:</span>{" "}
+                  {account.patron_id}
                 </p>
                 <p>
                   <span className="font-semibold text-white">Status:</span>{" "}
@@ -152,18 +112,6 @@ export default function Account() {
                   <span className="font-semibold text-white">Date of Birth:</span>{" "}
                   {FormatDateOfBirth(account.date_of_birth)}
                 </p>
-                {account.phone_number && (
-                  <p>
-                    <span className="font-semibold text-white">Phone:</span>{" "}
-                    {account.phone_number}
-                  </p>
-                )}
-                {account.address && (
-                  <p>
-                    <span className="font-semibold text-white">Address:</span>{" "}
-                    {account.address}
-                  </p>
-                )}
               </div>
             )}
 

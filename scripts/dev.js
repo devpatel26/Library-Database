@@ -7,16 +7,6 @@ const npmCommand = isWindows ? "npm" : "npm";
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDirectory, "..");
 
-function LogStartupHelp() {
-  console.log("Starting the frontend and backend dev servers...");
-  console.log(
-    "Frontend: Vite will print the exact URL below (usually http://localhost:5173)."
-  );
-  console.log("Backend: http://localhost:3000");
-  console.log("This command stays open while the dev servers are running.");
-  console.log("Press Ctrl+C to stop both servers.");
-}
-
 function RunProcess(name, cwd) {
   const child = spawn(npmCommand, ["run", "dev"], {
     cwd: path.resolve(repoRoot, cwd),
@@ -44,8 +34,6 @@ function RunProcess(name, cwd) {
 
   return child;
 }
-
-LogStartupHelp();
 
 const children = [
   RunProcess("backend", "backend"),
