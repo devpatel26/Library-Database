@@ -1124,6 +1124,97 @@ app.post(["/itementry/book", "api/itementry/book"], async (req, res) => {
   }
 });
 
+// periodical insertion
+app.post(["/itementry/periodical", "api/itementry/periodical"], async (req, res) => {
+  try {
+    const {
+      title,
+      available,
+      shelfnumber,
+      genre,
+      language,
+      format,
+      publisher,
+      publicationdate,
+      summary,
+    } = req.body;
+    if (
+      !title ||
+      !available ||
+      !shelfnumber ||
+      !genre ||
+      !language ||
+      !format ||
+      !publisher ||
+      !publicationdate ||
+      !summary
+    ) {
+      return res.status(400).json({ error: "Missing required fields." });
+    }
+    const trimmmedtitle = title.trim();
+    const trimmmedpublisher = publisher.trim();
+    const trimmmedsummary = summary.trim();
+    const TITLEPATTERN = /[\s\S]{1,45}/;
+    const PUBLISHERPATTERN = /[\s\S]{1,50}/;
+    const SUMMARYPATTERN = /[\s\S]{1,1000}/;
+
+    // double-checking given data is proper format
+    if (
+      !(
+        TITLEPATTERN.test(trimmmedtitle) &&
+        PUBLISHERPATTERN.test(trimmmedpublisher) &&
+        SUMMARYPATTERN.test(trimmmedsummary)
+      )
+    ) {
+      return res.status(400).json({ error: "Error with form data." });
+    }
+
+    // insert base item
+    const [item] = await pool.query(
+      `INSERT INTO items (
+      available, on_hold, unavailable) VALUES(?,?,?)`,
+      [available, 0, 0],
+    );
+    const itemId = item.insertId;
+
+    await pool.query(
+      `
+      INSERT INTO periodicals
+        (
+          item_id,
+          title,
+          shelf_number,
+          genre_code,
+          language_code,
+          periodical_type_code,
+          publisher,
+          publication_date,
+          summary
+        )
+      VALUES
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      [
+        itemId,
+        trimmmedtitle,
+        shelfnumber,
+        genre,
+        language,
+        format,
+        trimmmedpublisher,
+        publicationdate,
+        trimmmedsummary,
+      ],
+    );
+    res.status(201).json({ message: "Periodical insertion successful." });
+  } catch (error) {
+    console.error("Periodical insertion error:", error);
+    res.status(500).json({
+      error: FormatServerError(error, "Periodical insertion failed."),
+    });
+  }
+});
+
 // equipment insertion
 app.post(
   ["/itementry/equipment", "api/itementry/equipment"],
