@@ -372,3 +372,154 @@ INSERT INTO fines
 (7,2.75,'2026-03-16'),
 (10,6.25,'2026-03-17'),
 (2,1.50,'2026-03-18');
+
+-- -----------------------------------------------------
+-- Additional Dummy Patrons for Testing
+-- -----------------------------------------------------
+
+INSERT INTO patrons
+(patron_role_code, first_name, last_name, date_of_birth, email, password_hash, is_active)
+VALUES
+(1,'Liam','Harris','1993-05-10','liam.harris@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Noah','Clark','1997-11-21','noah.clark@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Ava','Lewis','2000-03-14','ava.lewis@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Ethan','Walker','1992-09-05','ethan.walker@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Mason','Hall','1995-01-18','mason.hall@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Charlotte','Young','1999-07-12','charlotte.young@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Amelia','King','1996-02-03','amelia.king@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Benjamin','Wright','1994-06-30','benjamin.wright@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Lucas','Scott','2001-10-19','lucas.scott@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Harper','Green','1998-12-01','harper.green@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+
+(1,'Elijah','Baker','1993-04-14','elijah.baker@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Abigail','Adams','1997-08-25','abigail.adams@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Alexander','Nelson','1992-03-07','alexander.nelson@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Emily','Carter','1995-05-28','emily.carter@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Henry','Mitchell','1991-09-17','henry.mitchell@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Scarlett','Perez','1998-11-09','scarlett.perez@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Daniel','Roberts','1994-06-06','daniel.roberts@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Victoria','Turner','1999-01-13','victoria.turner@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Sebastian','Phillips','1996-10-27','sebastian.phillips@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Grace','Campbell','2000-04-04','grace.campbell@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1);
+
+
+-- -----------------------------------------------------
+-- Additional Loans for Newly Added Patrons
+-- -----------------------------------------------------
+
+INSERT INTO loans
+(item_id, patron_id, loan_origin_date, loan_due_date, patron_role_code, loan_status_code)
+VALUES
+
+-- active loans (not overdue)
+(33,11,'2026-04-01','2026-04-15',1,1),
+(34,12,'2026-04-02','2026-04-16',1,1),
+(35,13,'2026-04-03','2026-04-17',1,1),
+(36,14,'2026-04-04','2026-04-18',1,1),
+
+-- overdue loans
+(37,15,'2026-03-01','2026-03-10',1,1),
+(38,16,'2026-03-02','2026-03-12',1,1),
+(39,17,'2026-02-15','2026-03-01',1,1),
+
+-- returned loans (normal)
+(40,18,'2026-02-10','2026-02-24',1,2),
+(41,19,'2026-02-15','2026-03-01',1,2),
+
+-- returned overdue loans
+(42,20,'2026-02-01','2026-02-14',1,2),
+(43,21,'2026-02-05','2026-02-18',1,2),
+
+-- active loans
+(44,22,'2026-04-01','2026-04-15',1,1),
+(45,23,'2026-04-02','2026-04-16',1,1),
+(46,24,'2026-04-03','2026-04-17',1,1),
+
+-- overdue loans
+(47,25,'2026-03-10','2026-03-20',1,1),
+(48,26,'2026-03-05','2026-03-15',1,1),
+
+-- active
+(49,27,'2026-04-01','2026-04-15',1,1),
+(50,28,'2026-04-01','2026-04-15',1,1),
+
+-- returned
+(51,29,'2026-02-01','2026-02-14',1,2),
+(52,30,'2026-02-02','2026-02-15',1,2);
+
+
+-- -----------------------------------------------------
+-- Additional Holds
+-- -----------------------------------------------------
+
+INSERT INTO holds
+(item_id, patron_id, hold_origin_date, hold_expiration_date, hold_status_code)
+VALUES
+
+-- active holds
+(12,11,'2026-04-05','2026-04-08',1),
+(13,12,'2026-04-05','2026-04-08',1),
+(14,13,'2026-04-05','2026-04-08',1),
+(15,14,'2026-04-05','2026-04-08',1),
+
+-- expired holds
+(16,15,'2026-03-01','2026-03-03',3),
+(17,16,'2026-03-01','2026-03-03',3),
+
+-- fulfilled hold
+(18,17,'2026-03-20','2026-03-25',2),
+
+-- active holds
+(19,18,'2026-04-01','2026-04-06',1),
+(20,19,'2026-04-02','2026-04-07',1),
+(21,20,'2026-04-02','2026-04-07',1);
+
+-- -----------------------------------------------------
+-- Additional Fines
+-- -----------------------------------------------------
+
+INSERT INTO fines
+(patron_id, fine_amount, paid_amount, fine_date)
+VALUES
+
+-- unpaid fines
+(15,4.50,0.00,'2026-03-20'),
+(16,6.25,0.00,'2026-03-22'),
+
+-- partial payment
+(17,8.00,3.00,'2026-03-21'),
+(18,10.50,5.00,'2026-03-22'),
+
+-- fully paid
+(19,3.25,3.25,'2026-03-18'),
+(20,2.75,2.75,'2026-03-17'),
+
+-- more unpaid
+(21,7.00,0.00,'2026-03-23'),
+(22,5.50,0.00,'2026-03-24'),
+
+-- partial
+(23,9.75,4.00,'2026-03-25'),
+
+-- paid
+(24,1.50,1.50,'2026-03-16');
+
+-- -----------------------------------------------------
+-- Waived Fine Example
+-- -----------------------------------------------------
+
+UPDATE fines
+SET waived_date = '2026-03-30'
+WHERE patron_id = 23;
+-- ----------------------------------------------------
+-- Extra Overdue Loans for Overdue Report
+-- -----------------------------------------------------
+
+INSERT INTO loans
+(item_id, patron_id, loan_origin_date, loan_due_date, patron_role_code, loan_status_code)
+VALUES
+
+(33,15,'2026-03-01','2026-03-10',1,1),
+(34,16,'2026-03-02','2026-03-12',1,1),
+(35,17,'2026-03-03','2026-03-13',1,1),
+(36,18,'2026-03-04','2026-03-14',1,1);
