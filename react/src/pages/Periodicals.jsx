@@ -49,6 +49,18 @@ export default function Periodicals() {
 
             const formData = new FormData(e.target);
 
+            const title = formData.get("title");
+            const publisher = formData.get("publisher");
+            const publicationdate = formData.get("publicationdate");
+            const available = formData.get("available");
+            const shelfnumber = formData.get("shelfnumber");
+
+            if (!title || !publisher || !publicationdate || !available || !shelfnumber) {
+              alert("Please fill in all required fields.");
+              return;
+            }
+
+
             const periodicalData = {
               title: formData.get("title"),
               available: formData.get("available"),
