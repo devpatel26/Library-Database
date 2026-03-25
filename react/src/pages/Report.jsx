@@ -50,15 +50,15 @@ export default function Report() {
 
         <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-left">
           <h2 className="text-xl font-semibold text-white">
-            Testing
+            Overdue Report
           </h2>
           <p className="mt-3 text-sm leading-6 text-slate-300">
-            Temporary placeholder report page for testing future report ideas.
+            View all overdue loans, the patron responsible, overdue days, and current fine totals.
           </p >
           <div className="mt-6 flex justify-center">
             <PrimaryButton
               title="Open Report"
-              onClick={() => navigate("/report/testing")}
+              onClick={() => navigate("/report/overduereport")}
             />
           </div>
         </div>

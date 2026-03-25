@@ -24,7 +24,9 @@ import { ReadStoredUser } from "./api";
 import Holds from "./pages/Holds.jsx";
 import MostBorrowedBooksReport from "./pages/MostBorrowedBooksReport.jsx";
 import PatronSummaryReport from "./pages/PatronSummaryReport.jsx";
+import OverdueReport from "./pages/OverdueReport.jsx";
 import TestingReport from "./pages/TestingReport.jsx";
+
 
 function App() {
 const user = ReadStoredUser();
@@ -120,6 +122,7 @@ const navLinks = [
             <Route path="/staffloans" element={<StaffLoans />} />
             <Route path="/report/mostborrowedbooks" element={<MostBorrowedBooksReport />} />
             <Route path="/report/patronsummary" element={<PatronSummaryReport />} />
+            <Route path="/report/overduereport" element={<OverdueReport />} />
             <Route path="/report/testing" element={<TestingReport />} />
           </Routes>
         </main>
