@@ -2278,27 +2278,64 @@ app.get(["/staff/fines/current", "/api/staff/fines/current"], async (req, res) =
         f.fine_id AS fineId,
         f.loan_id AS loanId,
         f.patron_id AS patronId,
-        f.fine_amount AS fineAmount,
-        f.paid_amount AS paidAmount,
-        ROUND(f.fine_amount - f.paid_amount, 2) AS remainingAmount,
+        COALESCE(f.fine_amount, 0) AS fineAmount,
+        COALESCE(f.paid_amount, 0) AS paidAmount,
+        ROUND(COALESCE(f.fine_amount, 0) - COALESCE(f.paid_amount, 0), 2) AS remainingAmount,
         f.fine_date AS fineDate,
         f.paid_date AS paidDate,
         f.waived_date AS waivedDate,
         l.item_id AS itemId,
         l.loan_due_date AS loanDueDate,
+        l.loan_status_code AS loanStatusCode,
         p.first_name AS firstName,
         p.last_name AS lastName,
         pr.fine AS dailyFine,
-        DATEDIFF(CURDATE(), l.loan_due_date) AS daysOverdue
+        GREATEST(DATEDIFF(CURDATE(), l.loan_due_date), 0) AS daysOverdue,
+        CASE
+          WHEN f.waived_date IS NOT NULL THEN 'Waived'
+          WHEN ROUND(COALESCE(f.fine_amount, 0) - COALESCE(f.paid_amount, 0), 2) <= 0 THEN 'Paid'
+          WHEN l.loan_status_code = 1 AND l.loan_due_date < CURDATE() THEN 'Overdue'
+          WHEN l.loan_status_code <> 1 AND ROUND(COALESCE(f.fine_amount, 0) - COALESCE(f.paid_amount, 0), 2) > 0 THEN 'Returned but unpaid'
+          ELSE 'Paid'
+        END AS fineStatus,
+        COALESCE(
+          b.title,
+          per.title,
+          am.title,
+          e.equipment_name
+        ) AS title,
+        COALESCE(
+          (
+            SELECT GROUP_CONCAT(CONCAT(a.first_name, ' ', a.last_name) SEPARATOR ', ')
+            FROM authors a
+            WHERE a.item_id = b.item_id
+          ),
+          (
+            SELECT GROUP_CONCAT(CONCAT(c.first_name, ' ', c.last_name) SEPARATOR ', ')
+            FROM contributors c
+            WHERE c.item_id = am.item_id
+          ),
+          NULL
+        ) AS creator
       FROM fines f
       JOIN loans l ON l.loan_id = f.loan_id
       JOIN patrons p ON p.patron_id = f.patron_id
       JOIN patron_roles pr ON pr.patron_role_code = l.patron_role_code
-      WHERE l.loan_status_code = 1
-      AND l.loan_due_date < CURDATE()
-      AND pr.fine > 0
-      AND f.waived_date IS NULL
-      ORDER BY remainingAmount DESC;
+      LEFT JOIN books b ON b.item_id = l.item_id
+      LEFT JOIN periodicals per ON per.item_id = l.item_id
+      LEFT JOIN audiovisual_media am ON am.item_id = l.item_id
+      LEFT JOIN equipment e ON e.item_id = l.item_id
+      ORDER BY
+        CASE
+          WHEN f.waived_date IS NOT NULL THEN 4
+          WHEN ROUND(COALESCE(f.fine_amount, 0) - COALESCE(f.paid_amount, 0), 2) <= 0 THEN 3
+          WHEN l.loan_status_code = 1 AND l.loan_due_date < CURDATE() THEN 1
+          WHEN l.loan_status_code <> 1 AND ROUND(COALESCE(f.fine_amount, 0) - COALESCE(f.paid_amount, 0), 2) > 0 THEN 2
+          ELSE 5
+        END ASC,
+        remainingAmount DESC,
+        l.loan_due_date ASC,
+        f.fine_id DESC
       `
     );
 
