@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ItemHold, ItemHolder, ItemLoan } from "../components/Items";
 import { FetchJson, GetErrorMessage, ReadStoredUser } from "../api";
+import { FormatTime, FormatDate } from "../components/TimeFormats";
 
 async function FetchCirculationData() {
   const payload = await FetchJson("/api/loans");
@@ -13,6 +14,8 @@ async function FetchCirculationData() {
 }
 
 function LoanHistoryCard({ itemData }) {
+  const formattedLoanStart = FormatDate(new Date(itemData.loanStart), true);
+  const formattedLoanEnd = FormatDate(new Date(itemData.loanEnd), true);
   return (
     <div className="rounded-xl bg-white/2 px-3 py-1.5 outline-2 -outline-offset-1 outline-white/6">
       <div className="grid grid-cols-4">
@@ -20,8 +23,8 @@ function LoanHistoryCard({ itemData }) {
           <ItemHolder data={itemData} />
         </div>
         <div className="col-span-1 grid grid-rows-3 items-center text-center text-sm text-slate-300">
-          <div>Borrowed: {itemData.loanStart}</div>
-          <div>Due: {itemData.loanEnd}</div>
+          <div>Borrowed: {formattedLoanStart}</div>
+          <div>Due: {formattedLoanEnd}</div>
           <div>Status: {itemData.loanStatus ?? "Completed"}</div>
         </div>
       </div>
@@ -124,9 +127,7 @@ export default function Loans() {
             </p>
             <div className="mt-4 flex flex-wrap justify-evenly gap-4">
               {data.holds.length === 0 ? (
-                <p className="text-slate-300">
-                  No active holds.
-                </p>
+                <p className="text-slate-300">No active holds.</p>
               ) : (
                 data.holds.map((item) => (
                   <ItemHold

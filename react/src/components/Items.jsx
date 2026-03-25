@@ -1,5 +1,6 @@
 import PrimaryButton, { SecondaryButton } from "./Buttons";
 import { FetchJson, ReadStoredUser } from "../api";
+import { FormatTime, FormatDate } from "./TimeFormats";
 
 function PromptForPatronId(message) {
   const rawValue = window.prompt(message);
@@ -61,7 +62,9 @@ export default function Item({ itemData }) {
                         return;
                       }
 
-                      const patronId = PromptForPatronId("Enter patron id for hold:");
+                      const patronId = PromptForPatronId(
+                        "Enter patron id for hold:",
+                      );
 
                       if (!patronId) {
                         return;
@@ -97,7 +100,9 @@ export default function Item({ itemData }) {
                         return;
                       }
 
-                      const patronId = PromptForPatronId("Enter patron id for checkout:");
+                      const patronId = PromptForPatronId(
+                        "Enter patron id for checkout:",
+                      );
 
                       if (!patronId) {
                         return;
@@ -174,51 +179,31 @@ export function ItemStaff({ itemData }) {
         <div className="col-span-2 grid grid-cols-2 items-center m-2">
           {itemData.status === "Available" ? (
             <div className="grid grid-rows-2 col-span-1">
-              <div>
-                Copy number: {itemData.copy}
-              </div>
-              <div>
-                Item status: {itemData.status}
-              </div>
+              <div>Copy number: {itemData.copy}</div>
+              <div>Item status: {itemData.status}</div>
             </div>
           ) : itemData.status === "On hold" ? (
             <div className="grid grid-rows-4 col-span-1">
+              <div>Copy number: {itemData.copy}</div>
+              <div>Item status: {itemData.status}</div>
               <div>
-                Copy number: {itemData.copy}
+                On hold until {FormatDate(new Date(itemData.holdEnd), true)}
               </div>
-              <div>
-                Item status: {itemData.status}
-              </div>
-              <div>
-                On hold until {itemData.holdEnd}
-              </div>
-              <div>
-                Held by user {itemData.userid}
-              </div>
+              <div>Held by user {itemData.userid}</div>
             </div>
           ) : itemData.status === "Loaned" ? (
             <div className="grid grid-rows-4 col-span-1">
+              <div>Copy number: {itemData.copy}</div>
+              <div>Item status: {itemData.status}</div>
               <div>
-                Copy number: {itemData.copy}
+                Loaned until {FormatDate(new Date(itemData.loanEnd), true)}
               </div>
-              <div>
-                Item status: {itemData.status}
-              </div>
-              <div>
-                Loaned until {itemData.loanEnd}
-              </div>
-              <div>
-                Loaned by user {itemData.userid}
-              </div>
+              <div>Loaned by user {itemData.userid}</div>
             </div>
           ) : (
             <div className="grid grid-rows-2 col-span-1">
-              <div>
-                Copy number: {itemData.copy}
-              </div>
-              <div>
-                Item status: {itemData.status}
-              </div>
+              <div>Copy number: {itemData.copy}</div>
+              <div>Item status: {itemData.status}</div>
             </div>
           )}
           <div className="col-span-1 items-center justify-items-center text-center">
@@ -242,26 +227,21 @@ export function ItemStaff({ itemData }) {
 }
 
 export function ItemLoan({ itemData }) {
+  const formattedDate = FormatDate(new Date(itemData.loanEnd), true);
   return (
-    <div>
+    <div className="w-full">
       <div className="grid grid-cols-4 rounded-xl bg-white/2 px-3 py-1.5 outline-2 -outline-offset-1 outline-white/6">
         <div className="col-span-3 m-2">
           <ItemHolder data={itemData} />
         </div>
         {itemData.overdue ? (
           <div className="col-span-1 grid grid-rows-2 items-center text-center">
-            <div>
-              Due: {itemData.loanEnd}
-            </div>
-            <div>
-              Item Overdue
-            </div>
+            <div>Due: {formattedDate}</div>
+            <div>Item Overdue</div>
           </div>
         ) : (
           <div className="col-span-1 grid grid-rows-2 items-center text-center">
-            <div>
-              Due: {itemData.loanEnd}
-            </div>
+            <div>Due: {formattedDate}</div>
           </div>
         )}
       </div>
@@ -277,9 +257,7 @@ export function ItemHold({ itemData, onCancel }) {
         </div>
         {itemData.ready ? (
           <div className="col-span-1 grid grid-rows-2 items-center text-center">
-            <span>
-              Item ready to pickup
-            </span>
+            <span>Item ready to pickup</span>
             <PrimaryButton
               title="Cancel"
               disabledValue={!onCancel}
@@ -288,9 +266,7 @@ export function ItemHold({ itemData, onCancel }) {
           </div>
         ) : (
           <div className="col-span-1 grid grid-rows-2 items-center text-center">
-            <span>
-              Item not ready
-            </span>
+            <span>Item not ready</span>
             <PrimaryButton
               title="Cancel"
               disabledValue={!onCancel}
@@ -307,9 +283,8 @@ export function ItemHolder({ data }) {
   const creator =
     data.creator ??
     (data.author ? `${data.author.lastName}, ${data.author.firstName}` : null);
-  const pubLine = [data.publisher, data.publicationDate]
-    .filter(Boolean)
-    .join(", ");
+  const formattedDate = FormatDate(new Date(data.publicationDate));
+  const pubLine = [data.publisher, formattedDate].filter(Boolean).join(", ");
   const metaLine = [data.type, data.language, data.genre]
     .filter(Boolean)
     .join(", ");

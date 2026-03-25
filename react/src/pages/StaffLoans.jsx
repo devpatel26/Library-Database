@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import PrimaryButton from "../components/Buttons";
 import { FetchJson, ReadStoredUser } from "../api";
+import { FormatTime, FormatDate } from "../components/TimeFormats";
 
 async function FetchCurrentStaffLoans() {
   return FetchJson("/api/staff/loans/current");
@@ -10,9 +11,7 @@ export default function StaffLoans() {
   const [loans, setLoans] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const user = ReadStoredUser();
-  const userKey = user
-    ? `${user.user_type ?? ""}:${user.staff_id ?? ""}`
-    : "";
+  const userKey = user ? `${user.user_type ?? ""}:${user.staff_id ?? ""}` : "";
 
   useEffect(() => {
     const currentUser = ReadStoredUser();
@@ -65,13 +64,13 @@ export default function StaffLoans() {
     <section className="mx-auto flex w-full max-w-5xl flex-col rounded-3xl border border-white/10 bg-slate-900/70 p-6 shadow-xl shadow-slate-950/30">
       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
         Staff
-      </p >
+      </p>
       <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">
         Current Loans
       </h1>
       <p className="mt-4 text-base leading-7 text-slate-300">
         View all active loans and return checked out items.
-      </p >
+      </p>
 
       <div className="mt-6 space-y-4">
         {isLoading ? (
@@ -93,10 +92,10 @@ export default function StaffLoans() {
                   Borrowed by: {loan.patronName} (Patron ID: {loan.patronId})
                 </div>
                 <div className="text-slate-400">
-                  Loan date: {loan.loanStart}
+                  Loan date: {FormatDate(new Date(loan.loanStart), true)}
                 </div>
                 <div className="text-slate-400">
-                  Due date: {loan.loanEnd}
+                  Due date: {FormatDate(new Date(loan.loanEnd), true)}
                 </div>
               </div>
 

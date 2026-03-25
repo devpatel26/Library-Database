@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import PrimaryButton, { SecondaryButton } from "../components/Buttons";
 import { FetchJson, ReadStoredUser } from "../api";
+import { FormatTime, FormatDate } from "../components/TimeFormats";
 
 async function FetchCurrentHolds() {
   return FetchJson("/api/holds/current");
@@ -79,13 +80,13 @@ export default function Holds() {
     <section className="mx-auto flex w-full max-w-5xl flex-col rounded-3xl border border-white/10 bg-slate-900/70 p-6 shadow-xl shadow-slate-950/30">
       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
         Staff
-      </p >
+      </p>
       <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">
         Current Holds
       </h1>
       <p className="mt-4 text-base leading-7 text-slate-300">
         View all active holds, cancel them, or convert them into loans.
-      </p >
+      </p>
 
       <div className="mt-6 space-y-4">
         {isLoading ? (
@@ -107,10 +108,10 @@ export default function Holds() {
                   Held by: {hold.patronName} (Patron ID: {hold.patronId})
                 </div>
                 <div className="text-slate-400">
-                  Hold date: {hold.holdStart}
+                  Hold date: {FormatDate(new Date(hold.holdStart), true)}
                 </div>
                 <div className="text-slate-400">
-                  Expires: {hold.holdEnd}
+                  Expires: {FormatDate(new Date(hold.holdEnd), true)}
                 </div>
               </div>
 
