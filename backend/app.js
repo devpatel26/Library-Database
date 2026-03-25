@@ -20,27 +20,27 @@ const passwordResetMaxAgeSeconds = Math.max(
     Number(process.env.PASSWORD_RESET_MAX_AGE_SECONDS) || 60 * 30,
     60 * 5
 );
-const sessionSecret =
-    process.env.SESSION_SECRET?.trim() ||
-    (process.env.NODE_ENV === "production"
-        ? "team8"
-        : "library-dev-session-secret-change-me");
-const passwordResetSecret =
-    process.env.PASSWORD_RESET_SECRET?.trim() || sessionSecret;
-const defaultAppOrigin =
-    process.env.APP_ORIGIN?.trim() ||
-    process.env.FRONTEND_ORIGIN?.trim() ||
-    "http://localhost:5173";
+// const sessionSecret =
+//     process.env.SESSION_SECRET?.trim() ||
+//     (process.env.NODE_ENV === "production"
+//         ? "team8"
+//         : "library-dev-session-secret-change-me");
+// const passwordResetSecret =
+//     process.env.PASSWORD_RESET_SECRET?.trim() || sessionSecret;
+// const defaultAppOrigin =
+//     process.env.APP_ORIGIN?.trim() ||
+//     process.env.FRONTEND_ORIGIN?.trim() ||
+//     "http://localhost:5173";
 
-if (!sessionSecret) {
-    throw new Error("SESSION_SECRET must be set when NODE_ENV=production.");
-}
+// if (!sessionSecret) {
+//     throw new Error("SESSION_SECRET must be set when NODE_ENV=production.");
+// }
 
-if (!process.env.SESSION_SECRET && process.env.NODE_ENV !== "production") {
-    console.warn(
-        'SESSION_SECRET is not set in "backend/.env". Using a development fallback secret.'
-    );
-}
+// if (!process.env.SESSION_SECRET && process.env.NODE_ENV !== "production") {
+//     console.warn(
+//         'SESSION_SECRET is not set in "backend/.env". Using a development fallback secret.'
+//     );
+// }
 
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
