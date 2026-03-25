@@ -23,11 +23,6 @@ export default function TestPage() {
       </div>
 
       <div>Input Test</div>
-      <br />
-      <InputComponent type="number" id="input1" label="Input 1" />
-      <br />
-      <InputComponent />
-      <br />
       <div>Input Test End</div>
       <TestComponentNoData />
       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
