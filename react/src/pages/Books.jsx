@@ -2,6 +2,7 @@ import { SubmitButton } from "../components/Buttons";
 import { ObjectDropdown, DisabledDropdown } from "../components/Dropdown";
 import { FetchJson, GetErrorMessage } from "../api";
 import { useEffect, useState } from "react";
+import InputComponent from "../components/InputComponent";
 
 export default function Books() {
   const [languages, setLanguages] = useState([]);
@@ -80,46 +81,28 @@ export default function Books() {
           <div className="space-y-4">
             <div className="grid grid-cols-1 grid-rows-6 gap-x-6 ">
               <div className="grid grid-cols-4 gap-x-6">
-                <div className="sm:col-span-2">
-                  <label htmlFor="title">Book Title</label>
-                  <div className="mt-2">
-                    <input
-                      required
-                      pattern="(?=.*\S)[\s\S]{1,45}"
-                      id="title"
-                      name="title"
-                      className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
-                    />
-                  </div>
-                </div>
-                <div className="sm:col-span-1">
-                  <label htmlFor="available">Copies</label>
-                  <div className="mt-2">
-                    <input
-                      required
-                      min="1"
-                      max="100"
-                      type="number"
-                      id="available"
-                      name="available"
-                      className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
-                    />
-                  </div>
-                </div>
-                <div className="sm:col-span-1">
-                  <label htmlFor="shelfnumber">Shelf Number</label>
-                  <div className="mt-2">
-                    <input
-                      required
-                      min="1"
-                      max="100"
-                      type="number"
-                      id="shelfnumber"
-                      name="shelfnumber"
-                      className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
-                    />
-                  </div>
-                </div>
+                <InputComponent
+                  colspan={2}
+                  pattern="(?=.*\S)[\s\S]{1,45}"
+                  id="title"
+                  label="Book Title"
+                  min={1}
+                  max={45}
+                />
+                <InputComponent
+                  id="available"
+                  label="Copies"
+                  type="number"
+                  min={1}
+                  max={100}
+                />
+                <InputComponent
+                  id="shelfnumber"
+                  label="Shelf Number"
+                  type="number"
+                  min={1}
+                  max={100}
+                />
               </div>
               {loading && !error && (
                 <div className="grid grid-cols-3 gap-x-6">
@@ -142,59 +125,48 @@ export default function Books() {
               )}
 
               <div className="grid grid-cols-2 gap-x-6">
-                <div>
-                  <label htmlFor="authorfirstname">Author First Name</label>
-                  <div className="mt-2">
-                    <input
-                      required
-                      pattern="(?=.*\S)[\s\S]{1,30}"
-                      id="authorfirstname"
-                      name="authorfirstname"
-                      className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label htmlFor="authorlastname">Author Last Name</label>
-                  <div className="mt-2">
-                    <input
-                      required
-                      pattern="(?=.*\S)[\s\S]{1,30}"
-                      id="authorlastname"
-                      name="authorlastname"
-                      className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
-                    />
-                  </div>
-                </div>
+                <InputComponent
+                  pattern="(?=.*\S)[\s\S]{1,30}"
+                  id="authorfirstname"
+                  label="Author First Name"
+                  min={1}
+                  max={30}
+                />
+                <InputComponent
+                  pattern="(?=.*\S)[\s\S]{1,30}"
+                  id="authorlastname"
+                  label="Author Last Name"
+                  min={1}
+                  max={30}
+                />
               </div>
               <div className="grid grid-cols-3 gap-x-6">
-                <div className="col-span-2">
-                  <label htmlFor="publisher">Publisher</label>
-                  <div className="mt-2">
-                    <input
-                      required
-                      pattern="(?=.*\S)[\s\S]{1,50}"
-                      id="publisher"
-                      name="publisher"
-                      className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
-                    />
-                  </div>
-                </div>
-                <div className="col-span-1">
-                  <label htmlFor="publicationdate">Publication Date</label>
-                  <div className="mt-2">
-                    <input
-                      required
-                      id="publicationdate"
-                      name="publicationdate"
-                      type="date"
-                      className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
-                    />
-                  </div>
-                </div>
+                <InputComponent
+                  colspan={2}
+                  pattern="(?=.*\S)[\s\S]{1,50}"
+                  id="publisher"
+                  label="Publisher"
+                  min={1}
+                  max={50}
+                />
+
+                <InputComponent
+                  id="publicationdate"
+                  label="Publication Date"
+                  type="date"
+                />
               </div>
               <div>
-                <div className="sm:col-span-3">
+                <InputComponent
+                  colspan={3}
+                  pattern="(?=.*\S)[\s\S]{1,1000}"
+                  id="summary"
+                  label="Summary"
+                  type="textarea"
+                  min={1}
+                  max={1000}
+                />
+                {/* <div className="sm:col-span-3">
                   <label htmlFor="summary">Summary</label>
                   <div className="mt-2">
                     <textarea
@@ -205,7 +177,7 @@ export default function Books() {
                       className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                     />
                   </div>
-                </div>
+                </div> */}
               </div>
               <div className="grid justify-center mt-4">
                 <SubmitButton title={"Submit"} value={"OK"} />

@@ -3,9 +3,8 @@ import PrimaryButton, { SecondaryButton } from "../components/Buttons";
 import Item, { ItemHold, ItemLoan, ItemStaff } from "../components/Items";
 import Fine, { FineStaff } from "../components/Fine";
 import dummyFines from "../data/dummy/fines";
-import dummyBaseItemsPatron, {
-  dummyBaseItemsStaff,
-} from "../data/dummy/items";
+import dummyBaseItemsPatron, { dummyBaseItemsStaff } from "../data/dummy/items";
+import InputComponent from "../components/InputComponent";
 
 export default function TestPage() {
   return (
@@ -22,6 +21,14 @@ export default function TestPage() {
           validation.
         </p>
       </div>
+
+      <div>Input Test</div>
+      <br />
+      <InputComponent type="number" id="input1" label="Input 1" />
+      <br />
+      <InputComponent />
+      <br />
+      <div>Input Test End</div>
       <TestComponentNoData />
       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
         Button Tests
