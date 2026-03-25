@@ -16,11 +16,21 @@ const sessionMaxAgeSeconds = Math.max(
     Number(process.env.SESSION_MAX_AGE_SECONDS) || 60 * 60 * 12,
     60
 );
+const passwordResetMaxAgeSeconds = Math.max(
+    Number(process.env.PASSWORD_RESET_MAX_AGE_SECONDS) || 60 * 30,
+    60 * 5
+);
 const sessionSecret =
     process.env.SESSION_SECRET?.trim() ||
     (process.env.NODE_ENV === "production"
         ? ""
         : "library-dev-session-secret-change-me");
+const passwordResetSecret =
+    process.env.PASSWORD_RESET_SECRET?.trim() || sessionSecret;
+const defaultAppOrigin =
+    process.env.APP_ORIGIN?.trim() ||
+    process.env.FRONTEND_ORIGIN?.trim() ||
+    "http://localhost:5173";
 
 if (!sessionSecret) {
     throw new Error("SESSION_SECRET must be set when NODE_ENV=production.");
@@ -132,6 +142,122 @@ function BuildSessionToken({ userType, patronId, staffId }) {
         token: `${encodedPayload}.${signature}`,
         expiresAt: new Date(payload.expiresAt * 1000).toISOString(),
     };
+}
+
+function BuildPasswordResetFingerprint(passwordHash) {
+    return crypto
+        .createHash("sha256")
+        .update(String(passwordHash ?? ""))
+        .digest("base64url");
+}
+
+function BuildPasswordResetToken({ userType, patronId, staffId, passwordHash }) {
+    const issuedAt = Math.floor(Date.now() / 1000);
+    const subjectId = userType === "patron" ? patronId : staffId;
+    const payload = {
+        subjectType: userType,
+        subjectId,
+        passwordDigest: BuildPasswordResetFingerprint(passwordHash),
+        nonce: crypto.randomBytes(8).toString("hex"),
+        issuedAt,
+        expiresAt: issuedAt + passwordResetMaxAgeSeconds,
+    };
+    const encodedPayload = EncodeBase64Url(JSON.stringify(payload));
+    const signature = crypto
+        .createHmac("sha256", passwordResetSecret)
+        .update(encodedPayload)
+        .digest("base64url");
+
+    return {
+        token: `${encodedPayload}.${signature}`,
+        expiresAt: new Date(payload.expiresAt * 1000).toISOString(),
+    };
+}
+
+function ParsePasswordResetToken(token) {
+    if (!token) {
+        return null;
+    }
+
+    const [encodedPayload, encodedSignature] = token.split(".");
+
+    if (!encodedPayload || !encodedSignature) {
+        return null;
+    }
+
+    const expectedSignature = crypto
+        .createHmac("sha256", passwordResetSecret)
+        .update(encodedPayload)
+        .digest();
+    const providedSignature = DecodeBase64Url(encodedSignature);
+
+    if (
+        !providedSignature ||
+        providedSignature.length !== expectedSignature.length ||
+        !crypto.timingSafeEqual(expectedSignature, providedSignature)
+    ) {
+        return null;
+    }
+
+    const payloadBuffer = DecodeBase64Url(encodedPayload);
+
+    if (!payloadBuffer) {
+        return null;
+    }
+
+    let payload;
+
+    try {
+        payload = JSON.parse(payloadBuffer.toString("utf8"));
+    } catch {
+        return null;
+    }
+
+    const expiresAt = Number(payload?.expiresAt);
+    const subjectId = ParsePositiveInteger(payload?.subjectId);
+    const subjectType =
+        payload?.subjectType === "patron" || payload?.subjectType === "staff"
+            ? payload.subjectType
+            : null;
+    const passwordDigest =
+        typeof payload?.passwordDigest === "string" &&
+        payload.passwordDigest.trim() !== ""
+            ? payload.passwordDigest.trim()
+            : "";
+
+    if (!subjectType || !subjectId || !Number.isFinite(expiresAt) || !passwordDigest) {
+        return null;
+    }
+
+    if (expiresAt <= Math.floor(Date.now() / 1000)) {
+        return null;
+    }
+
+    return {
+        userType: subjectType,
+        subjectId,
+        passwordDigest,
+    };
+}
+
+function GetApplicationOrigin(req) {
+    const origin = String(req.get("origin") ?? "").trim();
+
+    if (/^https?:\/\//i.test(origin)) {
+        return origin.replace(/\/+$/, "");
+    }
+
+    const referer = String(req.get("referer") ?? "").trim();
+
+    if (/^https?:\/\//i.test(referer)) {
+        try {
+            return new URL(referer).origin;
+        } catch {
+            // Fall through to the configured default origin.
+        }
+    }
+
+    return defaultAppOrigin.replace(/\/+$/, "");
 }
 
 function ReadSessionToken(req) {
@@ -262,6 +388,118 @@ async function UpgradeLegacyPasswordIfNeeded({
         `,
         [upgradedPasswordHash, idValue]
     );
+}
+
+async function FindPasswordResetAccountByEmail(email) {
+    const normalizedEmail = String(email ?? "").trim();
+
+    if (!normalizedEmail) {
+        return null;
+    }
+
+    const [patronRows] = await pool.query(
+        `
+        SELECT
+            patron_id AS patronId,
+            email,
+            password_hash AS passwordHash,
+            is_active AS isActive
+        FROM patrons
+        WHERE LOWER(email) = LOWER(?)
+        LIMIT 1
+        `,
+        [normalizedEmail]
+    );
+
+    if (patronRows.length > 0) {
+        return {
+            userType: "patron",
+            patronId: patronRows[0].patronId,
+            email: patronRows[0].email,
+            passwordHash: patronRows[0].passwordHash,
+            isActive: Boolean(patronRows[0].isActive),
+        };
+    }
+
+    const [staffRows] = await pool.query(
+        `
+        SELECT
+            staff_id AS staffId,
+            email,
+            password_hash AS passwordHash,
+            is_active AS isActive
+        FROM staff
+        WHERE LOWER(email) = LOWER(?)
+        LIMIT 1
+        `,
+        [normalizedEmail]
+    );
+
+    if (staffRows.length === 0) {
+        return null;
+    }
+
+    return {
+        userType: "staff",
+        staffId: staffRows[0].staffId,
+        email: staffRows[0].email,
+        passwordHash: staffRows[0].passwordHash,
+        isActive: Boolean(staffRows[0].isActive),
+    };
+}
+
+async function FindPasswordResetAccountBySubject({ userType, subjectId }) {
+    if (userType === "patron") {
+        const [rows] = await pool.query(
+            `
+            SELECT
+                patron_id AS patronId,
+                email,
+                password_hash AS passwordHash,
+                is_active AS isActive
+            FROM patrons
+            WHERE patron_id = ?
+            `,
+            [subjectId]
+        );
+
+        if (rows.length === 0) {
+            return null;
+        }
+
+        return {
+            userType: "patron",
+            patronId: rows[0].patronId,
+            email: rows[0].email,
+            passwordHash: rows[0].passwordHash,
+            isActive: Boolean(rows[0].isActive),
+        };
+    }
+
+    const [rows] = await pool.query(
+        `
+        SELECT
+            staff_id AS staffId,
+            email,
+            password_hash AS passwordHash,
+            is_active AS isActive
+        FROM staff
+        WHERE staff_id = ?
+        `,
+        [subjectId]
+    );
+
+    if (rows.length === 0) {
+        return null;
+    }
+
+    return {
+        userType: "staff",
+        staffId: rows[0].staffId,
+        email: rows[0].email,
+        passwordHash: rows[0].passwordHash,
+        isActive: Boolean(rows[0].isActive),
+    };
 }
 
 async function GetRequestUser(req) {
@@ -562,6 +800,124 @@ function BuildSearchQuery({ q, category, availableOnly, sort, limit }) {
     };
 }
 
+function GetPatronItemSelectColumns() {
+    return `
+        CASE
+            WHEN b.item_id IS NOT NULL THEN 'book'
+            WHEN per.item_id IS NOT NULL THEN 'periodical'
+            WHEN am.item_id IS NOT NULL THEN 'audiovisualmedia'
+            ELSE 'equipment'
+        END AS category,
+        COALESCE(
+            b.title,
+            per.title,
+            am.title,
+            e.equipment_name
+        ) AS title,
+        COALESCE(
+            (
+                SELECT GROUP_CONCAT(CONCAT(a.first_name, ' ', a.last_name) SEPARATOR ', ')
+                FROM authors a
+                WHERE a.item_id = b.item_id
+            ),
+            (
+                SELECT GROUP_CONCAT(CONCAT(c.first_name, ' ', c.last_name) SEPARATOR ', ')
+                FROM contributors c
+                WHERE c.item_id = am.item_id
+            ),
+            NULL
+        ) AS creator,
+        COALESCE(
+            bt.book_type,
+            pt.periodical_type,
+            amt.audiovisual_media_type,
+            NULL
+        ) AS type,
+        COALESCE(
+            bookLanguage.language,
+            periodicalLanguage.language,
+            mediaLanguage.language,
+            NULL
+        ) AS language,
+        COALESCE(
+            bookGenre.genre,
+            periodicalGenre.genre,
+            mediaGenre.genre,
+            NULL
+        ) AS genre,
+        COALESCE(
+            b.summary,
+            per.summary,
+            am.summary,
+            NULL
+        ) AS summary,
+        COALESCE(
+            b.publisher,
+            per.publisher,
+            am.publisher,
+            NULL
+        ) AS publisher,
+        COALESCE(
+            b.shelf_number,
+            per.shelf_number,
+            am.shelf_number,
+            NULL
+        ) AS shelfNumber,
+        COALESCE(
+            b.publication_date,
+            per.publication_date,
+            am.publication_date,
+            NULL
+        ) AS publicationDate,
+        am.runtime AS runtime
+    `;
+}
+
+function GetPatronItemJoinClauses(itemIdColumn) {
+    return `
+        LEFT JOIN books b ON b.item_id = ${itemIdColumn}
+        LEFT JOIN book_types bt ON bt.book_type_code = b.book_type_code
+        LEFT JOIN languages bookLanguage ON bookLanguage.language_code = b.language_code
+        LEFT JOIN genres bookGenre ON bookGenre.genre_code = b.genre_code
+        LEFT JOIN periodicals per ON per.item_id = ${itemIdColumn}
+        LEFT JOIN periodical_types pt ON pt.periodical_type_code = per.periodical_type_code
+        LEFT JOIN languages periodicalLanguage ON periodicalLanguage.language_code = per.language_code
+        LEFT JOIN genres periodicalGenre ON periodicalGenre.genre_code = per.genre_code
+        LEFT JOIN audiovisual_media am ON am.item_id = ${itemIdColumn}
+        LEFT JOIN audiovisual_media_types amt
+            ON amt.audiovisual_media_type_code = am.audiovisual_media_type_code
+        LEFT JOIN languages mediaLanguage ON mediaLanguage.language_code = am.language_code
+        LEFT JOIN genres mediaGenre ON mediaGenre.genre_code = am.genre_code
+        LEFT JOIN equipment e ON e.item_id = ${itemIdColumn}
+    `;
+}
+
+function BuildPatronLoanQuery({ statusClause, orderBy }) {
+    return `
+        SELECT
+            l.loan_id AS loanId,
+            l.item_id AS itemId,
+            ${GetPatronItemSelectColumns()},
+            l.loan_origin_date AS loanStart,
+            l.loan_due_date AS loanEnd,
+            l.loan_status_code AS loanStatusCode,
+            CASE
+                WHEN ls.loan_status_name IS NULL THEN NULL
+                ELSE CONCAT(
+                    UPPER(LEFT(ls.loan_status_name, 1)),
+                    SUBSTRING(ls.loan_status_name, 2)
+                )
+            END AS loanStatus,
+            l.loan_status_code = 1 AND l.loan_due_date < CURDATE() AS overdue
+        FROM loans l
+        LEFT JOIN loan_statuses ls ON ls.loan_status_code = l.loan_status_code
+        ${GetPatronItemJoinClauses("l.item_id")}
+        WHERE l.patron_id = ?
+          AND ${statusClause}
+        ORDER BY ${orderBy}
+    `;
+}
+
 app.get(["/account", "/api/account"], async (req, res) => {
     try {
         const user = await RequireAuthenticatedUser(req, res);
@@ -628,313 +984,531 @@ app.get(["/account", "/api/account"], async (req, res) => {
     }
 });
 
+app.put(["/account/contact", "/api/account/contact"], async (req, res) => {
+    try {
+        const user = await RequireAuthenticatedUser(req, res);
+
+        if (!user) {
+            return;
+        }
+
+        const email = String(req.body?.email ?? "").trim();
+
+        if (!email) {
+            return res.status(400).json({ error: "Email is required." });
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return res.status(400).json({ error: "Enter a valid email address." });
+        }
+
+        const [matches] = await pool.query(
+            `
+            SELECT user_type AS userType, account_id AS accountId
+            FROM (
+                SELECT 'patron' AS user_type, patron_id AS account_id, email
+                FROM patrons
+
+                UNION ALL
+
+                SELECT 'staff' AS user_type, staff_id AS account_id, email
+                FROM staff
+            ) AS accounts
+            WHERE LOWER(email) = LOWER(?)
+            LIMIT 1
+            `,
+            [email]
+        );
+
+        const accountId = user.userType === "patron" ? user.patronId : user.staffId;
+
+        if (
+            matches.length > 0 &&
+            (
+                matches[0].userType !== user.userType ||
+                Number(matches[0].accountId) !== Number(accountId)
+            )
+        ) {
+            return res.status(409).json({ error: "That email address is already in use." });
+        }
+
+        const tableName = user.userType === "patron" ? "patrons" : "staff";
+        const idColumn = user.userType === "patron" ? "patron_id" : "staff_id";
+
+        await pool.query(
+            `
+            UPDATE ${tableName}
+            SET email = ?
+            WHERE ${idColumn} = ?
+            `,
+            [email, accountId]
+        );
+
+        return res.json({
+            message: "Contact information updated successfully.",
+            email,
+        });
+    } catch (error) {
+        SendServerError(res, error, "Internal Server Error");
+    }
+});
+
+app.put(["/account/password", "/api/account/password"], async (req, res) => {
+    try {
+        const user = await RequireAuthenticatedUser(req, res);
+
+        if (!user) {
+            return;
+        }
+
+        const currentPassword = String(req.body?.currentPassword ?? "");
+        const newPassword = String(req.body?.newPassword ?? "");
+        const confirmPassword = String(req.body?.confirmPassword ?? "");
+
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            return res.status(400).json({
+                error: "Current password, new password, and confirmation are required.",
+            });
+        }
+
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({ error: "Passwords do not match." });
+        }
+
+        if (newPassword.length < 8) {
+            return res.status(400).json({
+                error: "New password must be at least 8 characters long.",
+            });
+        }
+
+        const account = await FindPasswordResetAccountBySubject({
+            userType: user.userType,
+            subjectId: user.userType === "patron" ? user.patronId : user.staffId,
+        });
+
+        if (!account || !account.isActive) {
+            return res.status(404).json({ error: "Account not found." });
+        }
+
+        const passwordMatchesCurrent = await VerifyPassword(
+            currentPassword,
+            account.passwordHash,
+        );
+
+        if (!passwordMatchesCurrent) {
+            return res.status(400).json({ error: "Current password is incorrect." });
+        }
+
+        const newPasswordMatchesCurrent = await VerifyPassword(
+            newPassword,
+            account.passwordHash,
+        );
+
+        if (newPasswordMatchesCurrent) {
+            return res.status(400).json({
+                error: "Choose a password that is different from your current password.",
+            });
+        }
+
+        const nextPasswordHash = HashPassword(newPassword);
+        const tableName = user.userType === "patron" ? "patrons" : "staff";
+        const idColumn = user.userType === "patron" ? "patron_id" : "staff_id";
+        const idValue = user.userType === "patron" ? user.patronId : user.staffId;
+
+        await pool.query(
+            `
+            UPDATE ${tableName}
+            SET password_hash = ?
+            WHERE ${idColumn} = ?
+            `,
+            [nextPasswordHash, idValue]
+        );
+
+        return res.json({ message: "Password updated successfully." });
+    } catch (error) {
+        SendServerError(res, error, "Internal Server Error");
+    }
+});
+
 // Fines endpoint
 app.get(["/fines", "/api/fines"], async (req, res) => {
-  try {
-    const user = await RequireAuthenticatedUser(req, res);
+    try {
+        const user = await RequirePatronUser(req, res);
 
-    if (!user) {
-      return;
+        if (!user) {
+            return;
+        }
+
+        await SyncCurrentFines();
+
+        const [rows] = await pool.query(
+            `
+            SELECT
+                f.fine_id AS fineId,
+                f.loan_id AS loanId,
+                l.item_id AS itemId,
+                ${GetPatronItemSelectColumns()},
+                COALESCE(f.fine_amount, 0) AS fineAmount,
+                COALESCE(f.paid_amount, 0) AS paidAmount,
+                ROUND(COALESCE(f.fine_amount, 0) - COALESCE(f.paid_amount, 0), 2) AS remainingAmount,
+                f.fine_date AS fineDate,
+                f.paid_date AS paidDate,
+                f.waived_date AS waivedDate,
+                l.loan_due_date AS loanDueDate,
+                pr.fine AS dailyFine,
+                CASE
+                    WHEN l.loan_status_code = 1 THEN GREATEST(DATEDIFF(CURDATE(), l.loan_due_date), 0)
+                    ELSE NULL
+                END AS daysOverdue,
+                CASE
+                    WHEN f.waived_date IS NOT NULL THEN 'Waived'
+                    WHEN ROUND(COALESCE(f.fine_amount, 0) - COALESCE(f.paid_amount, 0), 2) <= 0 THEN 'Paid'
+                    WHEN l.loan_status_code = 1 AND l.loan_due_date < CURDATE() THEN 'Overdue'
+                    WHEN l.loan_id IS NULL THEN 'Unpaid'
+                    WHEN l.loan_status_code <> 1
+                        AND ROUND(COALESCE(f.fine_amount, 0) - COALESCE(f.paid_amount, 0), 2) > 0
+                        THEN 'Returned but unpaid'
+                    ELSE 'Unpaid'
+                END AS fineStatus
+            FROM fines f
+            LEFT JOIN loans l ON l.loan_id = f.loan_id
+            LEFT JOIN patron_roles pr ON pr.patron_role_code = l.patron_role_code
+            ${GetPatronItemJoinClauses("l.item_id")}
+            WHERE f.patron_id = ?
+            ORDER BY
+                CASE
+                    WHEN f.waived_date IS NOT NULL THEN 4
+                    WHEN ROUND(COALESCE(f.fine_amount, 0) - COALESCE(f.paid_amount, 0), 2) <= 0 THEN 3
+                    WHEN l.loan_status_code = 1 AND l.loan_due_date < CURDATE() THEN 1
+                    WHEN l.loan_id IS NULL THEN 2
+                    WHEN l.loan_status_code <> 1
+                        AND ROUND(COALESCE(f.fine_amount, 0) - COALESCE(f.paid_amount, 0), 2) > 0
+                        THEN 2
+                    ELSE 5
+                END ASC,
+                remainingAmount DESC,
+                f.fine_date DESC,
+                f.fine_id DESC
+            `,
+            [user.patronId]
+        );
+
+        return res.json(rows);
+    } catch (error) {
+        SendServerError(res, error, "Internal Server Error");
     }
-
-    if (user.userType !== "patron") {
-      return res.status(403).json({ error: "Only patrons can access fines." });
-    }
-
-    const currentFineRows = await GetCurrentFineRows(user.patronId);
-
-    const [recordedFines] = await pool.query(
-      `
-      SELECT
-        fine_id AS fineId,
-        fine_amount AS amount,
-        fine_date AS assignedDate,
-        paid_date AS paidDate,
-        waived_date AS waivedDate,
-        CASE
-          WHEN waived_date IS NOT NULL THEN 'waived'
-          WHEN paid_date IS NOT NULL THEN 'paid'
-          ELSE 'unpaid'
-        END AS status,
-        NULL AS title,
-        NULL AS daysOverdue,
-        NULL AS dailyFine,
-        NULL AS loanId
-      FROM fines
-      WHERE patron_id = ?
-      ORDER BY fine_date DESC, fine_id DESC
-      `,
-      [user.patronId]
-    );
-
-    const currentFines = currentFineRows.map((row) => ({
-      fineId: null,
-      amount: row.currentFine,
-      assignedDate: row.loanDueDate,
-      paidDate: null,
-      waivedDate: null,
-      status: "current",
-      title: row.title,
-      daysOverdue: row.daysOverdue,
-      dailyFine: row.dailyFine,
-      loanId: row.loanId,
-    }));
-
-    return res.json([...currentFines, ...recordedFines]);
-  } catch (error) {
-    SendServerError(res, error, "Internal Server Error");
-  }
 });
 
 // Loans and Holds endpoint
 app.get(["/loans", "/api/loans"], async (req, res) => {
-  try {
-    const user = await RequirePatronUser(req, res);
+    try {
+        await ClearExpiredHolds();
+        const user = await RequirePatronUser(req, res);
 
-    if (!user) {
-      return;
+        if (!user) {
+            return;
+        }
+
+        const [loans] = await pool.query(
+            BuildPatronLoanQuery({
+                statusClause: "l.loan_status_code = 1",
+                orderBy: "l.loan_due_date ASC, l.loan_id ASC",
+            }),
+            [user.patronId]
+        );
+
+        const [history] = await pool.query(
+            BuildPatronLoanQuery({
+                statusClause: "l.loan_status_code <> 1",
+                orderBy: "l.loan_due_date DESC, l.loan_id DESC",
+            }),
+            [user.patronId]
+        );
+
+        const [holds] = await pool.query(
+            `
+            SELECT * FROM (
+                SELECT
+                    h.hold_id AS holdId,
+                    h.item_id AS itemId,
+                    'book' AS category,
+                    b.title AS title,
+                    (
+                        SELECT GROUP_CONCAT(CONCAT(a.first_name, ' ', a.last_name) SEPARATOR ', ')
+                        FROM authors a
+                        WHERE a.item_id = b.item_id
+                    ) AS creator,
+                    bt.book_type AS type,
+                    lang.language AS language,
+                    g.genre AS genre,
+                    b.summary AS summary,
+                    b.publisher AS publisher,
+                    b.shelf_number AS shelfNumber,
+                    b.publication_date AS publicationDate,
+                    NULL AS runtime,
+                    h.hold_origin_date AS holdStart,
+                    h.hold_expiration_date AS holdEnd,
+                    COALESCE(LOWER(hs.hold_status_name), '') = 'ready' AS ready
+                FROM holds h
+                LEFT JOIN hold_statuses hs ON hs.hold_status_code = h.hold_status_code
+                JOIN books b ON b.item_id = h.item_id
+                LEFT JOIN book_types bt ON bt.book_type_code = b.book_type_code
+                LEFT JOIN languages lang ON lang.language_code = b.language_code
+                LEFT JOIN genres g ON g.genre_code = b.genre_code
+                WHERE h.patron_id = ?
+
+                UNION ALL
+
+                SELECT
+                    h.hold_id AS holdId,
+                    h.item_id AS itemId,
+                    'periodical' AS category,
+                    p.title AS title,
+                    NULL AS creator,
+                    pt.periodical_type AS type,
+                    lang.language AS language,
+                    g.genre AS genre,
+                    p.summary AS summary,
+                    p.publisher AS publisher,
+                    p.shelf_number AS shelfNumber,
+                    p.publication_date AS publicationDate,
+                    NULL AS runtime,
+                    h.hold_origin_date AS holdStart,
+                    h.hold_expiration_date AS holdEnd,
+                    COALESCE(LOWER(hs.hold_status_name), '') = 'ready' AS ready
+                FROM holds h
+                LEFT JOIN hold_statuses hs ON hs.hold_status_code = h.hold_status_code
+                JOIN periodicals p ON p.item_id = h.item_id
+                LEFT JOIN periodical_types pt ON pt.periodical_type_code = p.periodical_type_code
+                LEFT JOIN languages lang ON lang.language_code = p.language_code
+                LEFT JOIN genres g ON g.genre_code = p.genre_code
+                WHERE h.patron_id = ?
+
+                UNION ALL
+
+                SELECT
+                    h.hold_id AS holdId,
+                    h.item_id AS itemId,
+                    'audiovisualmedia' AS category,
+                    am.title AS title,
+                    (
+                        SELECT GROUP_CONCAT(CONCAT(c.first_name, ' ', c.last_name) SEPARATOR ', ')
+                        FROM contributors c
+                        WHERE c.item_id = am.item_id
+                    ) AS creator,
+                    amt.audiovisual_media_type AS type,
+                    lang.language AS language,
+                    g.genre AS genre,
+                    am.summary AS summary,
+                    am.publisher AS publisher,
+                    am.shelf_number AS shelfNumber,
+                    am.publication_date AS publicationDate,
+                    am.runtime AS runtime,
+                    h.hold_origin_date AS holdStart,
+                    h.hold_expiration_date AS holdEnd,
+                    COALESCE(LOWER(hs.hold_status_name), '') = 'ready' AS ready
+                FROM holds h
+                LEFT JOIN hold_statuses hs ON hs.hold_status_code = h.hold_status_code
+                JOIN audiovisual_media am ON am.item_id = h.item_id
+                LEFT JOIN audiovisual_media_types amt
+                    ON amt.audiovisual_media_type_code = am.audiovisual_media_type_code
+                LEFT JOIN languages lang ON lang.language_code = am.language_code
+                LEFT JOIN genres g ON g.genre_code = am.genre_code
+                WHERE h.patron_id = ?
+
+                UNION ALL
+
+                SELECT
+                    h.hold_id AS holdId,
+                    h.item_id AS itemId,
+                    'equipment' AS category,
+                    e.equipment_name AS title,
+                    NULL AS creator,
+                    NULL AS type,
+                    NULL AS language,
+                    NULL AS genre,
+                    NULL AS summary,
+                    NULL AS publisher,
+                    NULL AS shelfNumber,
+                    NULL AS publicationDate,
+                    NULL AS runtime,
+                    h.hold_origin_date AS holdStart,
+                    h.hold_expiration_date AS holdEnd,
+                    COALESCE(LOWER(hs.hold_status_name), '') = 'ready' AS ready
+                FROM holds h
+                LEFT JOIN hold_statuses hs ON hs.hold_status_code = h.hold_status_code
+                JOIN equipment e ON e.item_id = h.item_id
+                WHERE h.patron_id = ?
+            ) AS patron_holds
+            ORDER BY holdEnd ASC
+            `,
+            [user.patronId, user.patronId, user.patronId, user.patronId]
+        );
+
+        res.json({ loans, holds, history });
+    } catch (error) {
+        SendServerError(res, error, "Internal Server Error");
     }
+});
 
-    const [loans] = await pool.query(
-      `
-      SELECT * FROM (
-        SELECT
-          l.loan_id AS loanId,
-          l.item_id AS itemId,
-          'book' AS category,
-          b.title AS title,
-          (
-            SELECT GROUP_CONCAT(CONCAT(a.first_name, ' ', a.last_name) SEPARATOR ', ')
-            FROM authors a
-            WHERE a.item_id = b.item_id
-          ) AS creator,
-          bt.book_type AS type,
-          lang.language AS language,
-          g.genre AS genre,
-          b.summary AS summary,
-          b.publisher AS publisher,
-          b.shelf_number AS shelfNumber,
-          b.publication_date AS publicationDate,
-          NULL AS runtime,
-          l.loan_origin_date AS loanStart,
-          l.loan_due_date AS loanEnd,
-          l.loan_due_date < CURDATE() AS overdue
-        FROM loans l
-        JOIN books b ON b.item_id = l.item_id
-        LEFT JOIN book_types bt ON bt.book_type_code = b.book_type_code
-        LEFT JOIN languages lang ON lang.language_code = b.language_code
-        LEFT JOIN genres g ON g.genre_code = b.genre_code
-        WHERE l.patron_id = ?
+app.get(["/account/activity", "/api/account/activity"], async (req, res) => {
+    try {
+        await ClearExpiredHolds();
+        const user = await RequirePatronUser(req, res);
 
-        UNION ALL
+        if (!user) {
+            return;
+        }
 
-        SELECT
-          l.loan_id AS loanId,
-          l.item_id AS itemId,
-          'periodical' AS category,
-          p.title AS title,
-          NULL AS creator,
-          pt.periodical_type AS type,
-          lang.language AS language,
-          g.genre AS genre,
-          p.summary AS summary,
-          p.publisher AS publisher,
-          p.shelf_number AS shelfNumber,
-          p.publication_date AS publicationDate,
-          NULL AS runtime,
-          l.loan_origin_date AS loanStart,
-          l.loan_due_date AS loanEnd,
-          l.loan_due_date < CURDATE() AS overdue
-        FROM loans l
-        JOIN periodicals p ON p.item_id = l.item_id
-        LEFT JOIN periodical_types pt ON pt.periodical_type_code = p.periodical_type_code
-        LEFT JOIN languages lang ON lang.language_code = p.language_code
-        LEFT JOIN genres g ON g.genre_code = p.genre_code
-        WHERE l.patron_id = ?
+        await SyncCurrentFines();
 
-        UNION ALL
+        const [holdRows] = await pool.query(
+            `
+            SELECT
+                CONCAT('hold-', h.hold_id) AS activityId,
+                h.hold_origin_date AS activityDate,
+                'hold' AS activityType,
+                ${GetPatronItemSelectColumns()},
+                h.hold_expiration_date AS holdEnd,
+                COALESCE(LOWER(hs.hold_status_name), 'active') AS holdStatus
+            FROM holds h
+            LEFT JOIN hold_statuses hs ON hs.hold_status_code = h.hold_status_code
+            ${GetPatronItemJoinClauses("h.item_id")}
+            WHERE h.patron_id = ?
+            `,
+            [user.patronId]
+        );
 
-        SELECT
-          l.loan_id AS loanId,
-          l.item_id AS itemId,
-          'audiovisualmedia' AS category,
-          am.title AS title,
-          (
-            SELECT GROUP_CONCAT(CONCAT(c.first_name, ' ', c.last_name) SEPARATOR ', ')
-            FROM contributors c
-            WHERE c.item_id = am.item_id
-          ) AS creator,
-          amt.audiovisual_media_type AS type,
-          lang.language AS language,
-          g.genre AS genre,
-          am.summary AS summary,
-          am.publisher AS publisher,
-          am.shelf_number AS shelfNumber,
-          am.publication_date AS publicationDate,
-          am.runtime AS runtime,
-          l.loan_origin_date AS loanStart,
-          l.loan_due_date AS loanEnd,
-          l.loan_due_date < CURDATE() AS overdue
-        FROM loans l
-        JOIN audiovisual_media am ON am.item_id = l.item_id
-        LEFT JOIN audiovisual_media_types amt
-          ON amt.audiovisual_media_type_code = am.audiovisual_media_type_code
-        LEFT JOIN languages lang ON lang.language_code = am.language_code
-        LEFT JOIN genres g ON g.genre_code = am.genre_code
-        WHERE l.patron_id = ?
+        const [loanRows] = await pool.query(
+            `
+            SELECT
+                CONCAT('loan-', l.loan_id) AS activityId,
+                l.loan_origin_date AS activityDate,
+                'loan' AS activityType,
+                ${GetPatronItemSelectColumns()},
+                l.loan_due_date AS loanEnd,
+                CASE
+                    WHEN ls.loan_status_name IS NULL THEN 'active'
+                    ELSE LOWER(ls.loan_status_name)
+                END AS loanStatus,
+                l.loan_status_code = 1 AND l.loan_due_date < CURDATE() AS overdue
+            FROM loans l
+            LEFT JOIN loan_statuses ls ON ls.loan_status_code = l.loan_status_code
+            ${GetPatronItemJoinClauses("l.item_id")}
+            WHERE l.patron_id = ?
+            `,
+            [user.patronId]
+        );
 
-        UNION ALL
+        const [fineRows] = await pool.query(
+            `
+            SELECT
+                f.fine_id AS fineId,
+                f.loan_id AS loanId,
+                ${GetPatronItemSelectColumns()},
+                f.fine_amount AS fineAmount,
+                f.paid_amount AS paidAmount,
+                ROUND(COALESCE(f.fine_amount, 0) - COALESCE(f.paid_amount, 0), 2) AS remainingAmount,
+                f.fine_date AS fineDate,
+                f.paid_date AS paidDate,
+                f.waived_date AS waivedDate
+            FROM fines f
+            LEFT JOIN loans l ON l.loan_id = f.loan_id
+            ${GetPatronItemJoinClauses("l.item_id")}
+            WHERE f.patron_id = ?
+            `,
+            [user.patronId]
+        );
 
-        SELECT
-          l.loan_id AS loanId,
-          l.item_id AS itemId,
-          'equipment' AS category,
-          e.equipment_name AS title,
-          NULL AS creator,
-          NULL AS type,
-          NULL AS language,
-          NULL AS genre,
-          NULL AS summary,
-          NULL AS publisher,
-          NULL AS shelfNumber,
-          NULL AS publicationDate,
-          NULL AS runtime,
-          l.loan_origin_date AS loanStart,
-          l.loan_due_date AS loanEnd,
-          l.loan_due_date < CURDATE() AS overdue
-        FROM loans l
-        JOIN equipment e ON e.item_id = l.item_id
-        WHERE l.patron_id = ?
-      ) AS patron_loans
-      ORDER BY loanEnd ASC
-      `,
-      [user.patronId, user.patronId, user.patronId, user.patronId]
-    );
+        const activity = [
+            ...holdRows.map((row) => ({
+                activityId: row.activityId,
+                activityType: row.activityType,
+                activityDate: row.activityDate,
+                headline: "Placed hold",
+                title: row.title,
+                creator: row.creator,
+                detail:
+                    row.holdStatus === "ready"
+                        ? `Ready for pickup until ${row.holdEnd}`
+                        : `Hold expires ${row.holdEnd}`,
+                status: row.holdStatus === "ready" ? "Ready" : "Active",
+            })),
+            ...loanRows.map((row) => ({
+                activityId: row.activityId,
+                activityType: row.activityType,
+                activityDate: row.activityDate,
+                headline: "Checked out item",
+                title: row.title,
+                creator: row.creator,
+                detail: `Due ${row.loanEnd}`,
+                status: row.overdue
+                    ? "Overdue"
+                    : row.loanStatus === "returned"
+                        ? "Returned"
+                        : "Active",
+            })),
+            ...fineRows.flatMap((row) => {
+                const events = [];
 
-    const [holds] = await pool.query(
-      `
-      SELECT * FROM (
-        SELECT
-          h.hold_id AS holdId,
-          h.item_id AS itemId,
-          'book' AS category,
-          b.title AS title,
-          (
-            SELECT GROUP_CONCAT(CONCAT(a.first_name, ' ', a.last_name) SEPARATOR ', ')
-            FROM authors a
-            WHERE a.item_id = b.item_id
-          ) AS creator,
-          bt.book_type AS type,
-          lang.language AS language,
-          g.genre AS genre,
-          b.summary AS summary,
-          b.publisher AS publisher,
-          b.shelf_number AS shelfNumber,
-          b.publication_date AS publicationDate,
-          NULL AS runtime,
-          h.hold_origin_date AS holdStart,
-          h.hold_expiration_date AS holdEnd,
-          COALESCE(LOWER(hs.hold_status_name), '') = 'ready' AS ready
-        FROM holds h
-        LEFT JOIN hold_statuses hs ON hs.hold_status_code = h.hold_status_code
-        JOIN books b ON b.item_id = h.item_id
-        LEFT JOIN book_types bt ON bt.book_type_code = b.book_type_code
-        LEFT JOIN languages lang ON lang.language_code = b.language_code
-        LEFT JOIN genres g ON g.genre_code = b.genre_code
-        WHERE h.patron_id = ?
+                if (row.fineDate) {
+                    events.push({
+                        activityId: `fine-${row.fineId}-assessed`,
+                        activityType: "fine",
+                        activityDate: row.fineDate,
+                        headline: "Fine assessed",
+                        title: row.title,
+                        creator: row.creator,
+                        detail: `Balance $${Number(row.fineAmount ?? 0).toFixed(2)}`,
+                        status: "Open",
+                    });
+                }
 
-        UNION ALL
+                if (row.paidDate) {
+                    events.push({
+                        activityId: `fine-${row.fineId}-paid`,
+                        activityType: "fine",
+                        activityDate: row.paidDate,
+                        headline: "Fine payment recorded",
+                        title: row.title,
+                        creator: row.creator,
+                        detail: `Paid $${Number(row.paidAmount ?? 0).toFixed(2)}`,
+                        status: "Paid",
+                    });
+                }
 
-        SELECT
-          h.hold_id AS holdId,
-          h.item_id AS itemId,
-          'periodical' AS category,
-          p.title AS title,
-          NULL AS creator,
-          pt.periodical_type AS type,
-          lang.language AS language,
-          g.genre AS genre,
-          p.summary AS summary,
-          p.publisher AS publisher,
-          p.shelf_number AS shelfNumber,
-          p.publication_date AS publicationDate,
-          NULL AS runtime,
-          h.hold_origin_date AS holdStart,
-          h.hold_expiration_date AS holdEnd,
-          COALESCE(LOWER(hs.hold_status_name), '') = 'ready' AS ready
-        FROM holds h
-        LEFT JOIN hold_statuses hs ON hs.hold_status_code = h.hold_status_code
-        JOIN periodicals p ON p.item_id = h.item_id
-        LEFT JOIN periodical_types pt ON pt.periodical_type_code = p.periodical_type_code
-        LEFT JOIN languages lang ON lang.language_code = p.language_code
-        LEFT JOIN genres g ON g.genre_code = p.genre_code
-        WHERE h.patron_id = ?
+                if (row.waivedDate) {
+                    events.push({
+                        activityId: `fine-${row.fineId}-waived`,
+                        activityType: "fine",
+                        activityDate: row.waivedDate,
+                        headline: "Fine waived",
+                        title: row.title,
+                        creator: row.creator,
+                        detail: `Waived remaining $${Number(row.remainingAmount ?? 0).toFixed(2)}`,
+                        status: "Waived",
+                    });
+                }
 
-        UNION ALL
+                return events;
+            }),
+        ]
+            .filter((row) => row.activityDate)
+            .sort((left, right) => {
+                const leftDate = Date.parse(left.activityDate);
+                const rightDate = Date.parse(right.activityDate);
 
-        SELECT
-          h.hold_id AS holdId,
-          h.item_id AS itemId,
-          'audiovisualmedia' AS category,
-          am.title AS title,
-          (
-            SELECT GROUP_CONCAT(CONCAT(c.first_name, ' ', c.last_name) SEPARATOR ', ')
-            FROM contributors c
-            WHERE c.item_id = am.item_id
-          ) AS creator,
-          amt.audiovisual_media_type AS type,
-          lang.language AS language,
-          g.genre AS genre,
-          am.summary AS summary,
-          am.publisher AS publisher,
-          am.shelf_number AS shelfNumber,
-          am.publication_date AS publicationDate,
-          am.runtime AS runtime,
-          h.hold_origin_date AS holdStart,
-          h.hold_expiration_date AS holdEnd,
-          COALESCE(LOWER(hs.hold_status_name), '') = 'ready' AS ready
-        FROM holds h
-        LEFT JOIN hold_statuses hs ON hs.hold_status_code = h.hold_status_code
-        JOIN audiovisual_media am ON am.item_id = h.item_id
-        LEFT JOIN audiovisual_media_types amt
-          ON amt.audiovisual_media_type_code = am.audiovisual_media_type_code
-        LEFT JOIN languages lang ON lang.language_code = am.language_code
-        LEFT JOIN genres g ON g.genre_code = am.genre_code
-        WHERE h.patron_id = ?
+                if (Number.isFinite(rightDate) && Number.isFinite(leftDate) && rightDate !== leftDate) {
+                    return rightDate - leftDate;
+                }
 
-        UNION ALL
+                return String(right.activityId).localeCompare(String(left.activityId));
+            });
 
-        SELECT
-          h.hold_id AS holdId,
-          h.item_id AS itemId,
-          'equipment' AS category,
-          e.equipment_name AS title,
-          NULL AS creator,
-          NULL AS type,
-          NULL AS language,
-          NULL AS genre,
-          NULL AS summary,
-          NULL AS publisher,
-          NULL AS shelfNumber,
-          NULL AS publicationDate,
-          NULL AS runtime,
-          h.hold_origin_date AS holdStart,
-          h.hold_expiration_date AS holdEnd,
-          COALESCE(LOWER(hs.hold_status_name), '') = 'ready' AS ready
-        FROM holds h
-        LEFT JOIN hold_statuses hs ON hs.hold_status_code = h.hold_status_code
-        JOIN equipment e ON e.item_id = h.item_id
-        WHERE h.patron_id = ?
-      ) AS patron_holds
-      ORDER BY holdEnd ASC
-      `,
-      [user.patronId, user.patronId, user.patronId, user.patronId]
-    );
-
-    res.json({ loans, holds });
-  } catch (error) {
-    SendServerError(res, error, "Internal Server Error");
-  }
+        return res.json(activity);
+    } catch (error) {
+        SendServerError(res, error, "Internal Server Error");
+    }
 });
 
 app.get(["/search", "/api/search"], async (req, res) => {
@@ -1397,6 +1971,135 @@ app.post(["/register", "/api/register"], async (req, res) => {
     console.error("Register error:", error);
     res.status(500).json({
       error: FormatServerError(error, "Registration failed."),
+    });
+  }
+});
+
+app.post(["/forgot-password", "/api/forgot-password"], async (req, res) => {
+  try {
+    const email = String(req.body?.email ?? "").trim();
+
+    if (!email) {
+      return res.status(400).json({ error: "Email is required." });
+    }
+
+    const responsePayload = {
+      message:
+        "If an active account with that email exists, a password reset link has been prepared.",
+    };
+    const account = await FindPasswordResetAccountByEmail(email);
+
+    if (!account || !account.isActive) {
+      return res.json(responsePayload);
+    }
+
+    const resetToken = BuildPasswordResetToken({
+      userType: account.userType,
+      patronId: account.patronId,
+      staffId: account.staffId,
+      passwordHash: account.passwordHash,
+    });
+
+    if (process.env.NODE_ENV !== "production") {
+      responsePayload.delivery = "preview";
+      responsePayload.expiresAt = resetToken.expiresAt;
+      responsePayload.resetToken = resetToken.token;
+      responsePayload.resetUrl = `${GetApplicationOrigin(req)}/forgotpassword?token=${encodeURIComponent(resetToken.token)}`;
+    }
+
+    return res.json(responsePayload);
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to start password reset."),
+    });
+  }
+});
+
+app.post(["/reset-password", "/api/reset-password"], async (req, res) => {
+  try {
+    const token = String(req.body?.token ?? "").trim();
+    const newPassword = String(req.body?.newPassword ?? "");
+    const confirmPassword = String(req.body?.confirmPassword ?? "");
+
+    if (!token || !newPassword || !confirmPassword) {
+      return res.status(400).json({
+        error: "Token, new password, and confirmation are required.",
+      });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ error: "Passwords do not match." });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({
+        error: "New password must be at least 8 characters long.",
+      });
+    }
+
+    const parsedToken = ParsePasswordResetToken(token);
+
+    if (!parsedToken) {
+      return res.status(400).json({
+        error: "This password reset link is invalid or has expired.",
+      });
+    }
+
+    const account = await FindPasswordResetAccountBySubject({
+      userType: parsedToken.userType,
+      subjectId: parsedToken.subjectId,
+    });
+
+    if (!account || !account.isActive) {
+      return res.status(400).json({
+        error: "This password reset link is invalid or has expired.",
+      });
+    }
+
+    if (
+      BuildPasswordResetFingerprint(account.passwordHash) !==
+      parsedToken.passwordDigest
+    ) {
+      return res.status(400).json({
+        error: "This password reset link has already been used or is no longer valid.",
+      });
+    }
+
+    const passwordMatchesCurrent = await VerifyPassword(
+      newPassword,
+      account.passwordHash,
+    );
+
+    if (passwordMatchesCurrent) {
+      return res.status(400).json({
+        error: "Choose a password that is different from your current password.",
+      });
+    }
+
+    const nextPasswordHash = HashPassword(newPassword);
+    const tableName = account.userType === "patron" ? "patrons" : "staff";
+    const idColumn = account.userType === "patron" ? "patron_id" : "staff_id";
+    const idValue = account.userType === "patron"
+      ? account.patronId
+      : account.staffId;
+
+    await pool.query(
+      `
+      UPDATE ${tableName}
+      SET password_hash = ?
+      WHERE ${idColumn} = ?
+      `,
+      [nextPasswordHash, idValue]
+    );
+
+    return res.json({
+      message: "Password reset successful. You can now log in with your new password.",
+    });
+  } catch (error) {
+    console.error("Reset password error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to reset password."),
     });
   }
 });
@@ -2102,15 +2805,37 @@ app.post(["/loans/:loanId/return", "/api/loans/:loanId/return"], async (req, res
     const fineAmount = Number((daysOverdue * Number(loan.dailyFine)).toFixed(2));
 
     if (fineAmount > 0) {
-      await pool.query(
+      const [existingFines] = await pool.query(
         `
-        INSERT INTO fines
-          (patron_id, fine_amount, fine_date)
-        VALUES
-          (?, ?, CURDATE())
+        SELECT fine_id AS fineId, waived_date AS waivedDate
+        FROM fines
+        WHERE loan_id = ?
+        ORDER BY fine_id DESC
+        LIMIT 1
         `,
-        [loan.patronId, fineAmount]
+        [loan.loanId]
       );
+
+      if (existingFines.length > 0 && !existingFines[0].waivedDate) {
+        await pool.query(
+          `
+          UPDATE fines
+          SET fine_amount = ?
+          WHERE fine_id = ?
+          `,
+          [fineAmount, existingFines[0].fineId]
+        );
+      } else {
+        await pool.query(
+          `
+          INSERT INTO fines
+            (patron_id, loan_id, fine_amount, fine_date, paid_amount)
+          VALUES
+            (?, ?, ?, CURDATE(), 0)
+          `,
+          [loan.patronId, loan.loanId, fineAmount]
+        );
+      }
     }
 
     await pool.query(
@@ -2356,7 +3081,7 @@ app.get(["/staff/fines/current", "/api/staff/fines/current"], async (req, res) =
 // Pay fine endpoint
 app.post(["/fines/:fineId/pay", "/api/fines/:fineId/pay"], async (req, res) => {
   try {
-    const user = await RequireStaffUser(req, res);
+    const user = await RequireAuthenticatedUser(req, res);
 
     if (!user) {
       return;
@@ -2379,8 +3104,9 @@ app.post(["/fines/:fineId/pay", "/api/fines/:fineId/pay"], async (req, res) => {
       `
       SELECT
         fine_id AS fineId,
-        fine_amount AS fineAmount,
-        paid_amount AS paidAmount,
+        patron_id AS patronId,
+        COALESCE(fine_amount, 0) AS fineAmount,
+        COALESCE(paid_amount, 0) AS paidAmount,
         waived_date AS waivedDate
       FROM fines
       WHERE fine_id = ?
@@ -2393,6 +3119,14 @@ app.post(["/fines/:fineId/pay", "/api/fines/:fineId/pay"], async (req, res) => {
     }
 
     const fine = fines[0];
+
+    if (user.userType === "patron" && fine.patronId !== user.patronId) {
+      return res.status(403).json({ error: "You can only pay fines on your own account." });
+    }
+
+    if (user.userType === "staff" && ![1, 2].includes(user.roleCode)) {
+      return res.status(403).json({ error: "Your staff account does not have access." });
+    }
 
     if (fine.waivedDate) {
       return res.status(400).json({ error: "This fine has already been waived." });

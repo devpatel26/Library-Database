@@ -503,3 +503,49 @@ ADD COLUMN loan_id INT UNSIGNED NULL;
 
 ALTER TABLE fines
 ADD COLUMN paid_amount FLOAT NOT NULL DEFAULT 0;
+
+
+-- -----------------------------------------------------
+-- Triggers
+-- -----------------------------------------------------
+DROP TRIGGER IF EXISTS validate_loan_dates_before_insert;
+DROP TRIGGER IF EXISTS validate_fines_before_update;
+
+DELIMITER $$
+
+CREATE TRIGGER validate_loan_dates_before_insert
+BEFORE INSERT ON loans
+FOR EACH ROW
+BEGIN
+  IF NEW.loan_due_date < NEW.loan_origin_date THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'loan_due_date cannot be earlier than loan_origin_date.';
+  END IF;
+END$$
+
+CREATE TRIGGER validate_fines_before_update
+BEFORE UPDATE ON fines
+FOR EACH ROW
+BEGIN
+  IF NEW.paid_date IS NOT NULL AND NEW.paid_date < NEW.fine_date THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'paid_date cannot be earlier than fine_date.';
+  END IF;
+
+  IF NEW.waived_date IS NOT NULL AND NEW.waived_date < NEW.fine_date THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'waived_date cannot be earlier than fine_date.';
+  END IF;
+
+  IF NEW.paid_amount < 0 THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'paid_amount cannot be negative.';
+  END IF;
+
+  IF NEW.paid_amount > NEW.fine_amount THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'paid_amount cannot exceed fine_amount.';
+  END IF;
+END$$
+
+DELIMITER ;

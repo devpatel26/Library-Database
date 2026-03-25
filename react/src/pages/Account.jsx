@@ -1,4 +1,4 @@
-import { Link, useOutlet } from "react-router-dom";
+import { NavLink, useOutlet } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { FetchJson, GetErrorMessage, ReadStoredUser } from "../api";
 
@@ -44,11 +44,13 @@ export default function Account() {
   const isPatron = user?.user_type === "patron";
   const navLinks = isPatron
     ? [
-        { to: ".", label: "Account" },
-        { to: "fines", label: "Fines" },
+        { to: ".", label: "Account", end: true },
         { to: "loans", label: "Loans" },
+        { to: "fines", label: "Fines" },
+        { to: "activity", label: "Activity" },
+        { to: "settings", label: "Settings" },
       ]
-    : [{ to: ".", label: "Account" }];
+    : [{ to: ".", label: "Account", end: true }];
 
   useEffect(() => {
     let isMounted = true;
@@ -94,13 +96,20 @@ export default function Account() {
       <aside className="rounded-3xl border border-white/10 bg-slate-900/70 p-6 shadow-xl shadow-slate-950/30 lg:sticky lg:top-8 lg:w-72 lg:self-start">
         <nav className="space-y-2">
           {navLinks.map((link) => (
-            <Link
+            <NavLink
               key={link.to}
               to={link.to}
-              className="block rounded-md px-3 py-2 text-sm text-slate-200 transition hover:bg-slate-800 hover:text-white"
+              end={link.end}
+              className={({ isActive }) => (
+                `block rounded-md px-3 py-2 text-sm transition ${
+                  isActive
+                    ? "bg-sky-400/10 text-white"
+                    : "text-slate-200 hover:bg-slate-800 hover:text-white"
+                }`
+              )}
             >
               {link.label}
-            </Link>
+            </NavLink>
           ))}
         </nav>
       </aside>
@@ -112,6 +121,7 @@ export default function Account() {
           <section className="space-y-4 text-slate-200">
             <p className="text-slate-300">
               View your profile details below.
+              {isPatron ? " Use the account menu for fines, activity, loan history, and settings." : ""}
             </p>
 
             {loading && <p className="text-slate-300">Loading account...</p>}

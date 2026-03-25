@@ -168,6 +168,19 @@ export function WriteStoredAuth({ user, sessionToken, sessionExpiresAt }) {
   });
 }
 
+export function UpdateStoredUser(patch) {
+  const currentUser = ReadStoredUser();
+
+  if (!currentUser || !patch || typeof patch !== "object") {
+    return;
+  }
+
+  WriteStoredJson(userStorageKey, {
+    ...currentUser,
+    ...patch,
+  });
+}
+
 function BuildAuthenticatedHeaders(headers) {
   const nextHeaders = new Headers(headers ?? {});
 

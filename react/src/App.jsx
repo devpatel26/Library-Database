@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
 import Account from "./pages/Account.jsx";
+import AccountActivity from "./pages/AccountActivity.jsx";
+import AccountSettings from "./pages/AccountSettings.jsx";
 import Fines from "./pages/Fines.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import Home from "./pages/Home.jsx";
@@ -99,8 +101,10 @@ const navLinks = [
             <Route path="/test" element={<TestPage />} />
             <Route path="/account" element={<Account />}>
               <Route path="accountinfo" element={<Navigate to="/account" replace />} />
-              <Route path="fines" element={<Fines />} />
               <Route path="loans" element={<Loans />} />
+              <Route path="fines" element={<Fines />} />
+              <Route path="activity" element={<AccountActivity />} />
+              <Route path="settings" element={<AccountSettings />} />
             </Route>
             <Route path="/login" element={<Login />} />
             <Route path="/registration" element={<Registration />} />
