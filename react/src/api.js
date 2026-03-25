@@ -1,4 +1,4 @@
-const localApiOrigin = "http://localhost:3000";
+const localApiOrigin = process.env.VITE_API_ORIGIN || "http://localhost:3000"; 
 const sessionStorageKey = "session";
 const userStorageKey = "user";
 
@@ -27,7 +27,7 @@ function BuildRequestUrls(url) {
   ) {
     return [url];
   }
-
+  console.log(localApiOrigin);
   return [url, `${localApiOrigin}${url.replace(/^\/api/, "")}`];
 }
 

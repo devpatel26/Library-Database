@@ -23,7 +23,7 @@ const passwordResetMaxAgeSeconds = Math.max(
 const sessionSecret =
     process.env.SESSION_SECRET?.trim() ||
     (process.env.NODE_ENV === "production"
-        ? ""
+        ? "team8"
         : "library-dev-session-secret-change-me");
 const passwordResetSecret =
     process.env.PASSWORD_RESET_SECRET?.trim() || sessionSecret;
