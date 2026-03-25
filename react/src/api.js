@@ -237,7 +237,7 @@ export async function ReadJson(response) {
 }
 
 async function FetchJsonOnce(url, options) {
-  const response = await fetch(url, BuildRequestOptions(options));
+  const response = await fetch(`https://library-database-baclend-api.onrender.com${url}`, BuildRequestOptions(options));
   const data = await ReadJson(response);
 
   if (response.status === 401) {
