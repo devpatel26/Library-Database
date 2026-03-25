@@ -257,7 +257,7 @@ async function FetchJsonOnce(url, options) {
 }
 
 export async function FetchJson(url, options) {
-  const requestUrls = BuildRequestUrls(url);
+  const requestUrls = await BuildRequestUrls(url);
   console.log("Attempting request to:", requestUrls);
 
   let lastError = null;
