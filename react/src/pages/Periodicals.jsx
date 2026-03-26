@@ -187,8 +187,8 @@ export default function Periodicals() {
                   </div>
                 </div>
               </div>
-              <div className="grid justify-center mt-4">
-                <SubmitButton title={"Submit"} value={"OK"} />
+              <div className="mt-4 flex justify-center items-center w-full">
+                <SubmitButton title={"Submit"} value={"OK"} halfwidth={true} />
               </div>
             </div>
           </div>

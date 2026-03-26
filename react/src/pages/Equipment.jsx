@@ -61,8 +61,8 @@ export default function Equipment() {
                   />
                 </div>
               </div>
-              <div className="grid justify-center mt-4">
-                <SubmitButton title={"Submit"} value={"OK"} />
+              <div className=" flex items-end w-full">
+                <SubmitButton title={"Submit"} value={"OK"} fullwidth={true} />
               </div>
             </div>
           </div>
