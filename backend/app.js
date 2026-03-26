@@ -1570,6 +1570,17 @@ app.get(["/search", "/api/search"], async (req, res) => {
 
 // Item insertion stuff
 // get values for dropdowns
+// // get roles
+app.get(["/patronroles", "/api/patronroles"], async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT * FROM patron_roles WHERE patron_role_code NOT IN (2,3) ORDER BY patron_role_code ASC`,
+    );
+    res.json(rows);
+  } catch (error) {
+    SendServerError(res, error, "Internal Server Error");
+  }
+});
 // get languages
 app.get(["/languages", "/api/languages"], async (req, res) => {
   try {
