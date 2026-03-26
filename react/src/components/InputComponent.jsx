@@ -8,7 +8,7 @@ export default function InputComponent({
   label,
   colspan = 1,
 }) {
-  classes =
+  const classes =
     "block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6";
   return (
     <div className={"col-span-" + colspan}>
