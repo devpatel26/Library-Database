@@ -7,7 +7,9 @@ INSERT INTO patron_roles (patron_role_code, patron_role, loan_period, fine)
 VALUES
 (1, 'patron', 14, 0.25),
 (2, 'staff', 30, 0.10),
-(3, 'admin', 60, 0.00)
+(3, 'admin', 60, 0.00),
+(4, 'student', 21, 0.20),
+(5, 'faculty', 28, 0.10)
 ON DUPLICATE KEY UPDATE
 patron_role = VALUES(patron_role);
 
