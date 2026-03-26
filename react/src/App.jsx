@@ -105,6 +105,7 @@ const navLinks = [
               <Route path="fines" element={<Fines />} />
               <Route path="activity" element={<AccountActivity />} />
               <Route path="settings" element={<AccountSettings />} />
+              <Redirect to="/" />
             </Route>
             <Route path="/login" element={<Login />} />
             <Route path="/registration" element={<Registration />} />
@@ -115,6 +116,7 @@ const navLinks = [
               <Route path="audiovisualmedia" element={<AudiovisualMedia />} />
               <Route path="equipment" element={<Equipment />} />
               <Route path="newcopies" element={<NewCopies />} />
+              <Redirect to="/" />
             </Route>
             <Route path="/staffregistration" element={<StaffRegistration />} />
             <Route path="/report" element={<Report />} />
@@ -127,11 +129,12 @@ const navLinks = [
             <Route path="/report/mostborrowedbooks" element={<MostBorrowedBooksReport />} />
             <Route path="/report/patronsummary" element={<PatronSummaryReport />} />
             <Route path="/report/overduereport" element={<OverdueReport />} />
-            <Route path="/report/testing" element={<TestingReport />} />
+            <Route path="/report/testing" element={<TestingReport />} />  
+            <Redirect to="/" />
           </Routes>
         </main>
       </div>
-      <Redirect to="/" />
+      
     </BrowserRouter>
   );
 }
