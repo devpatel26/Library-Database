@@ -65,7 +65,7 @@ function App() {
       : []),
 
     ...(userType === "staff" && roleCode === 2
-      ? [{ to: "/report", label: "Report" }]
+      ? [{ to: "/report", label: "Reports" }]
       : []),
 
     ...(userType === "staff" && roleCode === 2
