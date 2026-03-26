@@ -44,7 +44,12 @@ export default function ItemEntry() {
         </nav>
       </aside>
       <main className="flex-1 space-y-8 rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
-        <h1 className="text-3xl font-bold text-white">Item Entry</h1>
+        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
+          Staff
+        </p>
+        <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">
+          Item Entry
+        </h1>
         <Outlet />
       </main>
     </div>
