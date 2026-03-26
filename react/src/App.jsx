@@ -9,6 +9,7 @@ import ItemEntry from "./pages/ItemEntry.jsx";
 import Books from "./pages/Books.jsx";
 import Periodicals from "./pages/Periodicals.jsx";
 import AudiovisualMedia from "./pages/AudiovisualMedia.jsx";
+import ChangeRole from "./pages/ChangeRole.jsx";
 import Equipment from "./pages/Equipment.jsx";
 import Loans from "./pages/Loans.jsx";
 import Login from "./pages/Login.jsx";
@@ -64,6 +65,10 @@ function App() {
       ? [{ to: "/stafffines", label: "Fines" }]
       : []),
 
+    ...(userType === "staff" && (roleCode === 1 || roleCode === 2)
+      ? [{ to: "/changerole", label: "Patron Roles" }]
+      : []),
+
     ...(userType === "staff" && roleCode === 2
       ? [{ to: "/report", label: "Reports" }]
       : []),
@@ -115,6 +120,7 @@ function App() {
               <Route path="audiovisualmedia" element={<AudiovisualMedia />} />
               <Route path="equipment" element={<Equipment />} />
             </Route>
+            <Route path="/changerole" element={<ChangeRole />} />
             <Route path="/staffregistration" element={<StaffRegistration />} />
             <Route path="/report" element={<Report />} />
             <Route path="/search" element={<Search />} />
