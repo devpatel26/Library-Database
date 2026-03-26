@@ -1620,7 +1620,7 @@ app.get(
 
 // item insertion
 // book insertion
-app.post(["/itementry/book", "api/itementry/book"], async (req, res) => {
+app.post(["/itementry/book", "/api/itementry/book"], async (req, res) => {
   try {
     const {
       title,
@@ -1722,9 +1722,108 @@ app.post(["/itementry/book", "api/itementry/book"], async (req, res) => {
     });
   }
 });
+// avm insertion
+app.post(
+  ["/itementry/audiovisual_media", "/api/itementry/audiovisual_media"],
+  async (req, res) => {
+    try {
+      const {
+        title,
+        available,
+        shelfnumber,
+        runtime,
+        genre,
+        language,
+        format,
+        publisher,
+        publicationdate,
+        summary,
+      } = req.body;
+      if (
+        (title,
+        !available ||
+          !shelfnumber ||
+          !runtime ||
+          !genre ||
+          !language ||
+          !format ||
+          !publisher ||
+          !publicationdate ||
+          !summary)
+      ) {
+        return res.status(400).json({ error: "Missing required fields." });
+      }
+      const trimmmedtitle = title.trim();
+      const trimmmedpublisher = publisher.trim();
+      const trimmmedsummary = summary.trim();
+      const TITLEPATTERN = /[\s\S]{1,45}/;
+      const PUBLISHERPATTERN = /[\s\S]{1,50}/;
+      const SUMMARYPATTERN = /[\s\S]{1,1000}/;
+
+      // double-checking given data is proper format
+      if (
+        !(
+          TITLEPATTERN.test(trimmmedtitle) &&
+          PUBLISHERPATTERN.test(trimmmedpublisher) &&
+          SUMMARYPATTERN.test(trimmmedsummary)
+        )
+      ) {
+        return res.status(400).json({ error: "Error with form data." });
+      }
+
+      // insert base item
+      const [item] = await pool.query(
+        `INSERT INTO items (
+      available, on_hold, unavailable) VALUES(?,?,?)`,
+        [available, 0, 0],
+      );
+      const itemId = item.insertId;
+
+      await pool.query(
+        `
+      INSERT INTO audiovisual_media
+        (
+          item_id,
+          title,
+          shelf_number,
+          genre_code,
+          runtime,
+          language_code,
+          audiovisual_media_type_code,
+          publisher,
+          publication_date,
+          summary
+        )
+      VALUES
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+        [
+          itemId,
+          trimmmedtitle,
+          shelfnumber,
+          genre,
+          runtime,
+          language,
+          format,
+          trimmmedpublisher,
+          publicationdate,
+          trimmmedsummary,
+        ],
+      );
+      res
+        .status(201)
+        .json({ message: "audiovisualmedia insertion successful." });
+    } catch (error) {
+      console.error("audiovisualmedia insertion error:", error);
+      res.status(500).json({
+        error: FormatServerError(error, "audiovisualmedia insertion failed."),
+      });
+    }
+  },
+);
 
 // periodical insertion
-app.post(["/itementry/periodical", "api/itementry/periodical"], async (req, res) => {
+app.post(["/itementry/periodical", "/api/itementry/periodical"], async (req, res) => {
   try {
     const {
       title,
@@ -1816,7 +1915,7 @@ app.post(["/itementry/periodical", "api/itementry/periodical"], async (req, res)
 
 // equipment insertion
 app.post(
-  ["/itementry/equipment", "api/itementry/equipment"],
+  ["/itementry/equipment", "/api/itementry/equipment"],
   async (req, res) => {
     try {
       const { title, available } = req.body;
