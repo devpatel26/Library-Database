@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { FetchJson, WriteStoredAuth } from "../api";
+import { SubmitButton } from "../components/Buttons";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -38,7 +39,7 @@ export default function Login() {
               sessionExpiresAt: data.sessionExpiresAt,
             });
             alert("Login successful!");
-            window.location.href = "account"
+            window.location.href = "account";
             //navigate("/account", { replace: true });
           } catch (error) {
             console.error("login error:", error);
@@ -69,13 +70,8 @@ export default function Login() {
           className="block w-full max-w-md rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
         />
 
-        <div className="grid justify-center pt-6">
-          <button
-            type="submit"
-            className="rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-500"
-          >
-            Login
-          </button>
+        <div className="mt-4 flex justify-center items-center w-full">
+          <SubmitButton title={"Login"} value={"OK"} halfwidth={true} />
         </div>
       </form>
 
@@ -88,7 +84,10 @@ export default function Login() {
 
       <p className="mt-4 text-sm text-slate-400">
         Staff signup?{" "}
-        <Link to="/staffregistration" className="text-sky-300 hover:text-sky-200">
+        <Link
+          to="/staffregistration"
+          className="text-sky-300 hover:text-sky-200"
+        >
           Register
         </Link>
       </p>
