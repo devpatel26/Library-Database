@@ -49,23 +49,23 @@ function App() {
       : []),
 
     ...(userType === "staff" && (roleCode === 1 || roleCode === 2)
-      ? [{ to: "/itementry", label: "Item Entry (Staff)" }]
+      ? [{ to: "/itementry", label: "Item Entry" }]
       : []),
 
     ...(userType === "staff" && (roleCode === 1 || roleCode === 2)
-      ? [{ to: "/staffloans", label: "Loans (Staff)" }]
+      ? [{ to: "/staffloans", label: "Loans" }]
       : []),
 
     ...(userType === "staff" && (roleCode === 1 || roleCode === 2)
-      ? [{ to: "/holds", label: "Holds (Staff)" }]
+      ? [{ to: "/holds", label: "Holds" }]
       : []),
 
     ...(userType === "staff" && (roleCode === 1 || roleCode === 2)
-      ? [{ to: "/stafffines", label: "Staff Fines (Staff)" }]
+      ? [{ to: "/stafffines", label: "Staff Fines" }]
       : []),
 
     ...(userType === "staff" && roleCode === 2
-      ? [{ to: "/report", label: "Report (Admin)" }]
+      ? [{ to: "/report", label: "Report" }]
       : []),
 
     ...(userType === "staff" && roleCode === 2
