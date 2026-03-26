@@ -131,6 +131,7 @@ const navLinks = [
           </Routes>
         </main>
       </div>
+      <Redirect to="/" />
     </BrowserRouter>
   );
 }
