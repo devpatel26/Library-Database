@@ -1568,6 +1568,36 @@ app.get(["/search", "/api/search"], async (req, res) => {
     }
 });
 
+//
+// update patron roles
+app.put(["/changerole","/api/changerole"], async (req,res) => {
+  try {
+    const {
+      patronId,
+      role,
+    } = req.body;
+    if (
+      !patronId ||
+      !role
+    ) {
+      return res.status(400).json({ error: "Missing required fields." });
+    }
+
+    await pool.query(`
+      UPDATE patrons
+      SET patron_role_code = ?
+      WHERE patron_id = ?
+      `,
+      [role,patronId])
+    res.status(201).json({ message: "Patron role changed successfully." });
+  } catch (error) {
+    console.error("Patron role change error:", error);
+    res.status(500).json({
+      error: FormatServerError(error, "Failed to change patron role."),
+    });
+  }
+})
+
 // Item insertion stuff
 // get values for dropdowns
 // // get roles
