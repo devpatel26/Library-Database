@@ -166,18 +166,6 @@ export default function Books() {
                   min={1}
                   max={1000}
                 />
-                {/* <div className="sm:col-span-3">
-                  <label htmlFor="summary">Summary</label>
-                  <div className="mt-2">
-                    <textarea
-                      required
-                      pattern="(?=.*\S)[\s\S]{1,1000}"
-                      id="summary"
-                      name="summary"
-                      className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
-                    />
-                  </div>
-                </div> */}
               </div>
               <div className="grid justify-center mt-4">
                 <SubmitButton title={"Submit"} value={"OK"} />
