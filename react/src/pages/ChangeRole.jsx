@@ -28,14 +28,13 @@ export default function ChangeRole() {
     <div className="space-y-6 rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
       <div>
         <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
-          Testing
+          Staff
         </p>
         <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">
-          Test Page
+          Change Role
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
-          This view is set up for isolated component checks and quick UI
-          validation.
+          Change patron roles with the below form.
         </p>
       </div>
 
@@ -74,11 +73,9 @@ export default function ChangeRole() {
               <div className="grid grid-cols-4 gap-x-6">
                 <InputComponent
                   colspan={2}
-                  pattern="(?=.*\S)[\s\S]{1,45}"
+                  pattern="^[0-9]+$"
                   id="patronId"
                   label="Patron ID"
-                  min={1}
-                  max={45}
                 />
                 {loading && !error && (
                   <div>
