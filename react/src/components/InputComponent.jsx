@@ -40,8 +40,8 @@ export default function InputComponent({
             pattern={pattern}
             id={id}
             name={id}
-            minlength={min}
-            maxlength={max}
+            minLength={min}
+            maxLength={max}
             className={classes}
           />
         ) : (
@@ -51,8 +51,8 @@ export default function InputComponent({
             type={type}
             id={id}
             name={id}
-            minlength={min}
-            maxlength={max}
+            minLength={min}
+            maxLength={max}
             className={classes}
           />
         )}
