@@ -20,6 +20,9 @@ const passwordResetMaxAgeSeconds = Math.max(
     Number(process.env.PASSWORD_RESET_MAX_AGE_SECONDS) || 60 * 30,
     60 * 5
 );
+
+ const sessionSecret = 
+  process.env.SESSION_SECRET || 'team8';
 // const sessionSecret =
 //     process.env.SESSION_SECRET?.trim() ||
 //     (process.env.NODE_ENV === "production"
