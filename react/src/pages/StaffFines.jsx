@@ -116,7 +116,7 @@ export default function StaffFines() {
         Staff
       </p>
       <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">
-        Staff Fines
+        Fines
       </h1>
       <p className="mt-4 text-base leading-7 text-slate-300">
         View all fines and manage overdue, unpaid, paid, and waived balances.
