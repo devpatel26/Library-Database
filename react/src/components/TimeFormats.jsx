@@ -13,18 +13,18 @@ export const months = [
   "December",
 ];
 export const monthsShort = [
-  "Jan.",
-  "Feb.",
-  "Mar.",
-  "Apr.",
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
   "May",
-  "Jun.",
-  "Jul.",
-  "Aug.",
-  "Sept.",
-  "Oct.",
-  "Nov.",
-  "Dec.",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sept",
+  "Oct",
+  "Nov",
+  "Dec",
 ];
 export function FormatTime(date) {
   const hours = date.getHours();
