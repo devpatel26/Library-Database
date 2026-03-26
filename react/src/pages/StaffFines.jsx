@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import PrimaryButton, { SecondaryButton } from "../components/Buttons";
 import { FetchJson, ReadStoredJson } from "../api";
+import { FormatTime, FormatDate } from "../components/TimeFormats";
 
 function GetStatusColorClass(fineStatus) {
   if (fineStatus === "Overdue") {
@@ -64,7 +65,7 @@ export default function StaffFines() {
     }
 
     const amountInput = window.prompt(
-      `Enter payment amount (max $${Number(remainingAmount).toFixed(2)}):`
+      `Enter payment amount (max $${Number(remainingAmount).toFixed(2)}):`,
     );
 
     if (!amountInput) {
@@ -113,13 +114,13 @@ export default function StaffFines() {
     <section className="mx-auto flex w-full max-w-7xl flex-col rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
         Staff
-      </p >
+      </p>
       <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">
         Staff Fines
       </h1>
       <p className="mt-4 text-base leading-7 text-slate-300">
         View all fines and manage overdue, unpaid, paid, and waived balances.
-      </p >
+      </p>
 
       <div className="mt-8 ">
         {isLoading ? (
@@ -155,15 +156,21 @@ export default function StaffFines() {
                   >
                     <td className="px-4 py-3">{fine.fineId}</td>
                     <td className="px-4 py-3">
-                      <div className="font-semibold text-white">{fine.title}</div>
+                      <div className="font-semibold text-white">
+                        {fine.title}
+                      </div>
                       {fine.creator ? (
-                        <div className="text-sm text-sky-300">{fine.creator}</div>
+                        <div className="text-sm text-sky-300">
+                          {fine.creator}
+                        </div>
                       ) : null}
                     </td>
                     <td className="px-4 py-3">
                       {fine.patronName} ({fine.patronId})
                     </td>
-                    <td className="px-4 py-3">{fine.loanDueDate}</td>
+                    <td className="px-4 py-3">
+                      {FormatDate(new Date(fine.loanDueDate), true)}
+                    </td>
                     <td className="px-4 py-3">{fine.daysOverdue}</td>
                     <td className="px-4 py-3">
                       ${Number(fine.dailyFine ?? 0).toFixed(2)}
@@ -177,7 +184,9 @@ export default function StaffFines() {
                     <td className="px-4 py-3 font-semibold">
                       ${Number(fine.remainingAmount ?? 0).toFixed(2)}
                     </td>
-                    <td className={`px-4 py-3 font-semibold ${GetStatusColorClass(fine.fineStatus)}`}>
+                    <td
+                      className={`px-4 py-3 font-semibold ${GetStatusColorClass(fine.fineStatus)}`}
+                    >
                       {fine.fineStatus}
                     </td>
                     <td className="px-4 py-3">
@@ -185,7 +194,9 @@ export default function StaffFines() {
                         <PrimaryButton
                           title="Pay Fine"
                           disabledValue={isPaid || isWaived}
-                          onClick={() => PayFine(fine.fineId, fine.remainingAmount)}
+                          onClick={() =>
+                            PayFine(fine.fineId, fine.remainingAmount)
+                          }
                         />
                         <SecondaryButton
                           title="Waive Fine"
