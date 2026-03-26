@@ -69,29 +69,35 @@ export default function ChangeRole() {
           }}
         >
           <div className="space-y-4">
-            <div className="grid grid-cols-1 grid-rows-6 gap-x-6 ">
-              <div className="grid grid-cols-4 gap-x-6">
+            <div className="grid grid-cols-1 grid-rows-1 gap-x-6 ">
+              <div className="grid grid-cols-6 gap-x-6">
                 <InputComponent
-                  colspan={2}
+                  colspan={3}
                   pattern="^[0-9]+$"
                   id="patronId"
                   label="Patron ID"
                 />
                 {loading && !error && (
-                  <div>
+                  <div className="col-span-2">
                     <DisabledDropdown name="role" />
                   </div>
                 )}
                 {!loading && error && (
-                  <div>Error encountered; please reload.</div>
+                  <div className="col-span-2">
+                    Error encountered; please reload.
+                  </div>
                 )}
                 {!loading && !error && (
-                  <div>
+                  <div className="col-span-2">
                     <ObjectDropdown name="role" options={roles} />
                   </div>
                 )}
-                <div className="grid justify-center mt-4">
-                  <SubmitButton title={"Submit"} value={"OK"} />
+                <div className="flex items-end w-full">
+                  <SubmitButton
+                    title={"Submit"}
+                    value={"OK"}
+                    fullwidth={true}
+                  />
                 </div>
               </div>
             </div>
