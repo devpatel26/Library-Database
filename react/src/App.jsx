@@ -9,7 +9,6 @@ import ItemEntry from "./pages/ItemEntry.jsx";
 import Books from "./pages/Books.jsx";
 import Periodicals from "./pages/Periodicals.jsx";
 import AudiovisualMedia from "./pages/AudiovisualMedia.jsx";
-import NewCopies from "./pages/NewCopies.jsx";
 import Equipment from "./pages/Equipment.jsx";
 import Loans from "./pages/Loans.jsx";
 import Login from "./pages/Login.jsx";
@@ -29,54 +28,52 @@ import PatronSummaryReport from "./pages/PatronSummaryReport.jsx";
 import OverdueReport from "./pages/OverdueReport.jsx";
 import TestingReport from "./pages/TestingReport.jsx";
 
-
 function App() {
-const user = ReadStoredUser();
-const userType = user?.user_type;
-const roleCode = Number(user?.role);
+  const user = ReadStoredUser();
+  const userType = user?.user_type;
+  const roleCode = Number(user?.role);
 
-const navLinks = [
-  { to: "/", label: "Home" },
-  { to: "/search", label: "Search" },
+  const navLinks = [
+    { to: "/", label: "Home" },
+    { to: "/search", label: "Search" },
 
-  ...(!user
-    ? [{ to: "/login", label: "Login" }]
-    : [
-        { to: "/account", label: "Account" },
-        { to: "/logout", label: "Logout" },
-      ]),
+    ...(!user
+      ? [{ to: "/login", label: "Login" }]
+      : [
+          { to: "/account", label: "Account" },
+          { to: "/logout", label: "Logout" },
+        ]),
 
-  ...(userType === "staff" && roleCode === 2
-    ? [{ to: "/createsignupcode", label: "Create Signup Code" }]
-    : []),
+    ...(userType === "staff" && roleCode === 2
+      ? [{ to: "/createsignupcode", label: "Create Signup Code" }]
+      : []),
 
-  ...(userType === "staff" && (roleCode === 1 || roleCode === 2)
-    ? [{ to: "/itementry", label: "Item Entry (Staff)" }]
-    : []),
-  
-  ...(userType === "staff" && (roleCode === 1 || roleCode === 2)
-  ? [{ to: "/staffloans", label: "Loans (Staff)" }]
-  : []),
-  
-  ...(userType === "staff" && (roleCode === 1 || roleCode === 2)
-  ? [{ to: "/holds", label: "Holds (Staff)" }]
-  : []),
+    ...(userType === "staff" && (roleCode === 1 || roleCode === 2)
+      ? [{ to: "/itementry", label: "Item Entry (Staff)" }]
+      : []),
 
-  ...(userType === "staff" && (roleCode === 1 || roleCode === 2)
-    ? [{ to: "/stafffines", label: "Staff Fines (Staff)" }]
-    : []),
+    ...(userType === "staff" && (roleCode === 1 || roleCode === 2)
+      ? [{ to: "/staffloans", label: "Loans (Staff)" }]
+      : []),
 
-  ...(userType === "staff" && roleCode === 2
-    ? [{ to: "/report", label: "Report (Admin)" }]
-    : []),
+    ...(userType === "staff" && (roleCode === 1 || roleCode === 2)
+      ? [{ to: "/holds", label: "Holds (Staff)" }]
+      : []),
 
-  ...(userType === "staff" && roleCode === 2
-    ? [{ to: "/staffregistration", label: "Staff Signup" }]
-    : []),
+    ...(userType === "staff" && (roleCode === 1 || roleCode === 2)
+      ? [{ to: "/stafffines", label: "Staff Fines (Staff)" }]
+      : []),
 
-  { to: "/test", label: "Test Page" },
-  
-];
+    ...(userType === "staff" && roleCode === 2
+      ? [{ to: "/report", label: "Report (Admin)" }]
+      : []),
+
+    ...(userType === "staff" && roleCode === 2
+      ? [{ to: "/staffregistration", label: "Staff Signup" }]
+      : []),
+
+    { to: "/test", label: "Test Page" },
+  ];
 
   return (
     <BrowserRouter>
@@ -100,7 +97,10 @@ const navLinks = [
             <Route path="/" element={<Home />} />
             <Route path="/test" element={<TestPage />} />
             <Route path="/account" element={<Account />}>
-              <Route path="accountinfo" element={<Navigate to="/account" replace />} />
+              <Route
+                path="accountinfo"
+                element={<Navigate to="/account" replace />}
+              />
               <Route path="loans" element={<Loans />} />
               <Route path="fines" element={<Fines />} />
               <Route path="activity" element={<AccountActivity />} />
@@ -114,7 +114,6 @@ const navLinks = [
               <Route path="periodicals" element={<Periodicals />} />
               <Route path="audiovisualmedia" element={<AudiovisualMedia />} />
               <Route path="equipment" element={<Equipment />} />
-              <Route path="newcopies" element={<NewCopies />} />
             </Route>
             <Route path="/staffregistration" element={<StaffRegistration />} />
             <Route path="/report" element={<Report />} />
@@ -124,8 +123,14 @@ const navLinks = [
             <Route path="/createsignupcode" element={<CreateSignupCode />} />
             <Route path="/holds" element={<Holds />} />
             <Route path="/staffloans" element={<StaffLoans />} />
-            <Route path="/report/mostborrowedbooks" element={<MostBorrowedBooksReport />} />
-            <Route path="/report/patronsummary" element={<PatronSummaryReport />} />
+            <Route
+              path="/report/mostborrowedbooks"
+              element={<MostBorrowedBooksReport />}
+            />
+            <Route
+              path="/report/patronsummary"
+              element={<PatronSummaryReport />}
+            />
             <Route path="/report/overduereport" element={<OverdueReport />} />
             <Route path="/report/testing" element={<TestingReport />} />
           
