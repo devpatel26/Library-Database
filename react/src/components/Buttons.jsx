@@ -23,9 +23,10 @@ export function SubmitButton({
   disabledValue = false,
   onClick,
   fullwidth = false,
+  halfwidth = false,
 }) {
   return (
-    <div className={fullwidth ? "w-full" : null}>
+    <div className={fullwidth ? "w-full" : halfwidth ? "w-1/2" : null}>
       <button
         type="submit"
         disabled={disabledValue}
