@@ -79,10 +79,11 @@ function App() {
 
     { to: "/test", label: "Test Page" },
   ];
+  const version = "1.1.0";
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen min-w-80 bg-slate-950 text-slate-100 antialiased">
+      <div className="min-h-screen min-w-80 bg-slate-950 text-slate-100 antialiased flex flex-col">
         <nav className="border-b border-white/10 bg-slate-950/95 backdrop-blur">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-3 px-4 py-4 sm:px-6">
             {navLinks.map(({ to, label }) => (
@@ -97,7 +98,7 @@ function App() {
           </div>
         </nav>
 
-        <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+        <main className="w-full flex-1 mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/test" element={<TestPage />} />
@@ -142,6 +143,11 @@ function App() {
           
           </Routes>
         </main>
+        <footer className="bottom-0 border-t border-white/10 bg-slate-950/95 backdrop-blur">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-3 px-4 py-4 sm:px-6 text-centered">
+            {version}
+          </div>
+        </footer>
       </div>
       
     </BrowserRouter>
