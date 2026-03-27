@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FetchJson, ReadStoredJson } from "../api";
+import { FormatDate } from "../components/TimeFormats";
 
 export default function OverdueReport() {
   const [reportRows, setReportRows] = useState([]);
@@ -40,13 +41,14 @@ export default function OverdueReport() {
     <section className="mx-auto flex w-full max-w-7xl flex-col rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
         Report
-      </p >
+      </p>
       <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">
         Overdue Report
       </h1>
       <p className="mt-4 text-base leading-7 text-slate-300">
-        View all currently overdue items, the responsible patron, and the current fine amount.
-      </p >
+        View all currently overdue items, the responsible patron, and the
+        current fine amount.
+      </p>
 
       <div className="mt-8 overflow-x-auto">
         {isLoading ? (
@@ -79,7 +81,9 @@ export default function OverdueReport() {
                   <td className="px-4 py-3">
                     {row.patronName} ({row.patronId})
                   </td>
-                  <td className="px-4 py-3">{row.loanDueDate}</td>
+                  <td className="px-4 py-3">
+                    {FormatDate(new Date(row.loanDueDate))}
+                  </td>
                   <td className="px-4 py-3 font-semibold text-red-300">
                     {row.daysOverdue}
                   </td>

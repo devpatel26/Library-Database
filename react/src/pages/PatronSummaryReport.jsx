@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import PrimaryButton from "../components/Buttons";
 import { FetchJson, ReadStoredJson } from "../api";
+import { FormatBirthdate, FormatDate } from "../components/TimeFormats";
 
 export default function PatronSummaryReport() {
   const [patronIdInput, setPatronIdInput] = useState("");
@@ -29,7 +30,9 @@ export default function PatronSummaryReport() {
 
     try {
       setIsLoading(true);
-      const data = await FetchJson(`/api/reports/patron-summary?patronId=${patronIdInput}`);
+      const data = await FetchJson(
+        `/api/reports/patron-summary?patronId=${patronIdInput}`,
+      );
       setReportData(data);
     } catch (error) {
       console.error(error);
@@ -44,13 +47,13 @@ export default function PatronSummaryReport() {
     <section className="mx-auto flex w-full max-w-7xl flex-col rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
         Report
-      </p >
+      </p>
       <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">
         Patron Summary
       </h1>
       <p className="mt-4 text-base leading-7 text-slate-300">
         Enter a patron ID to view that patron&apos;s holds, loans, and fines.
-      </p >
+      </p>
 
       <div className="mt-6 flex flex-col gap-4 md:flex-row md:items-center">
         <input
@@ -69,7 +72,9 @@ export default function PatronSummaryReport() {
       {reportData ? (
         <div className="mt-8 space-y-8">
           <div className="rounded-2xl bg-white/5 p-6 outline outline-1 outline-white/10">
-            <h2 className="text-2xl font-semibold text-white">Patron Information</h2>
+            <h2 className="text-2xl font-semibold text-white">
+              Patron Information
+            </h2>
             <div className="mt-4 grid grid-cols-1 gap-3 text-slate-300 md:grid-cols-2">
               <div>Patron ID: {reportData.patron.patronId}</div>
               <div>
@@ -77,13 +82,21 @@ export default function PatronSummaryReport() {
               </div>
               <div>Email: {reportData.patron.email}</div>
               <div>Role: {reportData.patron.patronRole}</div>
-              <div>Status: {reportData.patron.isActive ? "Active" : "Inactive"}</div>
-              <div>Date of Birth: {reportData.patron.dateOfBirth || "N/A"}</div>
+              <div>
+                Status: {reportData.patron.isActive ? "Active" : "Inactive"}
+              </div>
+              <div>
+                Date of Birth:{" "}
+                {FormatBirthdate(new Date(reportData.patron.dateOfBirth)) ||
+                  "N/A"}
+              </div>
             </div>
           </div>
 
           <div className="rounded-2xl bg-white/5 p-6 outline outline-1 outline-white/10">
-            <h2 className="text-2xl font-semibold text-yellow-300">Current Holds</h2>
+            <h2 className="text-2xl font-semibold text-yellow-300">
+              Current Holds
+            </h2>
             <div className="mt-4 overflow-x-auto">
               {reportData.holds.length === 0 ? (
                 <div className="text-slate-300">No current holds found.</div>
@@ -107,8 +120,12 @@ export default function PatronSummaryReport() {
                         <td className="px-4 py-3">{hold.holdId}</td>
                         <td className="px-4 py-3 text-white">{hold.title}</td>
                         <td className="px-4 py-3">{hold.creator || "N/A"}</td>
-                        <td className="px-4 py-3">{hold.holdStart}</td>
-                        <td className="px-4 py-3">{hold.holdEnd}</td>
+                        <td className="px-4 py-3">
+                          {FormatDate(new Date(hold.holdStart))}
+                        </td>
+                        <td className="px-4 py-3">
+                          {FormatDate(new Date(hold.holdEnd))}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -118,7 +135,9 @@ export default function PatronSummaryReport() {
           </div>
 
           <div className="rounded-2xl bg-white/5 p-6 outline outline-1 outline-white/10">
-            <h2 className="text-2xl font-semibold text-emerald-300">Active Loans</h2>
+            <h2 className="text-2xl font-semibold text-emerald-300">
+              Active Loans
+            </h2>
             <div className="mt-4 overflow-x-auto">
               {reportData.activeLoans.length === 0 ? (
                 <div className="text-slate-300">No active loans found.</div>
@@ -143,8 +162,12 @@ export default function PatronSummaryReport() {
                         <td className="px-4 py-3">{loan.loanId}</td>
                         <td className="px-4 py-3 text-white">{loan.title}</td>
                         <td className="px-4 py-3">{loan.creator || "N/A"}</td>
-                        <td className="px-4 py-3">{loan.loanStart}</td>
-                        <td className="px-4 py-3">{loan.loanEnd}</td>
+                        <td className="px-4 py-3">
+                          {FormatDate(new Date(loan.loanStart))}
+                        </td>
+                        <td className="px-4 py-3">
+                          {FormatDate(new Date(loan.loanEnd))}
+                        </td>
                         <td className="px-4 py-3 font-semibold text-emerald-300">
                           Active
                         </td>
@@ -157,7 +180,9 @@ export default function PatronSummaryReport() {
           </div>
 
           <div className="rounded-2xl bg-white/5 p-6 outline outline-1 outline-white/10">
-            <h2 className="text-2xl font-semibold text-sky-300">Completed Loans</h2>
+            <h2 className="text-2xl font-semibold text-sky-300">
+              Completed Loans
+            </h2>
             <div className="mt-4 overflow-x-auto">
               {reportData.completedLoans.length === 0 ? (
                 <div className="text-slate-300">No completed loans found.</div>
@@ -182,8 +207,12 @@ export default function PatronSummaryReport() {
                         <td className="px-4 py-3">{loan.loanId}</td>
                         <td className="px-4 py-3 text-white">{loan.title}</td>
                         <td className="px-4 py-3">{loan.creator || "N/A"}</td>
-                        <td className="px-4 py-3">{loan.loanStart}</td>
-                        <td className="px-4 py-3">{loan.loanEnd}</td>
+                        <td className="px-4 py-3">
+                          {FormatDate(new Date(loan.loanStart))}
+                        </td>
+                        <td className="px-4 py-3">
+                          {FormatDate(new Date(loan.loanEnd))}
+                        </td>
                         <td className="px-4 py-3 font-semibold text-sky-300">
                           Completed
                         </td>
@@ -233,9 +262,15 @@ export default function PatronSummaryReport() {
                         <td className="px-4 py-3 font-semibold text-red-300">
                           ${Number(fine.remainingAmount ?? 0).toFixed(2)}
                         </td>
-                        <td className="px-4 py-3">{fine.fineDate}</td>
-                        <td className="px-4 py-3">{fine.paidDate || "Not paid"}</td>
-                        <td className="px-4 py-3">{fine.waivedDate || "Not waived"}</td>
+                        <td className="px-4 py-3">
+                          {FormatDate(new Date(fine.fineDate))}
+                        </td>
+                        <td className="px-4 py-3">
+                          {fine.paidDate || "Not paid"}
+                        </td>
+                        <td className="px-4 py-3">
+                          {fine.waivedDate || "Not waived"}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
