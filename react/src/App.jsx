@@ -145,7 +145,7 @@ function App() {
         </main>
         <footer className="bottom-0 border-t border-white/10 bg-slate-950/95 backdrop-blur">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-3 px-4 py-4 sm:px-6 text-centered">
-            {version}
+            Version {version}
           </div>
         </footer>
       </div>

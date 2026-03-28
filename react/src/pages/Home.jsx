@@ -9,8 +9,8 @@ export default function Home() {
           Library Database System
         </h1>
         <p className="mt-4 max-w-2xl text-base text-slate-200 sm:text-lg">
-          Welcome to the library. Search books, manage your account, and move
-          between project pages from a single interface.
+          Welcome to the library. Search books, checkout items, manage your
+          account, and more.
         </p>
       </header>
 
@@ -44,24 +44,12 @@ export default function Home() {
           Team
         </p>
         <div className="mt-4 grid gap-3 text-sm text-slate-300 sm:grid-cols-2">
-          <p>
-            Library System © TeamProject 2026 Spring
-          </p>
-          <p>
-            By Azan, Mehrab U
-          </p>
-          <p>
-            Lin, Evan
-          </p>
-          <p>
-            Chukwu, David David
-          </p>
-          <p>
-            Morin, Rainer Diamond
-          </p>
-          <p>
-            Patel, Devkumar
-          </p>
+          <p>Library System © TeamProject 2026 Spring</p>
+          <p>By Azan, Mehrab U</p>
+          <p>Lin, Evan</p>
+          <p>Chukwu, David David</p>
+          <p>Morin, Rainer Diamond</p>
+          <p>Patel, Devkumar</p>
         </div>
       </footer>
     </div>
