@@ -59,7 +59,7 @@ export default function Account() {
     async function LoadAccount() {
       if (!currentUser) {
         setAccount(null);
-        setError("Please log in to view your account.");
+        setError("Please log in to access your account.");
         setLoading(false);
         return;
       }
@@ -75,7 +75,7 @@ export default function Account() {
       } catch (err) {
         if (isMounted) {
           setAccount(null);
-          setError(GetErrorMessage(err, "Failed to load account."));
+          setError(GetErrorMessage(err, "Failed to load account. Please try again."));
         }
       } finally {
         if (isMounted) {
@@ -114,13 +114,13 @@ export default function Account() {
         </nav>
       </aside>
       <main className="flex-1 space-y-8 rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
-        <h1 className="text-3xl font-bold text-white">Account</h1>
+        <h1 className="text-3xl font-bold text-white">My Account</h1>
         {outlet ? (
           outlet
         ) : (
           <section className="space-y-4 text-slate-200">
             <p className="text-slate-300">
-              View your profile details below.
+              View your account details below.
               {isPatron ? " Use the account menu for fines, activity, loan history, and settings." : ""}
             </p>
 
