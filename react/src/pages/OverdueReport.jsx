@@ -1,41 +1,47 @@
 import React, { useEffect, useState } from "react";
 import { FetchJson, ReadStoredJson } from "../api";
 import { FormatDate } from "../components/TimeFormats";
+import { useMessage } from "../hooks/useMessage";
 
 export default function OverdueReport() {
   const [reportRows, setReportRows] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  async function LoadReport() {
-    try {
-      setIsLoading(true);
-      const data = await FetchJson("/api/reports/overdue-items");
-      setReportRows(data);
-    } catch (error) {
-      console.error(error);
-      alert(error.message || "Failed to load report.");
-    } finally {
-      setIsLoading(false);
-    }
-  }
+  const {showError, showWarning } = useMessage();
 
   useEffect(() => {
+    async function LoadReport() {
+      try {
+        setIsLoading(true);
+        const data = await FetchJson("/api/reports/overdue-items");
+        setReportRows(data);
+      } catch (error) {
+        console.error(error);
+        showError(error.message || "Failed to load report.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
     const user = ReadStoredJson("user");
 
     if (!user) {
-      alert("Please log in first.");
-      window.location.href = "/login";
+      showWarning("Please log in first.");
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 800);
       return;
     }
 
     if (user.user_type !== "staff") {
-      alert("Only staff can access reports.");
-      window.location.href = "/";
+      showWarning("Only staff can access reports.");
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 800);
       return;
     }
 
     LoadReport();
-  }, []);
+  }, [ showError, showWarning ]);
 
   return (
     <section className="mx-auto flex w-full max-w-7xl flex-col rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">

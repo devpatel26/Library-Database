@@ -1,10 +1,12 @@
 import InputComponent from "../components/InputComponent";
 import { SubmitButton } from "../components/Buttons";
 import { FetchJson, GetErrorMessage } from "../api";
+import { useMessage } from "../hooks/useMessage";
 import { useEffect, useState } from "react";
 import { ObjectDropdown, DisabledDropdown } from "../components/Dropdown";
 
 export default function ChangeRole() {
+  const { showSuccess, showError } = useMessage();
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -60,11 +62,13 @@ export default function ChangeRole() {
                 body: JSON.stringify(changeData),
               });
 
-              alert("Patron role change successful!");
-              e.target.reset();
+              showSuccess("Patron role change successful!");
+              setTimeout(() => {
+                window.location.reload();
+              }, 800);
             } catch (error) {
               console.error(error);
-              alert(error.message || "Patron role change failed.");
+              showError(error.message || "Patron role change failed.");
             }
           }}
         >

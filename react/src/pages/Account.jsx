@@ -2,6 +2,7 @@ import { NavLink, useOutlet } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { FetchJson, GetErrorMessage, ReadStoredUser } from "../api";
 
+
 function FormatDateOfBirth(dateOfBirth) {
   if (!dateOfBirth) {
     return "Not provided";

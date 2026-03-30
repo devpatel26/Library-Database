@@ -1,9 +1,11 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, /*useNavigate*/ } from "react-router-dom";
 import { FetchJson, WriteStoredAuth } from "../api";
 import { SubmitButton } from "../components/Buttons";
+import { useMessage } from "../hooks/useMessage";
 
 export default function Login() {
-  const navigate = useNavigate();
+  const { showSuccess, showWarning } = useMessage();
+  //const navigate = useNavigate();
 
   return (
     <section className="mx-auto flex w-full max-w-lg flex-col items-center rounded-3xl border border-white/10 bg-slate-900/70 p-6 text-center shadow-xl shadow-slate-950/30">
@@ -38,12 +40,14 @@ export default function Login() {
               sessionToken: data.sessionToken,
               sessionExpiresAt: data.sessionExpiresAt,
             });
-            alert("Login successful!");
-            window.location.href = "account";
+            showSuccess("Login successful!");
+            setTimeout(() => {
+              window.location.href = "/account";
+            }, 3000);
             //navigate("/account", { replace: true });
           } catch (error) {
             console.error("login error:", error);
-            alert(error.message || "Login failed.");
+            showWarning(error.message || "Login failed.");
           }
         }}
         className="w-full flex flex-col items-center"

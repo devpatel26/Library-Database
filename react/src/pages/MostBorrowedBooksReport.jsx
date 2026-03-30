@@ -1,40 +1,46 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+import { useMessage } from "../hooks/useMessage";
 import { FetchJson, ReadStoredJson } from "../api";
 
 export default function MostBorrowedBooksReport() {
+  const {showError, showWarning } = useMessage();
   const [reportRows, setReportRows] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  async function LoadReport() {
+  const LoadReport = useCallback(async () => {
     try {
       setIsLoading(true);
       const data = await FetchJson("/api/reports/most-borrowed-books");
       setReportRows(data);
     } catch (error) {
       console.error(error);
-      alert(error.message || "Failed to load report.");
+      showError(error.message || "Failed to load report.");
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [showError]);
 
   useEffect(() => {
     const user = ReadStoredJson("user");
 
     if (!user) {
-      alert("Please log in first.");
+      showWarning("Please log in first.");
+      setTimeout(() => {
       window.location.href = "/login";
+      }, 800);
       return;
     }
 
     if (user.user_type !== "staff") {
-      alert("Only staff can access reports.");
+      showWarning("Only staff can access reports.");
+      setTimeout(() => {
       window.location.href = "/";
+      }, 800);
       return;
     }
 
     LoadReport();
-  }, []);
+  }, [showError, showWarning, LoadReport]);
 
   return (
     <section className="mx-auto flex w-full max-w-5xl flex-col rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">

@@ -1,21 +1,67 @@
-import Fine from "../components/Fine";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { FetchJson, GetErrorMessage, ReadStoredUser } from "../api";
+import { useMessage } from "../hooks/useMessage";
+
+function FormatMoney(value) {
+  return `$${Number(value ?? 0).toFixed(2)}`;
+}
+
+function FormatDateValue(value) {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return date.toLocaleDateString();
+}
+
+function NormalizeStatus(fine) {
+  const rawStatus = String(
+    fine.fineStatus ??
+      fine.status ??
+      ""
+  ).trim().toLowerCase();
+
+  if (rawStatus.includes("waiv")) {
+    return "Waived";
+  }
+
+  if (rawStatus.includes("paid")) {
+    return "Paid";
+  }
+
+  if (Number(fine.remainingAmount ?? 0) <= 0) {
+    return "Paid";
+  }
+
+  return "Open";
+}
 
 export default function Fines() {
+  const { showSuccess, showError, showWarning } = useMessage();
+
   const [fines, setFines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [pendingFineId, setPendingFineId] = useState(null);
+
+  const [expandedFineId, setExpandedFineId] = useState(null);
+  const [paymentAmount, setPaymentAmount] = useState("");
+
   const user = ReadStoredUser();
   const userKey = user
     ? `${user.user_type ?? ""}:${user.patron_id ?? ""}:${user.staff_id ?? ""}`
     : "";
 
-  async function LoadFines(currentUser = ReadStoredUser()) {
+  const LoadFines = useCallback(async (currentUser = ReadStoredUser()) => {
     if (!currentUser) {
       setFines([]);
-      setError("Please log in to view fines.");
+      setError("Please log in first.");
       setLoading(false);
       return;
     }
@@ -30,45 +76,68 @@ export default function Fines() {
     try {
       setLoading(true);
       setError("");
-      const data = await FetchJson("/api/fines");
 
-      setFines(data ?? []);
+      const data = await FetchJson("/api/fines");
+      setFines(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(GetErrorMessage(err, "Failed to load fines."));
+      showError(GetErrorMessage(err, "Failed to load fines."));
     } finally {
       setLoading(false);
     }
-  }
+  }, [showError]);
 
   useEffect(() => {
     LoadFines(ReadStoredUser());
-  }, [userKey]);
+  }, [userKey, LoadFines]);
 
-  async function PayFine(fineId, remainingAmount) {
-    if (Number(remainingAmount) <= 0) {
-      alert("This fine has already been fully paid.");
+  function OpenPaymentBox(fine) {
+    const remainingAmount = Number(fine.remainingAmount ?? 0);
+    const status = NormalizeStatus(fine);
+
+    if (status === "Waived") {
+      showWarning("This fine has been waived.");
       return;
     }
 
-    const amountInput = window.prompt(
-      `Enter payment amount (max $${Number(remainingAmount).toFixed(2)}):`,
-    );
-
-    if (!amountInput) {
+    if (remainingAmount <= 0) {
+      showWarning("This fine has already been fully paid.");
       return;
     }
 
-    const amount = Number(amountInput);
+    setExpandedFineId(fine.fineId);
+    setPaymentAmount(String(remainingAmount.toFixed(2)));
+  }
+
+  function ClosePaymentBox() {
+    setExpandedFineId(null);
+    setPaymentAmount("");
+  }
+
+  async function PayFine(fine) {
+    const remainingAmount = Number(fine.remainingAmount ?? 0);
+    const amount = Number(paymentAmount);
+
+    if (remainingAmount <= 0) {
+      showWarning("This fine has already been fully paid.");
+      return;
+    }
 
     if (!Number.isFinite(amount) || amount <= 0) {
-      alert("Please enter a valid payment amount.");
+      showWarning("Please enter a valid payment amount.");
+      return;
+    }
+
+    if (amount > remainingAmount) {
+      showWarning(`Payment cannot exceed ${FormatMoney(remainingAmount)}.`);
       return;
     }
 
     try {
       setError("");
-      setPendingFineId(fineId);
-      await FetchJson(`/api/fines/${fineId}/pay`, {
+      setPendingFineId(fine.fineId);
+
+      await FetchJson(`/api/fines/${fine.fineId}/pay`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -76,89 +145,212 @@ export default function Fines() {
         body: JSON.stringify({ amount }),
       });
 
-      alert("Fine payment recorded successfully!");
+      showSuccess("Fine payment recorded successfully!");
+      ClosePaymentBox();
       await LoadFines(ReadStoredUser());
     } catch (err) {
-      setError(GetErrorMessage(err, "Failed to pay fine."));
+      const message = GetErrorMessage(err, "Failed to pay fine.");
+      setError(message);
+      showError(message);
     } finally {
       setPendingFineId(null);
     }
   }
 
-  const openFines = fines.filter(
-    (fine) => !["Paid", "Waived"].includes(fine.fineStatus),
+  const openFines = useMemo(
+    () =>
+      fines.filter((fine) => {
+        const status = NormalizeStatus(fine);
+        return status !== "Paid" && status !== "Waived";
+      }),
+    [fines]
   );
-  const outstandingBalance = openFines.reduce(
-    (sum, fine) => sum + Number(fine.remainingAmount ?? 0),
-    0,
+
+  const outstandingBalance = useMemo(
+    () =>
+      openFines.reduce(
+        (sum, fine) => sum + Number(fine.remainingAmount ?? 0),
+        0
+      ),
+    [openFines]
   );
-  const totalPaid = fines.reduce(
-    (sum, fine) => sum + Number(fine.paidAmount ?? 0),
-    0,
+
+  const totalPaid = useMemo(
+    () =>
+      fines.reduce(
+        (sum, fine) => sum + Number(fine.paidAmount ?? 0),
+        0
+      ),
+    [fines]
   );
 
   return (
-    <section className="rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
+    <section className="rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-2xl shadow-slate-950/30">
       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
         Fines
-      </p>
+      </p >
+
       <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">
         Patron Fines
       </h1>
+
       <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
         Review your balances, see overdue details, and pay fines from your account.
-      </p>
+      </p >
 
       {!loading && !error ? (
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
           <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
             <p className="text-xs uppercase tracking-[0.25em] text-sky-300">
               Open Balance
-            </p>
+            </p >
             <p className="mt-2 text-2xl font-semibold text-white">
-              ${outstandingBalance.toFixed(2)}
-            </p>
+              {FormatMoney(outstandingBalance)}
+            </p >
           </div>
+
           <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
             <p className="text-xs uppercase tracking-[0.25em] text-sky-300">
               Paid So Far
-            </p>
+            </p >
             <p className="mt-2 text-2xl font-semibold text-white">
-              ${totalPaid.toFixed(2)}
-            </p>
+              {FormatMoney(totalPaid)}
+            </p >
           </div>
+
           <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
             <p className="text-xs uppercase tracking-[0.25em] text-sky-300">
               Fine Records
-            </p>
+            </p >
             <p className="mt-2 text-2xl font-semibold text-white">
               {fines.length}
-            </p>
+            </p >
           </div>
         </div>
       ) : null}
 
-      {loading && <p className="mt-4 text-slate-300">Loading fines...</p>}
-      {!loading && error && <p className="mt-4 text-rose-300">{error}</p>}
+      {loading ? (
+        <p className="mt-6 text-slate-300">Loading fines...</p >
+      ) : null}
 
-      {!loading && !error && (
-        <div className="mt-6 flex flex-wrap gap-4">
+      {!loading && error ? (
+        <p className="mt-6 text-rose-300">{error}</p >
+      ) : null}
+
+      {!loading && !error ? (
+        <div className="mt-6 flex flex-col gap-4">
           {fines.length === 0 ? (
-            <p className="text-slate-300">
-              No fines found.
-            </p>
+            <p className="text-slate-300">No fines found.</p >
           ) : (
-            fines.map((item) => (
-              <Fine
-                key={item.fineId}
-                data={item}
-                onPay={PayFine}
-                payPending={pendingFineId === item.fineId}
-              />
-            ))
+            fines.map((fine) => {
+              const status = NormalizeStatus(fine);
+              const remainingAmount = Number(fine.remainingAmount ?? 0);
+              const paidAmount = Number(fine.paidAmount ?? 0);
+              const fineAmount = Number(fine.amount ?? fine.fineAmount ?? 0);
+
+              const isExpanded = expandedFineId === fine.fineId;
+              const isPending = pendingFineId === fine.fineId;
+              const canPay = status !== "Waived" && remainingAmount > 0;
+
+              return (
+                <div
+                  key={fine.fineId}
+                  className="rounded-2xl border border-white/10 bg-slate-950/40 p-5"
+                >
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="space-y-2">
+                      <div className="text-sm text-slate-400">
+                        Fine ID #{fine.fineId}
+                      </div>
+
+                      <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-300">
+                        <span>Total: {FormatMoney(fineAmount)}</span>
+                        <span>Paid: {FormatMoney(paidAmount)}</span>
+                        <span>Remaining: {FormatMoney(remainingAmount)}</span>
+                        <span>Status: {status}</span>
+                      </div>
+
+                      <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-400">
+                        {fine.assignedDate ? (
+                          <span>Assigned: {FormatDateValue(fine.assignedDate)}</span>
+                        ) : null}
+
+                        {fine.paidDate ? (
+                          <span>Paid date: {FormatDateValue(fine.paidDate)}</span>
+                        ) : null}
+
+                        {fine.waivedDate ? (
+                          <span>Waived date: {FormatDateValue(fine.waivedDate)}</span>
+                        ) : null}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      {canPay ? (
+                        <button
+                          type="button"
+                          onClick={() => OpenPaymentBox(fine)}
+                          className="rounded-full border border-sky-400/30 bg-sky-500/10 px-4 py-2 text-sm font-medium text-sky-200 transition hover:border-sky-300 hover:bg-sky-500/20"
+                        >
+                          Pay Fine
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled
+                          className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-500"
+                        >
+                          {status === "Waived" ? "Waived" : "Paid"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {isExpanded ? (
+                    <div className="mt-4 rounded-2xl border border-white/10 bg-slate-900/70 p-4">
+                      <p className="text-sm text-slate-300">
+                        Enter payment amount up to {FormatMoney(remainingAmount)}.
+                      </p >
+
+                      <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <input
+                          type="number"
+                          min="0.01"
+                          step="0.01"
+                          value={paymentAmount}
+                          onChange={(event) => setPaymentAmount(event.target.value)}
+                          placeholder="Payment amount"
+                          className="w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-2 text-white outline-none focus:border-sky-400 sm:max-w-xs"
+                        />
+
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => PayFine(fine)}
+                            disabled={isPending}
+                            className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-200 transition hover:border-emerald-300 hover:bg-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {isPending ? "Processing..." : "Confirm Payment"}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={ClosePaymentBox}
+                            disabled={isPending}
+                            className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })
           )}
         </div>
-      )}
+      ) : null}
     </section>
   );
 }

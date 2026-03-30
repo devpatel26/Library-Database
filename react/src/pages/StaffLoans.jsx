@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import PrimaryButton from "../components/Buttons";
 import { FetchJson, ReadStoredUser } from "../api";
 import { FormatTime, FormatDate } from "../components/TimeFormats";
+import { useMessage } from "../hooks/useMessage";
 
 async function FetchCurrentStaffLoans() {
   return FetchJson("/api/staff/loans/current");
@@ -12,6 +13,7 @@ export default function StaffLoans() {
   const [isLoading, setIsLoading] = useState(true);
   const user = ReadStoredUser();
   const userKey = user ? `${user.user_type ?? ""}:${user.staff_id ?? ""}` : "";
+  const { showSuccess, showError, showWarning, /*showInfo */} = useMessage();
 
   useEffect(() => {
     const currentUser = ReadStoredUser();
@@ -22,26 +24,26 @@ export default function StaffLoans() {
         setLoans(await FetchCurrentStaffLoans());
       } catch (error) {
         console.error(error);
-        alert(error.message || "Failed to load loans.");
+        showError(error.message || "Failed to load loans.");
       } finally {
         setIsLoading(false);
       }
     }
 
     if (!currentUser) {
-      alert("Please log in first.");
+      showWarning("Please log in first.");
       window.location.href = "/login";
       return;
     }
 
     if (currentUser.user_type !== "staff") {
-      alert("Only staff can access the staff loans page.");
+      showWarning("Only staff can access the staff loans page.");
       window.location.href = "/";
       return;
     }
 
     LoadLoans();
-  }, [userKey]);
+  }, [userKey, showError, showWarning]);
 
   async function ReturnLoan(loanId) {
     try {
@@ -49,12 +51,12 @@ export default function StaffLoans() {
         method: "POST",
       });
 
-      alert("Loan returned successfully!");
+      showSuccess("Loan returned successfully!");
       setIsLoading(true);
       setLoans(await FetchCurrentStaffLoans());
     } catch (error) {
       console.error(error);
-      alert(error.message || "Failed to return loan.");
+      showError(error.message || "Failed to return loan.");
     } finally {
       setIsLoading(false);
     }

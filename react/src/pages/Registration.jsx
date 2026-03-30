@@ -1,7 +1,9 @@
 import { SubmitButton } from "../components/Buttons";
 import { FetchJson } from "../api";
+import { useMessage } from "../hooks/useMessage";
 
 export default function Registration() {
+  const { showSuccess, showError} = useMessage();
   return (
     // mx-auto flex w-full max-w-lg flex-col items-center rounded-3xl border border-white/10 bg-slate-900/70 p-6 text-center shadow-xl shadow-slate-950/3
     // rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30 text-center grid justify-items-center
@@ -25,6 +27,7 @@ export default function Registration() {
           e.preventDefault();
           const formData = new FormData(e.target);
 
+
           const registrationData = {
             firstname: formData.get("firstname"),
             lastname: formData.get("lastname"),
@@ -42,10 +45,10 @@ export default function Registration() {
               body: JSON.stringify(registrationData),
             });
 
-            alert("Registration successful! Please go back to the login page to sign in.");
-            } catch (error) {
+            showSuccess("Registration successful! Please go back to the login page to sign in.");
+          } catch (error) {
             console.error(error);
-            alert(error.message || "Registration failed.");
+            showError(error.message || "Registration failed.");
           }
         }}
       >

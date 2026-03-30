@@ -2,12 +2,16 @@ import { useEffect, useState } from "react";
 import PrimaryButton, { SecondaryButton } from "../components/Buttons";
 import { FetchJson, ReadStoredUser } from "../api";
 import { FormatTime, FormatDate } from "../components/TimeFormats";
+import { useMessage } from "../hooks/useMessage";
+
+
 
 async function FetchCurrentHolds() {
   return FetchJson("/api/holds/current");
 }
 
 export default function Holds() {
+  const { showSuccess, showError, showWarning } = useMessage();
   const user = ReadStoredUser();
   const [holds, setHolds] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -21,26 +25,26 @@ export default function Holds() {
         setHolds(await FetchCurrentHolds());
       } catch (error) {
         console.error(error);
-        alert(error.message || "Failed to load holds.");
+        showError(error.message || "Failed to load holds.");
       } finally {
         setIsLoading(false);
       }
     }
 
     if (!currentUser) {
-      alert("Please log in first.");
+      showWarning("Please log in first.");
       window.location.href = "/login";
       return;
     }
 
     if (currentUser.user_type !== "staff") {
-      alert("Only staff can access the holds page.");
+      showWarning("Only staff can access the holds page.");
       window.location.href = "/";
       return;
     }
 
     LoadHolds();
-  }, [user?.staff_id, user?.user_type]);
+  }, [user?.staff_id, user?.user_type, showError, showWarning]);
 
   async function CancelHold(holdId) {
     try {
@@ -48,12 +52,12 @@ export default function Holds() {
         method: "DELETE",
       });
 
-      alert("Hold cancelled successfully!");
+      showSuccess("Hold cancelled successfully!");
       setIsLoading(true);
       setHolds(await FetchCurrentHolds());
     } catch (error) {
       console.error(error);
-      alert(error.message || "Failed to cancel hold.");
+      showError(error.message || "Failed to cancel hold.");
     } finally {
       setIsLoading(false);
     }
@@ -65,12 +69,12 @@ export default function Holds() {
         method: "POST",
       });
 
-      alert("Hold checked out successfully!");
+      showSuccess("Hold checked out successfully!");
       setIsLoading(true);
       setHolds(await FetchCurrentHolds());
     } catch (error) {
       console.error(error);
-      alert(error.message || "Failed to check out hold.");
+      showError(error.message || "Failed to check out hold.");
     } finally {
       setIsLoading(false);
     }

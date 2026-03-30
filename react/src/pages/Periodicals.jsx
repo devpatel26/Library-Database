@@ -1,5 +1,6 @@
 import { SubmitButton } from "../components/Buttons";
 import Dropdown from "../components/Dropdown";
+import { useMessage } from "../hooks/useMessage";
 // import languages, { bookformats, genres } from "../data/dummy/formdropdowns";
 
 import { ObjectDropdown, DisabledDropdown } from "../components/Dropdown";
@@ -10,6 +11,7 @@ export default function Periodicals() {
   const [languages, setLanguages] = useState([]);
   const [genres, setGenres] = useState([]);
   const [format, setFormat] = useState([]);
+  const { showSuccess, showError, showWarning } = useMessage();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   useEffect(() => {
@@ -57,7 +59,7 @@ export default function Periodicals() {
               !available ||
               !shelfnumber
             ) {
-              alert("Please fill in all required fields.");
+              showWarning("Please fill in all required fields.");
               return;
             }
 
@@ -82,11 +84,11 @@ export default function Periodicals() {
                 body: JSON.stringify(periodicalData),
               });
 
-              alert("Periodical entry successful!");
+              showSuccess("Periodical entry successful!");
               e.target.reset();
             } catch (error) {
               console.error(error);
-              alert(error.message || "Periodical entry failed.");
+              showError(error.message || "Periodical entry failed.");
             }
           }}
         >

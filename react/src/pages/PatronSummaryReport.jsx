@@ -2,29 +2,35 @@ import React, { useState } from "react";
 import PrimaryButton from "../components/Buttons";
 import { FetchJson, ReadStoredJson } from "../api";
 import { FormatBirthdate, FormatDate } from "../components/TimeFormats";
+import { useMessage } from "../hooks/useMessage";
 
 export default function PatronSummaryReport() {
   const [patronIdInput, setPatronIdInput] = useState("");
   const [reportData, setReportData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const {showError, showWarning } = useMessage();
 
   async function LoadReport() {
     const user = ReadStoredJson("user");
 
     if (!user) {
-      alert("Please log in first.");
-      window.location.href = "/login";
+      showWarning("Please log in first.");
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 800);
       return;
     }
 
     if (user.user_type !== "staff") {
-      alert("Only staff can access reports.");
-      window.location.href = "/";
+      showWarning("Only staff can access reports.");
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 800);
       return;
     }
 
     if (!patronIdInput) {
-      alert("Please enter a patron ID.");
+      showWarning("Please enter a patron ID.");
       return;
     }
 
@@ -36,7 +42,7 @@ export default function PatronSummaryReport() {
       setReportData(data);
     } catch (error) {
       console.error(error);
-      alert(error.message || "Failed to load report.");
+      showError(error.message || "Failed to load report.");
       setReportData(null);
     } finally {
       setIsLoading(false);

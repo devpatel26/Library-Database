@@ -2,6 +2,7 @@ import { SubmitButton } from "../components/Buttons";
 // import Dropdown from "../components/Dropdown";
 import { ObjectDropdown, DisabledDropdown } from "../components/Dropdown";
 import { FetchJson, GetErrorMessage } from "../api";
+import { useMessage } from "../hooks/useMessage";
 import { useEffect, useState } from "react";
 // import languages, { avmformats, genres } from "../data/dummy/formdropdowns";
 
@@ -11,6 +12,7 @@ export default function AudiovisualMedia() {
   const [format, setFormat] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const { showSuccess, showError, /*showWarning*/} = useMessage();
   useEffect(() => {
     async function LoadDropdowns() {
       try {
@@ -65,11 +67,13 @@ export default function AudiovisualMedia() {
                 body: JSON.stringify(avmData),
               });
 
-              alert("AVM entry successful!");
-              e.target.reset();
+            showSuccess("AVM entry successful!");
+                setTimeout(() => {
+                  window.location.reload();
+                }, 800);
             } catch (error) {
               console.error(error);
-              alert(error.message || "AVM entry failed.");
+              showError(error.message || "AVM entry failed.");
             }
           }}
         >

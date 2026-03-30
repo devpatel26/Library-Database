@@ -1,7 +1,9 @@
 import { SubmitButton } from "../components/Buttons";
+import { useMessage } from "../hooks/useMessage";
 import { FetchJson } from "../api";
 
 export default function Equipment() {
+  const { showSuccess, showError} = useMessage();
   return (
     <section className="rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
       <h2 className="text-3xl font-bold text-white">Equipment Entry</h2>
@@ -28,11 +30,13 @@ export default function Equipment() {
                 body: JSON.stringify(equipmentData),
               });
 
-              alert("Equipment entry successful!");
-              e.target.reset();
+              showSuccess("Equipment entry successful!");
+              setTimeout(() => {
+                window.location.reload();
+              }, 800);
             } catch (error) {
               console.error(error);
-              alert(error.message || "Equipment entry failed.");
+              showError(error.message || "Equipment entry failed.");
             }
           }}
         >

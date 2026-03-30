@@ -1,7 +1,9 @@
 import { SubmitButton } from "../components/Buttons";
 import { FetchJson } from "../api";
+import { useMessage } from "../hooks/useMessage";
 
 export default function StaffRegistration() {
+  const { showSuccess, showError} = useMessage();
   return (
     <section className="mx-auto flex w-full max-w-3xl flex-col items-center rounded-3xl border border-white/10 bg-slate-900/70 p-8 text-center shadow-xl shadow-slate-950/30 sm:p-10">
       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
@@ -42,11 +44,11 @@ export default function StaffRegistration() {
               body: JSON.stringify(staffData),
             });
 
-            alert("Staff registration successful!");
+            showSuccess("Staff registration successful!");
             e.target.reset();
           } catch (error) {
             console.error(error);
-            alert(error.message || "Registration failed.");
+            showError(error.message || "Registration failed.");
           }
         }}
       >

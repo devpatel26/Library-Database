@@ -1,9 +1,12 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { SubmitButton } from "../components/Buttons";
+import { useMessage } from "../hooks/useMessage";
 import { FetchJson, ReadStoredUser } from "../api";
 
+
 export default function CreateSignupCode() {
+  const { showSuccess, showError } = useMessage();
   const navigate = useNavigate();
   const user = ReadStoredUser();
   const userKey = user
@@ -58,11 +61,13 @@ export default function CreateSignupCode() {
               body: JSON.stringify(signupCodeData),
             });
 
-            alert("Signup code created successfully!");
-            e.target.reset();
+            showSuccess("Signup code created successfully!");
+            setTimeout(() => {
+              window.location.reload();
+            }, 800);
           } catch (error) {
             console.error(error);
-            alert(error.message || "Failed to create signup code.");
+            showError(error.message || "Failed to create signup code.");
           }
         }}
       >

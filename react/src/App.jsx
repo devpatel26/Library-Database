@@ -28,6 +28,7 @@ import MostBorrowedBooksReport from "./pages/MostBorrowedBooksReport.jsx";
 import PatronSummaryReport from "./pages/PatronSummaryReport.jsx";
 import OverdueReport from "./pages/OverdueReport.jsx";
 import TestingReport from "./pages/TestingReport.jsx";
+import { MessageProvider } from "./context/MessageContext.jsx";
 
 function App() {
   const user = ReadStoredUser();
@@ -82,6 +83,7 @@ function App() {
   const version = "1.1.0";
 
   return (
+    <MessageProvider>
     <BrowserRouter>
       <div className="min-h-screen min-w-80 bg-slate-950 text-slate-100 antialiased flex flex-col">
         <nav className="border-b border-white/10 bg-slate-950/95 backdrop-blur">
@@ -151,6 +153,7 @@ function App() {
       </div>
       
     </BrowserRouter>
+    </MessageProvider>
   );
 }
 

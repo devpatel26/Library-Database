@@ -3,8 +3,10 @@ import { ObjectDropdown, DisabledDropdown } from "../components/Dropdown";
 import { FetchJson, GetErrorMessage } from "../api";
 import { useEffect, useState } from "react";
 import InputComponent from "../components/InputComponent";
+import { useMessage } from "../hooks/useMessage";
 
 export default function Books() {
+  const { showSuccess, showError} = useMessage();
   const [languages, setLanguages] = useState([]);
   const [genres, setGenres] = useState([]);
   const [format, setFormat] = useState([]);
@@ -65,11 +67,13 @@ export default function Books() {
                 body: JSON.stringify(bookData),
               });
 
-              alert("Book entry successful!");
-              e.target.reset();
+              showSuccess("Book entry successful!");
+              setTimeout(() => {
+                window.location.reload();
+              }, 800);
             } catch (error) {
               console.error(error);
-              alert(error.message || "Book entry failed.");
+              showError(error.message || "Book entry failed.");
             }
           }}
         >
