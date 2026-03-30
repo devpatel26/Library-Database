@@ -29,6 +29,7 @@ import PatronSummaryReport from "./pages/PatronSummaryReport.jsx";
 import OverdueReport from "./pages/OverdueReport.jsx";
 import TestingReport from "./pages/TestingReport.jsx";
 import { MessageProvider } from "./context/MessageContext.jsx";
+import FineSummaryReport from "./pages/FineSummaryReport";
 
 function App() {
   const user = ReadStoredUser();
@@ -132,6 +133,7 @@ function App() {
             <Route path="/createsignupcode" element={<CreateSignupCode />} />
             <Route path="/holds" element={<Holds />} />
             <Route path="/staffloans" element={<StaffLoans />} />
+
             <Route
               path="/report/mostborrowedbooks"
               element={<MostBorrowedBooksReport />}
@@ -142,6 +144,7 @@ function App() {
             />
             <Route path="/report/overduereport" element={<OverdueReport />} />
             <Route path="/report/testing" element={<TestingReport />} />
+            <Route path="/report/fine-summary" element={<FineSummaryReport />} />
           
           </Routes>
         </main>
