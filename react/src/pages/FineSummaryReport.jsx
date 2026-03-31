@@ -35,9 +35,7 @@ function NormalizeStatus(status) {
 
   return "Overdue";
 }
-function GetLoanStartValue(fine) {
-  return fine.loanStart ?? fine.loanStartDate ?? fine.loan_origin_date ?? null;
-}
+
 function ParseDateValue(value) {
 
   if (!value) {
@@ -80,8 +78,6 @@ function BuildSortValue(fine, sortBy) {
       return SafeText(fine.patronName).toLowerCase();
     case "title":
       return SafeText(fine.title).toLowerCase();
-    case "loanStart":
-      return ParseDateValue(GetLoanStartValue(fine))?.getTime() ?? 0;
     case "loanDueDate":
       return ParseDateValue(fine.loanDueDate)?.getTime() ?? 0;
     case "daysOverdue":
