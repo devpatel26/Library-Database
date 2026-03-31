@@ -3719,9 +3719,8 @@ app.get(["/reports/patron-summary", "/api/reports/patron-summary"], async (req, 
   }
 });
 
-
-// Get overdue items report
-app.get(["/reports/overdue-items", "/api/reports/overdue-items"], async (req, res) => {
+// Mark loan as lost endpoint
+app.post(["/loans/:loanId/mark-lost", "/api/loans/:loanId/mark-lost"], async (req, res) => {
   try {
     const user = await RequireStaffUser(req, res);
 
@@ -3729,67 +3728,179 @@ app.get(["/reports/overdue-items", "/api/reports/overdue-items"], async (req, re
       return;
     }
 
-    const [rows] = await pool.query(
+    const loanId = ParsePositiveInteger(req.params.loanId);
+
+    if (!loanId) {
+      return res.status(400).json({ error: "A valid loanId is required." });
+    }
+
+    const [loans] = await pool.query(
       `
       SELECT
-        l.loan_id AS loanId,
-        l.item_id AS itemId,
-        l.patron_id AS patronId,
-        l.loan_due_date AS loanDueDate,
-        l.loan_origin_date AS loanStart,
-        p.first_name AS firstName,
-        p.last_name AS lastName,
-        pr.fine AS dailyFine,
-        DATEDIFF(CURDATE(), l.loan_due_date) AS daysOverdue,
-        ROUND(DATEDIFF(CURDATE(), l.loan_due_date) * pr.fine, 2) AS currentFine,
-        COALESCE(
-          b.title,
-          per.title,
-          am.title,
-          e.equipment_name
-        ) AS title,
-        COALESCE(
-          (
-            SELECT GROUP_CONCAT(CONCAT(a.first_name, ' ', a.last_name) SEPARATOR ', ')
-            FROM authors a
-            WHERE a.item_id = b.item_id
-          ),
-          (
-            SELECT GROUP_CONCAT(CONCAT(c.first_name, ' ', c.last_name) SEPARATOR ', ')
-            FROM contributors c
-            WHERE c.item_id = am.item_id
-          ),
-          NULL
-        ) AS creator
-      FROM loans l
-      JOIN patrons p
-        ON p.patron_id = l.patron_id
-      JOIN patron_roles pr
-        ON pr.patron_role_code = l.patron_role_code
-      LEFT JOIN books b
-        ON b.item_id = l.item_id
-      LEFT JOIN periodicals per
-        ON per.item_id = l.item_id
-      LEFT JOIN audiovisual_media am
-        ON am.item_id = l.item_id
-      LEFT JOIN equipment e
-        ON e.item_id = l.item_id
-      WHERE l.loan_status_code = 1
-        AND l.loan_due_date < CURDATE()
-      ORDER BY daysOverdue DESC, currentFine DESC, l.loan_due_date ASC
-      `
+        loan_id AS loanId,
+        loan_status_code AS loanStatusCode,
+        return_date AS returnDate,
+        loan_due_date AS loanDueDate
+      FROM loans
+      WHERE loan_id = ?
+      `,
+      [loanId]
     );
 
-    const formattedRows = rows.map((row) => ({
-      ...row,
-      patronName: `${row.firstName} ${row.lastName}`,
-    }));
+    if (loans.length === 0) {
+      return res.status(404).json({ error: "Loan not found." });
+    }
 
-    return res.json(formattedRows);
+    const loan = loans[0];
+
+    if (loan.returnDate) {
+      return res.status(400).json({ error: "This loan has already been returned." });
+    }
+
+    await pool.query(
+      `
+      UPDATE loans
+      SET loan_status_code = 3,
+          return_date = CURRENT_DATE
+      WHERE loan_id = ?
+      `,
+      [loanId]
+    );
+
+    return res.json({ message: "Loan marked as lost successfully." });
   } catch (error) {
-    console.error("Load overdue report error:", error);
+    console.error("Mark lost error:", error);
     return res.status(500).json({
-      error: FormatServerError(error, "Failed to load overdue report."),
+      error: FormatServerError(error, "Failed to mark loan as lost."),
     });
   }
 });
+
+
+// Get overdue items report
+app.get(
+  ["/reports/overdue-items", "/api/reports/overdue-items"],
+  async (req, res) => {
+    try {
+      const user = await RequireStaffUser(req, res);
+
+      if (!user) {
+        return;
+      }
+
+      const startDate = req.query.startDate ?? null;
+      const endDate = req.query.endDate ?? null;
+
+      const params = [];
+
+      let dateFilter = "";
+
+      if (startDate) {
+        dateFilter += " AND l.loan_due_date >= ?";
+        params.push(startDate);
+      }
+
+      if (endDate) {
+        dateFilter += " AND l.loan_due_date <= ?";
+        params.push(endDate);
+      }
+
+      const [rows] = await pool.query(
+        `
+        SELECT
+          l.loan_id AS loanId,
+          l.item_id AS itemId,
+          l.patron_id AS patronId,
+          l.loan_origin_date AS loanStartDate,
+          l.loan_due_date AS loanDueDate,
+          l.return_date AS returnDate,
+
+          p.first_name AS firstName,
+          p.last_name AS lastName,
+
+          pr.fine AS dailyFine,
+
+          DATEDIFF(CURDATE(), l.loan_due_date) AS daysOverdue,
+          ROUND(DATEDIFF(CURDATE(), l.loan_due_date) * pr.fine, 2) AS currentFine,
+
+          COALESCE(
+            b.title,
+            per.title,
+            am.title,
+            e.equipment_name
+          ) AS title,
+
+          COALESCE(
+            (
+              SELECT GROUP_CONCAT(CONCAT(a.first_name, ' ', a.last_name) SEPARATOR ', ')
+              FROM authors a
+              WHERE a.item_id = b.item_id
+            ),
+            (
+              SELECT GROUP_CONCAT(CONCAT(c.first_name, ' ', c.last_name) SEPARATOR ', ')
+              FROM contributors c
+              WHERE c.item_id = am.item_id
+            ),
+            NULL
+          ) AS creator,
+
+          CASE
+            WHEN b.item_id IS NOT NULL THEN 'Book'
+            WHEN per.item_id IS NOT NULL THEN 'Periodical'
+            WHEN am.item_id IS NOT NULL THEN 'Audiovisual Media'
+            WHEN e.item_id IS NOT NULL THEN 'Equipment'
+            ELSE 'Other'
+          END AS category
+
+        FROM loans l
+
+        JOIN patrons p
+          ON p.patron_id = l.patron_id
+
+        JOIN patron_roles pr
+          ON pr.patron_role_code = l.patron_role_code
+
+        LEFT JOIN books b
+          ON b.item_id = l.item_id
+
+        LEFT JOIN periodicals per
+          ON per.item_id = l.item_id
+
+        LEFT JOIN audiovisual_media am
+          ON am.item_id = l.item_id
+
+        LEFT JOIN equipment e
+          ON e.item_id = l.item_id
+
+        WHERE l.loan_status_code = 1
+          AND l.return_date IS NULL
+          AND l.loan_due_date < CURDATE()
+          ${dateFilter}
+
+        ORDER BY
+          daysOverdue DESC,
+          currentFine DESC,
+          l.loan_due_date ASC
+        `,
+        params
+      );
+
+      const formattedRows = rows.map((row) => ({
+        ...row,
+        patronName: `${row.firstName} ${row.lastName}`,
+      }));
+
+      return res.json(formattedRows);
+    } catch (error) {
+      console.error("Load overdue report error:", error);
+
+      return res.status(500).json({
+        error: FormatServerError(
+          error,
+          "Failed to load overdue report."
+        ),
+      });
+    }
+    
+  }
+);

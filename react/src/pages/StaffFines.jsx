@@ -171,8 +171,8 @@ export default function StaffFines() {
         ) : fines.length === 0 ? (
           <div className="text-slate-300">No fines found.</div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full border-collapse overflow-hidden rounded-xl">
+          <div className="mt-6 w-full overflow-x-hidden">
+            <table className="w-full table-fixed text-left text-sm">
               <thead>
                 <tr className="bg-slate-800 text-left text-sm text-slate-200">
                   <th className="px-4 py-3">Fine ID</th>

@@ -558,3 +558,7 @@ ADD COLUMN return_date DATE NULL AFTER loan_due_date;
 UPDATE loans
 SET return_date = loan_due_date
 WHERE loan_status_code = 2;
+
+--
+INSERT INTO loan_statuses (loan_status_name)
+VALUES ('Lost');
