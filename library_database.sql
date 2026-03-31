@@ -549,3 +549,12 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+-- adding return_date to loans table
+ALTER TABLE loans
+ADD COLUMN return_date DATE NULL AFTER loan_due_date;
+
+-- setting return_date to loan_due_date for all loans with loan_status_code = 2 (returned)
+UPDATE loans
+SET return_date = loan_due_date
+WHERE loan_status_code = 2;

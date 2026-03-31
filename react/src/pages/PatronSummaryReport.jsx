@@ -107,7 +107,7 @@ export default function PatronSummaryReport() {
               {reportData.holds.length === 0 ? (
                 <div className="text-slate-300">No current holds found.</div>
               ) : (
-                <table className="min-w-full border-collapse overflow-hidden rounded-xl">
+                <table className="min-w-full table-fixed border-collapse overflow-hidden rounded-xl">
                   <thead>
                     <tr className="bg-slate-800 text-left text-sm text-slate-200">
                       <th className="px-4 py-3">Hold ID</th>
@@ -148,7 +148,7 @@ export default function PatronSummaryReport() {
               {reportData.activeLoans.length === 0 ? (
                 <div className="text-slate-300">No active loans found.</div>
               ) : (
-                <table className="min-w-full border-collapse overflow-hidden rounded-xl">
+                <table className="min-w-full table-fixed border-collapse overflow-hidden rounded-xl">
                   <thead>
                     <tr className="bg-slate-800 text-left text-sm text-slate-200">
                       <th className="px-4 py-3">Loan ID</th>
@@ -193,7 +193,7 @@ export default function PatronSummaryReport() {
               {reportData.completedLoans.length === 0 ? (
                 <div className="text-slate-300">No completed loans found.</div>
               ) : (
-                <table className="min-w-full border-collapse overflow-hidden rounded-xl">
+                <table className="min-w-full table-fixed border-collapse overflow-hidden rounded-xl">
                   <thead>
                     <tr className="bg-slate-800 text-left text-sm text-slate-200">
                       <th className="px-4 py-3">Loan ID</th>
@@ -236,7 +236,7 @@ export default function PatronSummaryReport() {
               {reportData.fines.length === 0 ? (
                 <div className="text-slate-300">No fines found.</div>
               ) : (
-                <table className="min-w-full border-collapse overflow-hidden rounded-xl">
+                <table className="min-w-full table-fixed border-collapse overflow-hidden rounded-xl">
                   <thead>
                     <tr className="bg-slate-800 text-left text-sm text-slate-200">
                       <th className="px-4 py-3">Fine ID</th>

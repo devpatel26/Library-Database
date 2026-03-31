@@ -3007,6 +3007,7 @@ app.post(["/loans/:loanId/return", "/api/loans/:loanId/return"], async (req, res
       `
       UPDATE loans
       SET loan_status_code = 2
+      return_date = CURRENT_DATE
       WHERE loan_id = ?
       `,
       [loanId]
@@ -3396,11 +3397,11 @@ app.get(["/reports/popularity", "/api/reports/popularity"], async (req, res) => 
 
     const roleCode = Number(
       user.roleCode ??
-      user.role ??
-      user.role_code ??
-      user.staff_role_code ??
-      user.staffRoleCode ??
-      0
+        user.role ??
+        user.role_code ??
+        user.staff_role_code ??
+        user.staffRoleCode ??
+        0
     );
 
     if (roleCode !== 2) {
@@ -3442,10 +3443,25 @@ app.get(["/reports/popularity", "/api/reports/popularity"], async (req, res) => 
           WHEN e.item_id IS NOT NULL THEN 'Equipment'
           ELSE 'Other'
         END AS category,
-        NULL AS genre,
-        NULL AS publisher,
-        NULL AS publicationDate,
-        NULL AS summary,
+        g.genre AS genre,
+        COALESCE(
+          b.publisher,
+          per.publisher,
+          am.publisher,
+          NULL
+        ) AS publisher,
+        COALESCE(
+          b.publication_date,
+          per.publication_date,
+          am.publication_date,
+          NULL
+        ) AS publicationDate,
+        COALESCE(
+          b.summary,
+          per.summary,
+          am.summary,
+          NULL
+        ) AS summary,
         COUNT(l.loan_id) AS loanCount,
         COALESCE(
           (
@@ -3467,6 +3483,12 @@ app.get(["/reports/popularity", "/api/reports/popularity"], async (req, res) => 
       LEFT JOIN periodicals per ON per.item_id = l.item_id
       LEFT JOIN audiovisual_media am ON am.item_id = l.item_id
       LEFT JOIN equipment e ON e.item_id = l.item_id
+      LEFT JOIN genres g
+        ON g.genre_code = COALESCE(
+          b.genre_code,
+          per.genre_code,
+          am.genre_code
+        )
       WHERE 1 = 1
         ${dateClause}
       GROUP BY
@@ -3478,7 +3500,17 @@ app.get(["/reports/popularity", "/api/reports/popularity"], async (req, res) => 
         b.title,
         per.title,
         am.title,
-        e.equipment_name
+        e.equipment_name,
+        g.genre,
+        b.publisher,
+        per.publisher,
+        am.publisher,
+        b.publication_date,
+        per.publication_date,
+        am.publication_date,
+        b.summary,
+        per.summary,
+        am.summary
       ORDER BY loanCount DESC, title ASC
       `,
       filters
@@ -3493,6 +3525,74 @@ app.get(["/reports/popularity", "/api/reports/popularity"], async (req, res) => 
   }
 });
 
+// Get popularity loan history for a specific item
+app.get(
+  ["/reports/popularity/:itemId/history", "/api/reports/popularity/:itemId/history"],
+  async (req, res) => {
+    try {
+      const user = await RequireStaffUser(req, res);
+
+      if (!user) {
+        return;
+      }
+
+      const roleCode = Number(
+        user.roleCode ??
+          user.role ??
+          user.role_code ??
+          user.staff_role_code ??
+          user.staffRoleCode ??
+          0
+      );
+
+      if (roleCode !== 2) {
+        return res.status(403).json({
+          error: "Only admin can access popularity loan history.",
+        });
+      }
+
+      const itemId = ParsePositiveInteger(req.params.itemId);
+
+      if (!itemId) {
+        return res.status(400).json({
+          error: "A valid itemId is required.",
+        });
+      }
+
+      const [rows] = await pool.query(
+        `
+        SELECT
+          l.loan_id AS loanId,
+          l.item_id AS itemId,
+          l.patron_id AS patronId,
+          p.first_name AS firstName,
+          p.last_name AS lastName,
+          l.loan_origin_date AS loanStartDate,
+          l.loan_due_date AS loanDueDate,
+          l.return_date AS returnDate,
+          l.loan_status_code AS loanStatusCode
+        FROM loans l
+        JOIN patrons p ON p.patron_id = l.patron_id
+        WHERE l.item_id = ?
+        ORDER BY l.loan_origin_date DESC, l.loan_id DESC
+        `,
+        [itemId]
+      );
+
+      const formattedRows = rows.map((row) => ({
+        ...row,
+        patronName: `${row.firstName} ${row.lastName}`,
+      }));
+
+      return res.json(formattedRows);
+    } catch (error) {
+      console.error("Popularity loan history error:", error);
+      return res.status(500).json({
+        error: FormatServerError(error, "Failed to load loan history."),
+      });
+    }
+  }
+);
 
 
 // Get patron summary report

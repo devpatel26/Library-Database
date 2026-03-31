@@ -24,7 +24,11 @@ function NormalizeCategory(category) {
     return "Periodical";
   }
 
-  if (text === "audiovisual media" || text === "audiovisualmedia" || text === "audiovisual") {
+  if (
+    text === "audiovisual media" ||
+    text === "audiovisualmedia" ||
+    text === "audiovisual"
+  ) {
     return "Audiovisual Media";
   }
 
@@ -83,8 +87,26 @@ function BuildSortValue(item, sortBy) {
   }
 }
 
+function FormatLoanStatus(statusCode) {
+  const code = Number(statusCode);
+
+  if (code === 1) {
+    return "Checked Out";
+  }
+
+  if (code === 2) {
+    return "Returned";
+  }
+
+  return `Status ${SafeText(statusCode)}`;
+}
+
 export default function PopularityReport() {
   const { showError, showWarning, showInfo } = useMessage();
+
+  const [expandedItemId, setExpandedItemId] = useState(null);
+  const [loanHistoryByItemId, setLoanHistoryByItemId] = useState({});
+  const [historyLoadingItemId, setHistoryLoadingItemId] = useState(null);
 
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -184,7 +206,10 @@ export default function PopularityReport() {
       }
     });
 
-    return ["All Genres", ...Array.from(uniqueGenres).sort((a, b) => a.localeCompare(b))];
+    return [
+      "All Genres",
+      ...Array.from(uniqueGenres).sort((a, b) => a.localeCompare(b)),
+    ];
   }, [items]);
 
   const filteredItems = useMemo(() => {
@@ -246,7 +271,10 @@ export default function PopularityReport() {
           return false;
         }
 
-        if (searchBy === "Publisher" && !byPublisher.includes(normalizedSearch)) {
+        if (
+          searchBy === "Publisher" &&
+          !byPublisher.includes(normalizedSearch)
+        ) {
           return false;
         }
       }
@@ -330,7 +358,9 @@ export default function PopularityReport() {
     }
 
     if (startDate && endDate) {
-      return `Showing popularity data from ${FormatDateLabel(startDate)} to ${FormatDateLabel(endDate)}.`;
+      return `Showing popularity data from ${FormatDateLabel(
+        startDate
+      )} to ${FormatDateLabel(endDate)}.`;
     }
 
     if (startDate) {
@@ -339,6 +369,35 @@ export default function PopularityReport() {
 
     return `Showing popularity data up to ${FormatDateLabel(endDate)}.`;
   }, [startDate, endDate]);
+
+  async function ToggleLoanHistory(itemId) {
+    if (expandedItemId === itemId) {
+      setExpandedItemId(null);
+      return;
+    }
+
+    setExpandedItemId(itemId);
+
+    if (loanHistoryByItemId[itemId]) {
+      return;
+    }
+
+    try {
+      setHistoryLoadingItemId(itemId);
+
+      const data = await FetchJson(`/api/reports/popularity/${itemId}/history`);
+
+      setLoanHistoryByItemId((current) => ({
+        ...current,
+        [itemId]: Array.isArray(data) ? data : [],
+      }));
+    } catch (error) {
+      console.error(error);
+      showError(error.message || "Failed to load loan history.");
+    } finally {
+      setHistoryLoadingItemId(null);
+    }
+  }
 
   function ResetFilters() {
     setStartDate("");
@@ -363,12 +422,13 @@ export default function PopularityReport() {
       </h1>
 
       <p className="mt-3 text-sm font-medium text-sky-300">
-        Note: Dates in this report refer to item loan dates used to measure popularity.
+        Note: Dates in this report refer to item loan dates used to measure
+        popularity.
       </p>
 
       <p className="mt-4 max-w-3xl text-base leading-7 text-slate-300">
-        Review the most borrowed items across categories, filter by genre and format,
-        and analyze popularity with flexible search and sorting tools.
+        Review the most borrowed items across categories, filter by genre and
+        format, and analyze popularity with flexible search and sorting tools.
       </p>
 
       {isLoading ? (
@@ -376,13 +436,21 @@ export default function PopularityReport() {
       ) : (
         <>
           <div className="mt-8">
-            <p className="text-sm font-medium text-slate-300">{dateRangeLabel}</p>
+            <p className="text-sm font-medium text-slate-300">
+              {dateRangeLabel}
+            </p>
           </div>
 
           <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <SummaryCard title="Total Loans Count" value={summary.totalLoans} />
-            <SummaryCard title="Unique Items Borrowed" value={summary.uniqueItems} />
-            <SummaryCard title="Most Popular Category" value={summary.topCategory} />
+            <SummaryCard
+              title="Unique Items Borrowed"
+              value={summary.uniqueItems}
+            />
+            <SummaryCard
+              title="Most Popular Category"
+              value={summary.topCategory}
+            />
             <SummaryCard title="Most Popular Genre" value={summary.topGenre} />
             <SummaryCard
               title="Top Borrowed Item"
@@ -536,60 +604,198 @@ export default function PopularityReport() {
               Popularity Detail Table
             </h2>
 
-            <div className="mt-4 overflow-x-auto">
-              <table className="min-w-full text-left text-sm">
+            <div className="mt-4 w-full overflow-x-hidden">
+              <table className="w-full table-fixed text-left text-sm">
                 <thead>
                   <tr className="border-b border-white/10 text-slate-300">
-                    <th className="px-3 py-2">Item ID</th>
-                    <th className="px-3 py-2">Title</th>
-                    <th className="px-3 py-2">Creator</th>
-                    <th className="px-3 py-2">Category</th>
-                    <th className="px-3 py-2">Genre</th>
-                    <th className="px-3 py-2">Publisher</th>
-                    <th className="px-3 py-2">Publication Date</th>
-                    <th className="px-3 py-2">Loan Count</th>
-                    <th className="px-3 py-2">Summary</th>
+                    <th className="px-2 py-2 w-[58px]">Item ID</th>
+                    <th className="px-2 py-2 w-[108px]">Title</th>
+                    <th className="px-2 py-2 w-[100px]">Creator</th>
+                    <th className="px-2 py-2 w-[82px]">Category</th>
+                    <th className="px-2 py-2 w-[88px]">Genre</th>
+                    <th className="px-2 py-2 w-[92px]">Publisher</th>
+                    <th className="px-2 py-2 w-[96px]">Publication Date</th>
+                    <th className="px-2 py-2 w-[68px]">Loan Count</th>
+                    <th className="px-2 py-2 w-[120px]">Summary</th>
+                    <th className="px-2 py-2 w-[92px]">Action</th>
                   </tr>
                 </thead>
 
                 <tbody>
                   {filteredItems.length === 0 ? (
                     <tr>
-                      <td colSpan={9} className="px-3 py-5 text-slate-400">
+                      <td colSpan={10} className="px-3 py-5 text-slate-400">
                         No popularity records match the current filters.
                       </td>
                     </tr>
                   ) : (
-                    filteredItems.map((item) => (
-                      <tr
-                        key={item.itemId}
-                        className="border-b border-white/5 text-slate-200"
-                      >
-                        <td className="px-3 py-3">{item.itemId}</td>
-                        <td className="px-3 py-3 font-semibold text-white">
-                          {item.title || "-"}
-                        </td>
-                        <td className="px-3 py-3">{item.creator || "-"}</td>
-                        <td className="px-3 py-3">
-                          {NormalizeCategory(item.category)}
-                        </td>
-                        <td className="px-3 py-3">{item.genre || "-"}</td>
-                        <td className="px-3 py-3">{item.publisher || "-"}</td>
-                        <td className="px-3 py-3">
-                          {item.publicationDate
-                            ? FormatDate(new Date(item.publicationDate), true)
-                            : "-"}
-                        </td>
-                        <td className="px-3 py-3 font-semibold text-sky-300">
-                          {SafeNumber(item.loanCount)}
-                        </td>
-                        <td className="px-3 py-3">
-                          <div className="max-w-md whitespace-normal text-slate-300">
-                            {item.summary || "-"}
-                          </div>
-                        </td>
-                      </tr>
-                    ))
+                    filteredItems.map((item) => {
+                      const isExpanded = expandedItemId === item.itemId;
+                      const historyRows = loanHistoryByItemId[item.itemId] ?? [];
+                      const isHistoryLoading =
+                        historyLoadingItemId === item.itemId;
+
+                      return (
+                        <React.Fragment key={item.itemId}>
+                          <tr className="border-b border-white/5 text-slate-200 align-top">
+                            <td className="px-2 py-3">{item.itemId}</td>
+
+                            <td className="px-2 py-3 font-semibold text-white align-top">
+                              <div className="break-words">
+                                {item.title || "-"}
+                              </div>
+                            </td>
+
+                            <td className="px-2 py-3 align-top">
+                              <div className="break-words">
+                                {item.creator || "-"}
+                              </div>
+                            </td>
+
+                            <td className="px-2 py-3 align-top">
+                              {NormalizeCategory(item.category)}
+                            </td>
+
+                            <td className="px-2 py-3 align-top">
+                              <div className="break-words">
+                                {item.genre || "-"}
+                              </div>
+                            </td>
+
+                            <td className="px-2 py-3 align-top">
+                              <div className="break-words">
+                                {item.publisher || "-"}
+                              </div>
+                            </td>
+
+                            <td className="px-2 py-3 align-top">
+                              {item.publicationDate
+                                ? FormatDate(new Date(item.publicationDate), true)
+                                : "-"}
+                            </td>
+
+                            <td className="px-2 py-3 font-semibold text-sky-300 align-top">
+                              {SafeNumber(item.loanCount)}
+                            </td>
+
+                            <td className="px-2 py-3 align-top">
+                              <div className="break-words text-slate-300">
+                                {item.summary || "-"}
+                              </div>
+                            </td>
+
+                            <td className="px-2 py-3 align-top">
+                              <button
+                                type="button"
+                                onClick={() => ToggleLoanHistory(item.itemId)}
+                                className="w-[88px] rounded-xl border border-sky-400/30 bg-sky-500/15 px-2 py-2 text-xs font-semibold leading-4 text-sky-200 transition hover:border-sky-300/50 hover:bg-sky-500/25"
+                              >
+                                {isExpanded
+                                  ? "Hide Loan History"
+                                  : "View Loan History"}
+                              </button>
+                            </td>
+                          </tr>
+
+                          {isExpanded ? (
+                            <tr className="border-b border-white/10 bg-slate-950/50">
+                              <td colSpan={10} className="px-4 py-4">
+                                <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
+                                  <h3 className="text-lg font-semibold text-white">
+                                    Loan History for Item {item.itemId}
+                                  </h3>
+
+                                  <p className="mt-2 text-sm text-slate-300">
+                                    Title:{" "}
+                                    <span className="font-medium text-white">
+                                      {item.title || "-"}
+                                    </span>
+                                  </p>
+
+                                  {isHistoryLoading ? (
+                                    <div className="mt-4 text-slate-300">
+                                      Loading loan history...
+                                    </div>
+                                  ) : historyRows.length === 0 ? (
+                                    <div className="mt-4 text-slate-400">
+                                      No loan history found for this item.
+                                    </div>
+                                  ) : (
+                                    <div className="mt-4 overflow-x-auto">
+                                      <table className="min-w-[900px] text-left text-sm">
+                                        <thead>
+                                          <tr className="border-b border-white/10 text-slate-300">
+                                            <th className="px-3 py-2">Loan ID</th>
+                                            <th className="px-3 py-2">Item ID</th>
+                                            <th className="px-3 py-2">Patron</th>
+                                            <th className="px-3 py-2">Patron ID</th>
+                                            <th className="px-3 py-2">Borrow Date</th>
+                                            <th className="px-3 py-2">Due Date</th>
+                                            <th className="px-3 py-2">Return Date</th>
+                                            <th className="px-3 py-2">Status</th>
+                                          </tr>
+                                        </thead>
+
+                                        <tbody>
+                                          {historyRows.map((loan) => (
+                                            <tr
+                                              key={loan.loanId}
+                                              className="border-b border-white/5 text-slate-200"
+                                            >
+                                              <td className="px-3 py-3">
+                                                {loan.loanId}
+                                              </td>
+                                              <td className="px-3 py-3">
+                                                {loan.itemId}
+                                              </td>
+                                              <td className="px-3 py-3">
+                                                {loan.patronName}
+                                              </td>
+                                              <td className="px-3 py-3">
+                                                {loan.patronId}
+                                              </td>
+                                              <td className="px-3 py-3">
+                                                {loan.loanStartDate
+                                                  ? FormatDate(
+                                                      new Date(loan.loanStartDate),
+                                                      true
+                                                    )
+                                                  : "-"}
+                                              </td>
+                                              <td className="px-3 py-3">
+                                                {loan.loanDueDate
+                                                  ? FormatDate(
+                                                      new Date(loan.loanDueDate),
+                                                      true
+                                                    )
+                                                  : "-"}
+                                              </td>
+                                              <td className="px-3 py-3">
+                                                {loan.returnDate
+                                                  ? FormatDate(
+                                                      new Date(loan.returnDate),
+                                                      true
+                                                    )
+                                                  : "-"}
+                                              </td>
+                                              <td className="px-3 py-3 font-medium text-sky-300">
+                                                {FormatLoanStatus(
+                                                  loan.loanStatusCode
+                                                )}
+                                              </td>
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ) : null}
+                        </React.Fragment>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
