@@ -24,7 +24,7 @@ import Logout from "./pages/Logout.jsx";
 import CreateSignupCode from "./pages/CreateSignupCode.jsx";
 import { ReadStoredUser } from "./api";
 import Holds from "./pages/Holds.jsx";
-import MostBorrowedBooksReport from "./pages/MostBorrowedBooksReport.jsx";
+import PopularityReport from "./pages/PopularityReport.jsx";
 import PatronSummaryReport from "./pages/PatronSummaryReport.jsx";
 import OverdueReport from "./pages/OverdueReport.jsx";
 import TestingReport from "./pages/TestingReport.jsx";
@@ -182,10 +182,7 @@ function App() {
                   <Route path="/createsignupcode" element={<CreateSignupCode />} />
                   <Route path="/holds" element={<Holds />} />
                   <Route path="/staffloans" element={<StaffLoans />} />
-                  <Route
-                    path="/report/mostborrowedbooks"
-                    element={<MostBorrowedBooksReport />}
-                  />
+                  <Route path="/report/PopularityReport" element={<PopularityReport />} />
                   <Route
                     path="/report/patronsummary"
                     element={<PatronSummaryReport />}

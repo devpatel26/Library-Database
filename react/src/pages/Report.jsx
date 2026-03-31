@@ -20,15 +20,15 @@ export default function Report() {
       <div className="mt-8 grid w-full max-w-3xl grid-cols-1 gap-6 md:grid-cols-3">
         <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-left">
           <h2 className="text-xl font-semibold text-white">
-            Most Borrowed Books
+            Popularity Report
           </h2>
           <p className="mt-3 text-sm leading-6 text-slate-300">
-            View the books with the highest total number of loans.
+            View most popular items in the library, including different categories.
           </p >
           <div className="mt-6 flex justify-center">
             <PrimaryButton
               title="Open Report"
-              onClick={() => navigate("/report/mostborrowedbooks")}
+              onClick={() => navigate("/report/popularityreport")}
             />
           </div>
         </div>

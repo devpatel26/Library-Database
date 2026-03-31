@@ -3380,8 +3380,13 @@ app.post(["/fines/:fineId/waive", "/api/fines/:fineId/waive"], async (req, res) 
   }
 });
 
-// Get most borrowed books report
-app.get(["/reports/most-borrowed-books", "/api/reports/most-borrowed-books"], async (req, res) => {
+function SafeText(value) {
+  return value == null ? "" : String(value);
+}
+
+
+// Get populity report
+app.get(["/reports/popularity", "/api/reports/popularity"], async (req, res) => {
   try {
     const user = await RequireStaffUser(req, res);
 
@@ -3389,31 +3394,106 @@ app.get(["/reports/most-borrowed-books", "/api/reports/most-borrowed-books"], as
       return;
     }
 
+    const roleCode = Number(
+      user.roleCode ??
+      user.role ??
+      user.role_code ??
+      user.staff_role_code ??
+      user.staffRoleCode ??
+      0
+    );
+
+    if (roleCode !== 2) {
+      return res.status(403).json({
+        error: "Only admin can access the popularity report.",
+      });
+    }
+
+    const startDate = SafeText(req.query.startDate).trim();
+    const endDate = SafeText(req.query.endDate).trim();
+
+    const filters = [];
+    let dateClause = "";
+
+    if (startDate) {
+      dateClause += " AND l.loan_origin_date >= ? ";
+      filters.push(startDate);
+    }
+
+    if (endDate) {
+      dateClause += " AND l.loan_origin_date <= ? ";
+      filters.push(endDate);
+    }
+
     const [rows] = await pool.query(
       `
       SELECT
-        b.item_id AS itemId,
+        l.item_id AS itemId,
+        COALESCE(
+          b.title,
+          per.title,
+          am.title,
+          e.equipment_name
+        ) AS title,
+        CASE
+          WHEN b.item_id IS NOT NULL THEN 'Book'
+          WHEN per.item_id IS NOT NULL THEN 'Periodical'
+          WHEN am.item_id IS NOT NULL THEN 'Audiovisual Media'
+          WHEN e.item_id IS NOT NULL THEN 'Equipment'
+          ELSE 'Other'
+        END AS category,
+        NULL AS genre,
+        NULL AS publisher,
+        NULL AS publicationDate,
+        NULL AS summary,
+        COUNT(l.loan_id) AS loanCount,
+        COALESCE(
+          (
+            SELECT GROUP_CONCAT(CONCAT(a.first_name, ' ', a.last_name) SEPARATOR ', ')
+            FROM authors a
+            WHERE b.item_id IS NOT NULL
+              AND a.item_id = b.item_id
+          ),
+          (
+            SELECT GROUP_CONCAT(CONCAT(c.first_name, ' ', c.last_name) SEPARATOR ', ')
+            FROM contributors c
+            WHERE am.item_id IS NOT NULL
+              AND c.item_id = am.item_id
+          ),
+          NULL
+        ) AS creator
+      FROM loans l
+      LEFT JOIN books b ON b.item_id = l.item_id
+      LEFT JOIN periodicals per ON per.item_id = l.item_id
+      LEFT JOIN audiovisual_media am ON am.item_id = l.item_id
+      LEFT JOIN equipment e ON e.item_id = l.item_id
+      WHERE 1 = 1
+        ${dateClause}
+      GROUP BY
+        l.item_id,
+        b.item_id,
+        per.item_id,
+        am.item_id,
+        e.item_id,
         b.title,
-        GROUP_CONCAT(CONCAT(a.first_name, ' ', a.last_name) SEPARATOR ', ') AS authors,
-        COUNT(l.loan_id) AS totalLoans
-      FROM books b
-      LEFT JOIN authors a
-        ON a.item_id = b.item_id
-      LEFT JOIN loans l
-        ON l.item_id = b.item_id
-      GROUP BY b.item_id, b.title
-      ORDER BY totalLoans DESC, b.title ASC
-      `
+        per.title,
+        am.title,
+        e.equipment_name
+      ORDER BY loanCount DESC, title ASC
+      `,
+      filters
     );
 
     return res.json(rows);
   } catch (error) {
-    console.error("Load most borrowed books report error:", error);
+    console.error("Popularity report error:", error);
     return res.status(500).json({
-      error: FormatServerError(error, "Failed to load most borrowed books report."),
+      error: FormatServerError(error, "Failed to load popularity report."),
     });
   }
 });
+
+
 
 // Get patron summary report
 app.get(["/reports/patron-summary", "/api/reports/patron-summary"], async (req, res) => {
