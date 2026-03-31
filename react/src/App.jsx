@@ -183,10 +183,7 @@ function App() {
                   <Route path="/holds" element={<Holds />} />
                   <Route path="/staffloans" element={<StaffLoans />} />
                   <Route path="/report/PopularityReport" element={<PopularityReport />} />
-                  <Route
-                    path="/report/patronsummary"
-                    element={<PatronSummaryReport />}
-                  />
+                  <Route path="/report/patron-summary" element={<PatronSummaryReport />} />
                   <Route path="/report/overduereport" element={<OverdueReport />} />
                   <Route path="/report/fine-summary" element={<FineSummaryReport />} />
                   <Route path="/report/testing" element={<TestingReport />} />

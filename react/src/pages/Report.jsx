@@ -43,7 +43,7 @@ export default function Report() {
           <div className="mt-6 flex justify-center">
             <PrimaryButton
               title="Open Report"
-              onClick={() => navigate("/report/patronsummary")}
+              onClick={() => navigate("/report/patron-summary")}
             />
           </div>
         </div>

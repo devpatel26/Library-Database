@@ -3006,7 +3006,7 @@ app.post(["/loans/:loanId/return", "/api/loans/:loanId/return"], async (req, res
     await pool.query(
       `
       UPDATE loans
-      SET loan_status_code = 2
+      SET loan_status_code = 2,
       return_date = CURRENT_DATE
       WHERE loan_id = ?
       `,
@@ -3604,189 +3604,115 @@ app.get(["/reports/patron-summary", "/api/reports/patron-summary"], async (req, 
       return;
     }
 
-    const patronId = ParsePositiveInteger(req.query.patronId);
+    const roleCode = Number(
+      user.roleCode ??
+        user.role ??
+        user.role_code ??
+        user.staff_role_code ??
+        user.staffRoleCode ??
+        0
+    );
 
-    if (!patronId) {
-      return res.status(400).json({ error: "A valid patronId is required." });
+    if (roleCode !== 2) {
+      return res.status(403).json({
+        error: "Only admin can access the patron summary report.",
+      });
     }
 
-    const [patrons] = await pool.query(
+    const [rows] = await pool.query(
       `
       SELECT
         p.patron_id AS patronId,
         p.first_name AS firstName,
         p.last_name AS lastName,
-        p.email,
-        p.date_of_birth AS dateOfBirth,
-        p.is_active AS isActive,
-        pr.patron_role AS patronRole
+
+        COALESCE(ls.totalLoansHistory, 0) AS totalLoansHistory,
+        COALESCE(ls.currentLoans, 0) AS currentLoans,
+        COALESCE(ls.returnedLoans, 0) AS returnedLoans,
+        ls.lastLoanDate AS lastLoanDate,
+        ls.lastReturnDate AS lastReturnDate,
+
+        COALESCE(hs.totalHoldsHistory, 0) AS totalHoldsHistory,
+        COALESCE(hs.activeHolds, 0) AS activeHolds,
+        hs.lastHoldDate AS lastHoldDate,
+
+        COALESCE(fs.totalFineRecords, 0) AS totalFineRecords,
+        COALESCE(fs.totalFineAmount, 0) AS totalFineAmount,
+        COALESCE(fs.totalPaidAmount, 0) AS totalPaidAmount,
+        COALESCE(fs.outstandingBalance, 0) AS outstandingBalance,
+        COALESCE(fs.waivedFineCount, 0) AS waivedFineCount,
+        fs.lastFineDate AS lastFineDate,
+
+        NULLIF(
+          GREATEST(
+            COALESCE(ls.lastLoanDate, '1000-01-01'),
+            COALESCE(hs.lastHoldDate, '1000-01-01'),
+            COALESCE(fs.lastFineDate, '1000-01-01')
+          ),
+          '1000-01-01'
+        ) AS lastActivityDate
+
       FROM patrons p
-      JOIN patron_roles pr
-        ON pr.patron_role_code = p.patron_role_code
-      WHERE p.patron_id = ?
-      `,
-      [patronId]
-    );
 
-    if (patrons.length === 0) {
-      return res.status(404).json({ error: "Patron not found." });
-    }
+      LEFT JOIN (
+        SELECT
+          l.patron_id,
+          COUNT(*) AS totalLoansHistory,
+          SUM(CASE WHEN l.loan_status_code = 1 THEN 1 ELSE 0 END) AS currentLoans,
+          SUM(CASE WHEN l.loan_status_code <> 1 THEN 1 ELSE 0 END) AS returnedLoans,
+          MAX(l.loan_origin_date) AS lastLoanDate,
+          MAX(l.return_date) AS lastReturnDate
+        FROM loans l
+        GROUP BY l.patron_id
+      ) ls ON ls.patron_id = p.patron_id
 
-    const patron = patrons[0];
+      LEFT JOIN (
+        SELECT
+          h.patron_id,
+          COUNT(*) AS totalHoldsHistory,
+          SUM(
+            CASE
+              WHEN h.hold_status_code = 1 AND h.hold_expiration_date >= CURDATE()
+              THEN 1
+              ELSE 0
+            END
+          ) AS activeHolds,
+          MAX(h.hold_origin_date) AS lastHoldDate
+        FROM holds h
+        GROUP BY h.patron_id
+      ) hs ON hs.patron_id = p.patron_id
 
-    const [holds] = await pool.query(
+      LEFT JOIN (
+        SELECT
+          f.patron_id,
+          COUNT(*) AS totalFineRecords,
+          SUM(COALESCE(f.fine_amount, 0)) AS totalFineAmount,
+          SUM(COALESCE(f.paid_amount, 0)) AS totalPaidAmount,
+          SUM(
+            CASE
+              WHEN f.waived_date IS NULL
+              THEN GREATEST(COALESCE(f.fine_amount, 0) - COALESCE(f.paid_amount, 0), 0)
+              ELSE 0
+            END
+          ) AS outstandingBalance,
+          SUM(CASE WHEN f.waived_date IS NOT NULL THEN 1 ELSE 0 END) AS waivedFineCount,
+          MAX(f.fine_date) AS lastFineDate
+        FROM fines f
+        GROUP BY f.patron_id
+      ) fs ON fs.patron_id = p.patron_id
+
+      ORDER BY totalLoansHistory DESC, p.patron_id ASC
       `
-      SELECT
-        h.hold_id AS holdId,
-        h.item_id AS itemId,
-        h.hold_origin_date AS holdStart,
-        h.hold_expiration_date AS holdEnd,
-        COALESCE(
-          b.title,
-          per.title,
-          am.title,
-          e.equipment_name
-        ) AS title,
-        COALESCE(
-          (
-            SELECT GROUP_CONCAT(CONCAT(a.first_name, ' ', a.last_name) SEPARATOR ', ')
-            FROM authors a
-            WHERE a.item_id = b.item_id
-          ),
-          (
-            SELECT GROUP_CONCAT(CONCAT(c.first_name, ' ', c.last_name) SEPARATOR ', ')
-            FROM contributors c
-            WHERE c.item_id = am.item_id
-          ),
-          NULL
-        ) AS creator
-      FROM holds h
-      LEFT JOIN books b ON b.item_id = h.item_id
-      LEFT JOIN periodicals per ON per.item_id = h.item_id
-      LEFT JOIN audiovisual_media am ON am.item_id = h.item_id
-      LEFT JOIN equipment e ON e.item_id = h.item_id
-      WHERE h.patron_id = ?
-      ORDER BY h.hold_expiration_date ASC, h.hold_id ASC
-      `,
-      [patronId]
     );
 
-  const [activeLoans] = await pool.query(
-    `
-    SELECT
-      l.loan_id AS loanId,
-      l.item_id AS itemId,
-      l.loan_origin_date AS loanStart,
-      l.loan_due_date AS loanEnd,
-      l.loan_status_code AS loanStatusCode,
-      COALESCE(
-        b.title,
-        per.title,
-        am.title,
-        e.equipment_name
-      ) AS title,
-      COALESCE(
-        (
-          SELECT GROUP_CONCAT(CONCAT(a.first_name, ' ', a.last_name) SEPARATOR ', ')
-          FROM authors a
-          WHERE a.item_id = b.item_id
-        ),
-        (
-          SELECT GROUP_CONCAT(CONCAT(c.first_name, ' ', c.last_name) SEPARATOR ', ')
-          FROM contributors c
-          WHERE c.item_id = am.item_id
-        ),
-        NULL
-      ) AS creator
-    FROM loans l
-    LEFT JOIN books b ON b.item_id = l.item_id
-    LEFT JOIN periodicals per ON per.item_id = l.item_id
-    LEFT JOIN audiovisual_media am ON am.item_id = l.item_id
-    LEFT JOIN equipment e ON e.item_id = l.item_id
-    WHERE l.patron_id = ?
-      AND l.loan_status_code = 1
-    ORDER BY l.loan_due_date ASC, l.loan_id ASC
-    `,
-    [patronId]
-  );
+    const formattedRows = rows.map((row) => ({
+      ...row,
+      patronName: `${row.firstName} ${row.lastName}`,
+    }));
 
-  const [completedLoans] = await pool.query(
-    `
-    SELECT
-      l.loan_id AS loanId,
-      l.item_id AS itemId,
-      l.loan_origin_date AS loanStart,
-      l.loan_due_date AS loanEnd,
-      l.loan_status_code AS loanStatusCode,
-      COALESCE(
-        b.title,
-        per.title,
-        am.title,
-        e.equipment_name
-      ) AS title,
-      COALESCE(
-        (
-          SELECT GROUP_CONCAT(CONCAT(a.first_name, ' ', a.last_name) SEPARATOR ', ')
-          FROM authors a
-          WHERE a.item_id = b.item_id
-        ),
-        (
-          SELECT GROUP_CONCAT(CONCAT(c.first_name, ' ', c.last_name) SEPARATOR ', ')
-          FROM contributors c
-          WHERE c.item_id = am.item_id
-        ),
-        NULL
-      ) AS creator
-    FROM loans l
-    LEFT JOIN books b ON b.item_id = l.item_id
-    LEFT JOIN periodicals per ON per.item_id = l.item_id
-    LEFT JOIN audiovisual_media am ON am.item_id = l.item_id
-    LEFT JOIN equipment e ON e.item_id = l.item_id
-    WHERE l.patron_id = ?
-      AND l.loan_status_code <> 1
-    ORDER BY l.loan_due_date DESC, l.loan_id DESC
-    `,
-    [patronId]
-  );
-
-    const [fines] = await pool.query(
-      `
-      SELECT
-        f.fine_id AS fineId,
-        f.loan_id AS loanId,
-        f.fine_amount AS fineAmount,
-        f.paid_amount AS paidAmount,
-        ROUND(f.fine_amount - f.paid_amount, 2) AS remainingAmount,
-        f.fine_date AS fineDate,
-        f.paid_date AS paidDate,
-        f.waived_date AS waivedDate,
-        COALESCE(
-          b.title,
-          per.title,
-          am.title,
-          e.equipment_name
-        ) AS title
-      FROM fines f
-      LEFT JOIN loans l ON l.loan_id = f.loan_id
-      LEFT JOIN books b ON b.item_id = l.item_id
-      LEFT JOIN periodicals per ON per.item_id = l.item_id
-      LEFT JOIN audiovisual_media am ON am.item_id = l.item_id
-      LEFT JOIN equipment e ON e.item_id = l.item_id
-      WHERE f.patron_id = ?
-      ORDER BY f.fine_date DESC, f.fine_id DESC
-      `,
-      [patronId]
-    );
-
-    return res.json({
-      patron,
-      holds,
-      activeLoans,
-      completedLoans,
-      fines,
-    });
+    return res.json(formattedRows);
   } catch (error) {
-    console.error("Load patron summary report error:", error);
+    console.error("Patron summary report error:", error);
     return res.status(500).json({
       error: FormatServerError(error, "Failed to load patron summary report."),
     });
