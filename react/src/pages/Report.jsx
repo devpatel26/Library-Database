@@ -62,6 +62,24 @@ export default function Report() {
             />
           </div>
         </div>
+
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-left">
+          <h2 className="text-xl font-semibold text-white">
+            Fine Summary Report
+          </h2>
+          <p className="mt-3 text-sm leading-6 text-slate-300">
+            Report of total fines, paid amounts/remaining balances.
+          </p >
+          <div className="mt-6 flex justify-center">
+            <PrimaryButton
+              title="Open Report"
+              onClick={() => navigate("/report/fine-summary")}
+            />
+          </div>
+        </div>
+        
+        
+
       </div>
     </section>
   );

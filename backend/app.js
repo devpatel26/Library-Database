@@ -3153,9 +3153,12 @@ async function SyncCurrentFines() {
 
 // Get current fines for staff view
 app.get(["/staff/fines/current", "/api/staff/fines/current"], async (req, res) => {
+  
   try {
     const user = await RequireStaffUser(req, res);
-
+    console.log("staff fines keys =", Object.keys(data?.[0] ?? {}));
+console.log("staff fines first row full =", JSON.stringify(data?.[0], null, 2));
+console.log("staff fines start raw =", GetLoanStartValue(data?.[0] ?? {}));
     if (!user) {
       return;
     }
@@ -3175,6 +3178,7 @@ app.get(["/staff/fines/current", "/api/staff/fines/current"], async (req, res) =
         f.paid_date AS paidDate,
         f.waived_date AS waivedDate,
         l.item_id AS itemId,
+        l.loan_origin_date AS loanStartDate,
         l.loan_due_date AS loanDueDate,
         l.loan_status_code AS loanStatusCode,
         p.first_name AS firstName,
@@ -3231,12 +3235,12 @@ app.get(["/staff/fines/current", "/api/staff/fines/current"], async (req, res) =
 
     const formattedRows = rows.map((row) => ({
       ...row,
+      loanStartDate: row.loanStartDate ?? row.loan_origin_date ?? "HELLO_START_DATE",
       patronName: `${row.firstName} ${row.lastName}`,
     }));
 
     return res.json(formattedRows);
   } catch (error) {
-    console.error("Load current staff fines error:", error);
     return res.status(500).json({
       error: FormatServerError(error, "Failed to load current fines."),
     });
