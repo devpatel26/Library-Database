@@ -3156,9 +3156,6 @@ app.get(["/staff/fines/current", "/api/staff/fines/current"], async (req, res) =
   
   try {
     const user = await RequireStaffUser(req, res);
-    console.log("staff fines keys =", Object.keys(data?.[0] ?? {}));
-console.log("staff fines first row full =", JSON.stringify(data?.[0], null, 2));
-console.log("staff fines start raw =", GetLoanStartValue(data?.[0] ?? {}));
     if (!user) {
       return;
     }
@@ -3235,7 +3232,6 @@ console.log("staff fines start raw =", GetLoanStartValue(data?.[0] ?? {}));
 
     const formattedRows = rows.map((row) => ({
       ...row,
-      loanStartDate: row.loanStartDate ?? row.loan_origin_date ?? "HELLO_START_DATE",
       patronName: `${row.firstName} ${row.lastName}`,
     }));
 
