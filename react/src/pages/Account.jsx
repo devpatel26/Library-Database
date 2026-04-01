@@ -1,4 +1,4 @@
-import { NavLink, useOutlet } from "react-router-dom";
+import { NavLink, useOutlet,useNavigate,useLocation} from "react-router-dom";
 import { useEffect, useState } from "react";
 import { FetchJson, GetErrorMessage, ReadStoredUser } from "../api";
 
@@ -34,6 +34,8 @@ function FormatDateOfBirth(dateOfBirth) {
 }
 
 export default function Account() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [account, setAccount] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -43,14 +45,20 @@ export default function Account() {
     ? `${user.user_type ?? ""}:${user.patron_id ?? ""}:${user.staff_id ?? ""}`
     : "";
   const isPatron = user?.user_type === "patron";
-  const navLinks = [
-        { to: ".", label: "Account", end: true },
-        { to: "holds", label: "Holds" },
-        { to: "loans", label: "Loans" },
-        { to: "fines", label: "Fines" },
-        { to: "activity", label: "Activity" },
-        { to: "settings", label: "Settings" },
-  ];
+  const isStaff = user?.user_type === "staff";
+
+const navLinks = isPatron
+  ? [
+      { to: ".", label: "Account", end: true },
+      { to: "loans", label: "Loans/Holds" },
+      { to: "fines", label: "Fines" },
+      { to: "activity", label: "Activity" },
+      { to: "settings", label: "Settings" },
+    ]
+  : [
+      { to: ".", label: "Account", end: true },
+    ];
+
     
   useEffect(() => {
     let isMounted = true;
@@ -122,6 +130,7 @@ export default function Account() {
             <p className="text-slate-300">
               View your account details below.
               {isPatron ? " Use the account menu for fines, activity, loan history, and settings." : ""}
+              {isStaff ? "Warning: This is a staff account. Do not share your credentials. Basic library functionality is banned. Please use your patron account to access patron features." : ""}
             </p>
 
             {loading && <p className="text-slate-300">Loading account...</p>}

@@ -61,39 +61,7 @@ function FormatDateLabel(value) {
   return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString();
 }
 
-function GetSeverity(daysOverdue) {
-  const days = SafeNumber(daysOverdue);
 
-  if (days >= 60) {
-    return "Potentially Lost";
-  }
-
-  if (days >= 31) {
-    return "Critical";
-  }
-
-  if (days >= 15) {
-    return "Serious";
-  }
-
-  return "Warning";
-}
-
-function GetSeverityClass(severity) {
-  if (severity === "Potentially Lost") {
-    return "text-fuchsia-300";
-  }
-
-  if (severity === "Critical") {
-    return "text-red-300";
-  }
-
-  if (severity === "Serious") {
-    return "text-orange-300";
-  }
-
-  return "text-yellow-300";
-}
 
 function SummaryCard({ title, value, subtitle = "" }) {
   return (
@@ -119,14 +87,10 @@ function BuildSortValue(row, sortBy) {
       return SafeNumber(row.patronId);
     case "title":
       return SafeText(row.title).toLowerCase();
-    case "creator":
-      return SafeText(row.creator).toLowerCase();
     case "patronName":
       return SafeText(row.patronName).toLowerCase();
     case "category":
       return NormalizeCategory(row.category).toLowerCase();
-    case "severity":
-      return SafeText(GetSeverity(row.daysOverdue)).toLowerCase();
     case "loanStartDate":
       return ParseDateValue(row.loanStartDate)?.getTime() ?? 0;
     case "loanDueDate":
@@ -160,7 +124,6 @@ export default function OverdueReport() {
   const [endDate, setEndDate] = useState("");
 
   const [categoryFilter, setCategoryFilter] = useState("All");
-  const [severityFilter, setSeverityFilter] = useState("All");
   const [minDaysOverdue, setMinDaysOverdue] = useState("");
 
   const [searchBy, setSearchBy] = useState("All");
@@ -305,15 +268,11 @@ export default function OverdueReport() {
 
     const result = reportRows.filter((row) => {
       const normalizedCategory = NormalizeCategory(row.category);
-      const severity = GetSeverity(row.daysOverdue);
 
       if (categoryFilter !== "All" && normalizedCategory !== categoryFilter) {
         return false;
       }
 
-      if (severityFilter !== "All" && severity !== severityFilter) {
-        return false;
-      }
 
       if (Number.isFinite(minDays) && minDays >= 0) {
         if (SafeNumber(row.daysOverdue) < minDays) {
@@ -327,10 +286,8 @@ export default function OverdueReport() {
           row.itemId,
           row.patronId,
           row.title,
-          row.creator,
           row.patronName,
           row.category,
-          severity,
         ]
           .map(SafeText)
           .join(" ")
@@ -400,7 +357,6 @@ export default function OverdueReport() {
   }, [
     reportRows,
     categoryFilter,
-    severityFilter,
     minDaysOverdue,
     searchBy,
     searchText,
@@ -433,18 +389,6 @@ export default function OverdueReport() {
       0
     );
 
-    const potentiallyLostCount = filteredRows.filter(
-      (row) => GetSeverity(row.daysOverdue) === "Potentially Lost"
-    ).length;
-
-    const seriousOrWorseCount = filteredRows.filter((row) => {
-      const severity = GetSeverity(row.daysOverdue);
-      return (
-        severity === "Serious" ||
-        severity === "Critical" ||
-        severity === "Potentially Lost"
-      );
-    }).length;
 
     const mostOverdueItem = [...filteredRows].sort(
       (a, b) => SafeNumber(b.daysOverdue) - SafeNumber(a.daysOverdue)
@@ -456,8 +400,6 @@ export default function OverdueReport() {
       averageDaysOverdue,
       maximumDaysOverdue,
       estimatedOutstandingFine,
-      potentiallyLostCount,
-      seriousOrWorseCount,
       mostOverdueItemTitle: mostOverdueItem?.title ?? "-",
       mostOverdueItemDays: mostOverdueItem?.daysOverdue ?? 0,
     };
@@ -489,7 +431,6 @@ export default function OverdueReport() {
     setStartDate("");
     setEndDate("");
     setCategoryFilter("All");
-    setSeverityFilter("All");
     setMinDaysOverdue("");
     setSearchBy("All");
     setSearchText("");
@@ -514,7 +455,7 @@ export default function OverdueReport() {
       </p>
 
       <p className="mt-4 max-w-3xl text-base leading-7 text-slate-300">
-        View all currently overdue items, their responsible patrons, severity level,
+        View all currently overdue items, their responsible patrons,
         and estimated current fine amount with flexible search, filter, and sorting tools.
       </p>
 
@@ -540,14 +481,6 @@ export default function OverdueReport() {
             <SummaryCard
               title="Estimated Outstanding Fine"
               value={FormatMoney(summary.estimatedOutstandingFine)}
-            />
-            <SummaryCard
-              title="Potentially Lost"
-              value={summary.potentiallyLostCount}
-            />
-            <SummaryCard
-              title="Serious Or Worse"
-              value={summary.seriousOrWorseCount}
             />
             <SummaryCard
               title="Most Overdue Item"
@@ -600,23 +533,6 @@ export default function OverdueReport() {
                   <option>Periodical</option>
                   <option>Audiovisual Media</option>
                   <option>Equipment</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
-                  Filter By Severity
-                </label>
-                <select
-                  value={severityFilter}
-                  onChange={(event) => setSeverityFilter(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
-                >
-                  <option>All</option>
-                  <option>Warning</option>
-                  <option>Serious</option>
-                  <option>Critical</option>
-                  <option>Potentially Lost</option>
                 </select>
               </div>
 
@@ -676,7 +592,6 @@ export default function OverdueReport() {
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
                 >
                   <option value="daysOverdue">Days Overdue</option>
-                  <option value="severity">Severity</option>
                   <option value="loanDueDate">Due Date</option>
                   <option value="loanStartDate">Borrow Date</option>
                   <option value="currentFine">Estimated Fine</option>
@@ -723,26 +638,22 @@ export default function OverdueReport() {
                 <table className="min-w-full border-collapse overflow-hidden rounded-xl">
                   <thead>
                     <tr className="bg-slate-800 text-left text-sm text-slate-200">
-                      <th className="px-4 py-3">Loan ID</th>
-                      <th className="px-4 py-3">Item ID</th>
-                      <th className="px-4 py-3">Title</th>
-                      <th className="px-4 py-3">Creator</th>
-                      <th className="px-4 py-3">Category</th>
-                      <th className="px-4 py-3">Patron</th>
-                      <th className="px-4 py-3">Borrow Date</th>
-                      <th className="px-4 py-3">Due Date</th>
-                      <th className="px-4 py-3">Days Overdue</th>
-                      <th className="px-4 py-3">Severity</th>
-                      <th className="px-4 py-3">Daily Fine</th>
-                      <th className="px-4 py-3">Estimated Fine</th>
-                      <th className="px-4 py-3">Status</th>
-                      <th className="px-4 py-3">Actions</th>
+                      <th className="px-2 py-3">Loan ID</th>
+                      <th className="px-2 py-3">Item ID</th>
+                      <th className="px-2 py-3">Item Name</th>
+                      <th className="px-2 py-3">Category</th>
+                      <th className="px-2 py-3">Patron</th>
+                      <th className="px-2 py-3">Borrow Date</th>
+                      <th className="px-2 py-3">Due Date</th>
+                      <th className="px-2 py-3">Days Overdue</th>
+                      <th className="px-2 py-3">Daily Fine</th>
+                      <th className="px-2 py-3">Estimated Fine</th>
+                      <th className="px-2 py-3">Actions</th>
                     </tr>
                   </thead>
 
                   <tbody>
                     {filteredRows.map((row) => {
-                      const severity = GetSeverity(row.daysOverdue);
                       const isReturnPending = returnPendingLoanId === row.loanId;
                       const isLostPending = lostPendingLoanId === row.loanId;
                       const canMarkLost = SafeNumber(row.daysOverdue) >= 60;
@@ -755,7 +666,6 @@ export default function OverdueReport() {
                           <td className="px-4 py-3">{row.loanId}</td>
                           <td className="px-4 py-3">{row.itemId}</td>
                           <td className="px-4 py-3 text-white">{row.title}</td>
-                          <td className="px-4 py-3">{row.creator || "N/A"}</td>
                           <td className="px-4 py-3">
                             {NormalizeCategory(row.category)}
                           </td>
@@ -775,21 +685,12 @@ export default function OverdueReport() {
                           <td className="px-4 py-3 font-semibold text-red-300">
                             {row.daysOverdue}
                           </td>
-                          <td
-                            className={`px-4 py-3 font-semibold ${GetSeverityClass(
-                              severity
-                            )}`}
-                          >
-                            {severity}
-                          </td>
+                          
                           <td className="px-4 py-3">
                             {FormatMoney(row.dailyFine)}
                           </td>
                           <td className="px-4 py-3 font-semibold text-red-300">
                             {FormatMoney(row.currentFine)}
-                          </td>
-                          <td className="px-4 py-3 font-semibold text-red-300">
-                            Overdue
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex flex-col gap-2">

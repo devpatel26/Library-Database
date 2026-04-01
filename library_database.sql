@@ -562,3 +562,25 @@ WHERE loan_status_code = 2;
 --
 INSERT INTO loan_statuses (loan_status_name)
 VALUES ('Lost');
+
+CREATE TABLE activity_logs (
+  activity_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  actor_type ENUM('patron','staff') NOT NULL,
+  actor_id INT UNSIGNED NOT NULL,
+  action_type VARCHAR(50) NOT NULL,
+  item_id INT UNSIGNED NULL,
+  loan_id INT UNSIGNED NULL,
+  hold_id INT UNSIGNED NULL,
+  fine_id INT UNSIGNED NULL,
+  target_patron_id INT UNSIGNED NULL,
+  description VARCHAR(255),
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE items
+ADD COLUMN is_removed TINYINT(1) NOT NULL DEFAULT 0,
+ADD COLUMN removed_reason VARCHAR(50) NULL,
+ADD COLUMN removed_date DATETIME NULL;
+
+INSERT INTO loan_statuses (loan_status_name) VALUES ('Found');
+INSERT INTO loan_statuses (loan_status_name) VALUES ('Deleted');

@@ -50,11 +50,7 @@ export default function Item({ itemData }) {
       return;
     }
 
-    if (user.user_type !== "patron") {
-      showWarning("Only patrons can place holds for themselves.");
-      return;
-    }
-
+    if (!user) return null;
     try {
       setIsSubmitting(true);
 

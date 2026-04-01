@@ -4827,7 +4827,7 @@ app.post(["/loans/:loanId/mark-lost", "/api/loans/:loanId/mark-lost"], async (re
     await pool.query(
       `
       UPDATE loans
-      SET loan_status_code = 3,
+      SET loan_status_code = 4,
           return_date = CURRENT_DATE
       WHERE loan_id = ?
       `,
@@ -4971,3 +4971,345 @@ app.get(
     
   }
 );
+
+// Get lost items report
+app.get("/api/loans/lost", async (req,res)=>{
+
+const user = await RequireStaffUser(req,res);
+if(!user)return;
+
+const [rows] = await pool.query(`
+SELECT
+l.loan_id AS loanId,
+l.item_id AS itemId,
+l.patron_id AS patronId,
+l.return_date AS returnDate,
+p.first_name,
+p.last_name,
+
+COALESCE(
+b.title,
+per.title,
+am.title,
+e.equipment_name
+) AS title
+
+FROM loans l
+
+JOIN patrons p
+ON p.patron_id = l.patron_id
+
+LEFT JOIN books b ON b.item_id=l.item_id
+LEFT JOIN periodicals per ON per.item_id=l.item_id
+LEFT JOIN audiovisual_media am ON am.item_id=l.item_id
+LEFT JOIN equipment e ON e.item_id=l.item_id
+
+WHERE l.loan_status_code = 3
+ORDER BY l.return_date DESC
+`);
+
+const result = rows.map(r=>({
+...r,
+patronName: `${r.first_name} ${r.last_name}`
+}));
+
+res.json(result);
+
+});
+
+
+// Mark found endpoint
+app.post(["/loans/:loanId/found", "/api/loans/:loanId/found"], async (req, res) => {
+  try {
+    const user = await RequireStaffUser(req, res);
+
+    if (!user) {
+      return;
+    }
+
+    const loanId = ParsePositiveInteger(req.params.loanId);
+
+    if (!loanId) {
+      return res.status(400).json({ error: "A valid loanId is required." });
+    }
+
+    const [loans] = await pool.query(
+      `
+      SELECT
+        l.loan_id AS loanId,
+        l.item_id AS itemId,
+        l.loan_status_code AS loanStatusCode,
+        i.available AS available,
+        i.unavailable AS unavailable,
+        i.is_removed AS isRemoved
+      FROM loans l
+      JOIN items i ON i.item_id = l.item_id
+      WHERE l.loan_id = ?
+      `,
+      [loanId]
+    );
+
+    if (loans.length === 0) {
+      return res.status(404).json({ error: "Lost loan not found." });
+    }
+
+    const loan = loans[0];
+
+    if (Number(loan.loanStatusCode) !== 3) {
+      return res.status(400).json({ error: "Only lost items can be marked as found." });
+    }
+
+    if (Number(loan.isRemoved) === 1) {
+      return res.status(400).json({ error: "This item has already been permanently removed." });
+    }
+
+    await pool.query(
+      `
+      UPDATE loans
+      SET loan_status_code = 5,
+          return_date = CURRENT_DATE
+      WHERE loan_id = ?
+      `,
+      [loanId]
+    );
+
+    await pool.query(
+      `
+      UPDATE items
+      SET available = available + 1,
+          unavailable = CASE WHEN unavailable > 0 THEN unavailable - 1 ELSE 0 END
+      WHERE item_id = ?
+      `,
+      [loan.itemId]
+    );
+
+    await pool.query(
+      `
+      INSERT INTO activity_logs
+        (actor_type, actor_id, action_type, item_id, loan_id, description, created_at)
+      VALUES
+        ('staff', ?, 'lost_item_found', ?, ?, 'Lost item marked as found.', NOW())
+      `,
+      [user.staffId, loan.itemId, loanId]
+    );
+
+    return res.json({ message: "Item marked as found successfully." });
+  } catch (error) {
+    console.error("Mark found error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to mark lost item as found."),
+    });
+  }
+});
+
+// Delete lost item endpoint
+app.post(["/loans/:loanId/delete-lost", "/api/loans/:loanId/delete-lost"], async (req, res) => {
+  try {
+    const user = await RequireStaffUser(req, res);
+
+    if (!user) {
+      return;
+    }
+
+    const loanId = ParsePositiveInteger(req.params.loanId);
+
+    if (!loanId) {
+      return res.status(400).json({ error: "A valid loanId is required." });
+    }
+
+    const [loans] = await pool.query(
+      `
+      SELECT
+        l.loan_id AS loanId,
+        l.item_id AS itemId,
+        l.loan_status_code AS loanStatusCode,
+        i.is_removed AS isRemoved
+      FROM loans l
+      JOIN items i ON i.item_id = l.item_id
+      WHERE l.loan_id = ?
+      `,
+      [loanId]
+    );
+
+    if (loans.length === 0) {
+      return res.status(404).json({ error: "Lost loan not found." });
+    }
+
+    const loan = loans[0];
+
+    if (Number(loan.loanStatusCode) !== 3) {
+      return res.status(400).json({ error: "Only lost items can be permanently deleted." });
+    }
+
+    if (Number(loan.isRemoved) === 1) {
+      return res.status(400).json({ error: "This item has already been permanently removed." });
+    }
+
+    await pool.query(
+      `
+      UPDATE loans
+      SET loan_status_code = 5,
+          return_date = CURRENT_DATE
+      WHERE loan_id = ?
+      `,
+      [loanId]
+    );
+
+    await pool.query(
+      `
+      UPDATE items
+      SET is_removed = 1,
+          removed_reason = 'lost',
+          removed_date = NOW(),
+          available = 0,
+          on_hold = 0,
+          unavailable = 0
+      WHERE item_id = ?
+      `,
+      [loan.itemId]
+    );
+
+    await pool.query(
+      `
+      INSERT INTO activity_logs
+        (actor_type, actor_id, action_type, item_id, loan_id, description, created_at)
+      VALUES
+        ('staff', ?, 'lost_item_deleted', ?, ?, 'Lost item permanently removed.', NOW())
+      `,
+      [user.staffId, loan.itemId, loanId]
+    );
+
+    return res.json({ message: "Lost item permanently removed." });
+  } catch (error) {
+    console.error("Delete lost item error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to permanently delete lost item."),
+    });
+  }
+});
+
+
+// Mark lost endpoint
+app.post("/api/loans/:loanId/mark-lost", async (req, res) => {
+
+  try {
+
+    const user = await RequireStaffUser(req, res);
+    if (!user) return;
+
+    const loanId = ParsePositiveInteger(req.params.loanId);
+
+    if (!loanId) {
+      return res.status(400).json({ error: "Invalid loanId." });
+    }
+
+    const [loans] = await pool.query(
+      "SELECT item_id FROM loans WHERE loan_id = ?",
+      [loanId]
+    );
+
+    if (loans.length === 0) {
+      return res.status(404).json({ error: "Loan not found." });
+    }
+
+    await pool.query(
+      `
+      UPDATE loans
+      SET loan_status_code = 3
+      WHERE loan_id = ?
+      `,
+      [loanId]
+    );
+
+    return res.json({ message: "Loan marked as lost." });
+
+  } catch (error) {
+
+    console.error("Mark lost error:", error);
+
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to mark lost."),
+    });
+
+  }
+
+});
+
+// Get lost items report
+app.get(["/loans/lost", "/api/loans/lost"], async (req, res) => {
+  try {
+    const user = await RequireStaffUser(req, res);
+
+    if (!user) {
+      return;
+    }
+
+    const [rows] = await pool.query(`
+      SELECT
+        l.loan_id AS loanId,
+        l.item_id AS itemId,
+        l.patron_id AS patronId,
+        l.return_date AS returnDate,
+        p.first_name,
+        p.last_name,
+        COALESCE(
+          b.title,
+          per.title,
+          am.title,
+          e.equipment_name
+        ) AS title,
+        COALESCE(
+          (
+            SELECT GROUP_CONCAT(CONCAT(a.first_name, ' ', a.last_name) SEPARATOR ', ')
+            FROM authors a
+            WHERE a.item_id = b.item_id
+          ),
+          (
+            SELECT GROUP_CONCAT(CONCAT(c.first_name, ' ', c.last_name) SEPARATOR ', ')
+            FROM contributors c
+            WHERE c.item_id = am.item_id
+          ),
+          NULL
+        ) AS creator
+      FROM loans l
+      JOIN patrons p ON p.patron_id = l.patron_id
+      LEFT JOIN books b ON b.item_id = l.item_id
+      LEFT JOIN periodicals per ON per.item_id = l.item_id
+      LEFT JOIN audiovisual_media am ON am.item_id = l.item_id
+      LEFT JOIN equipment e ON e.item_id = l.item_id
+      WHERE l.loan_status_code = 3
+      ORDER BY l.return_date DESC, l.loan_id DESC
+    `);
+
+    const result = rows.map((row) => ({
+      ...row,
+      patronName: `${row.first_name} ${row.last_name}`,
+    }));
+
+    return res.json(result);
+  } catch (error) {
+    console.error("Load lost loans error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to load lost items."),
+    });
+  }
+});
+
+async function PermanentlyDelete(loanId) {
+  const confirmed = window.confirm("Permanently remove this lost item?");
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    await FetchJson(`/api/loans/${loanId}/delete-lost`, {
+      method: "POST",
+    });
+
+    showSuccess("Item permanently removed.");
+    await LoadLost();
+  } catch (error) {
+    console.error(error);
+    showError(error.message || "Failed to permanently delete item.");
+  }
+}

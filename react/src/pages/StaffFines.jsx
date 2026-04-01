@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import PrimaryButton, { SecondaryButton } from "../components/Buttons";
 import { FetchJson, ReadStoredJson } from "../api";
 import { FormatDate } from "../components/TimeFormats";
@@ -28,11 +28,18 @@ function FormatMoney(value) {
   return `$${Number(value ?? 0).toFixed(2)}`;
 }
 
+function SafeText(value) {
+  return value == null ? "" : String(value);
+}
+
 export default function StaffFines() {
   const { showSuccess, showError, showWarning } = useMessage();
 
   const [fines, setFines] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const [searchBy, setSearchBy] = useState("all");
+  const [searchText, setSearchText] = useState("");
 
   const [expandedFineId, setExpandedFineId] = useState(null);
   const [paymentAmount, setPaymentAmount] = useState("");
@@ -57,21 +64,17 @@ export default function StaffFines() {
 
     if (!user) {
       showWarning("Please log in first.");
-
       setTimeout(() => {
         window.location.href = "/login";
       }, 1200);
-
       return;
     }
 
     if (user.user_type !== "staff") {
       showError("Only staff can access the staff fines page.");
-
       setTimeout(() => {
         window.location.href = "/";
       }, 1200);
-
       return;
     }
 
@@ -151,28 +154,101 @@ export default function StaffFines() {
     }
   }
 
+  const filteredFines = useMemo(() => {
+    const normalizedSearch = searchText.trim().toLowerCase();
+
+    if (!normalizedSearch) {
+      return fines;
+    }
+
+    return fines.filter((fine) => {
+      const fields = {
+        fineId: SafeText(fine.fineId),
+        loanId: SafeText(fine.loanId),
+        patronName: SafeText(fine.patronName),
+        patronId: SafeText(fine.patronId),
+        title: SafeText(fine.title),
+        creator: SafeText(fine.creator),
+        status: SafeText(fine.fineStatus),
+      };
+
+      if (searchBy === "all") {
+        return Object.values(fields).join(" ").toLowerCase().includes(normalizedSearch);
+      }
+
+      const value = SafeText(fields[searchBy]).toLowerCase();
+
+if (
+  searchBy === "loanId" ||
+  searchBy === "patronId" ||
+  searchBy === "itemId" ||
+  searchBy === "fineId" ||
+  searchBy === "holdId"
+) {
+  return value === normalizedSearch;
+}
+
+return value.includes(normalizedSearch);
+    });
+  }, [fines, searchBy, searchText]);
+
   return (
     <section className="mx-auto flex w-full max-w-7xl flex-col rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-2xl shadow-slate-950/30">
       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
         Staff
-      </p >
+      </p>
 
       <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">
         Fines
       </h1>
 
       <p className="mt-4 text-base leading-7 text-slate-300">
-        View all fines and manage overdue, unpaid, paid, and waived balances.
-      </p >
+        View all fines, search by selected fields, and manage overdue, unpaid, paid, and waived balances.
+      </p>
+
+      <div className="mt-6 grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+            Search By
+          </label>
+          <select
+            value={searchBy}
+            onChange={(event) => setSearchBy(event.target.value)}
+            className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
+          >
+            <option value="all">All</option>
+            <option value="fineId">Fine ID</option>
+            <option value="loanId">Loan ID</option>
+            <option value="patronName">Patron Name</option>
+            <option value="patronId">Patron ID</option>
+            <option value="title">Item Title</option>
+            <option value="creator">Creator</option>
+            <option value="status">Status</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+            Search Text
+          </label>
+          <input
+            type="text"
+            value={searchText}
+            onChange={(event) => setSearchText(event.target.value)}
+            placeholder="Enter search text..."
+            className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
+          />
+        </div>
+      </div>
 
       <div className="mt-8">
         {isLoading ? (
           <div className="text-slate-300">Loading fines...</div>
-        ) : fines.length === 0 ? (
-          <div className="text-slate-300">No fines found.</div>
+        ) : filteredFines.length === 0 ? (
+          <div className="text-slate-300">No matching fines found.</div>
         ) : (
-          <div className="mt-6 w-full overflow-x-hidden">
-            <table className="w-full table-fixed text-left text-sm">
+          <div className="mt-6 w-full overflow-x-auto">
+            <table className="w-full table-auto text-left text-sm">
               <thead>
                 <tr className="bg-slate-800 text-left text-sm text-slate-200">
                   <th className="px-4 py-3">Fine ID</th>
@@ -190,7 +266,7 @@ export default function StaffFines() {
               </thead>
 
               <tbody>
-                {fines.map((fine) => {
+                {filteredFines.map((fine) => {
                   const isPaid = fine.fineStatus === "Paid";
                   const isWaived = fine.fineStatus === "Waived";
                   const isExpanded = expandedFineId === fine.fineId;
@@ -203,14 +279,9 @@ export default function StaffFines() {
                         <td className="px-4 py-3">{fine.fineId}</td>
 
                         <td className="px-4 py-3">
-                          <div className="font-semibold text-white">
-                            {fine.title}
-                          </div>
-
+                          <div className="font-semibold text-white">{fine.title}</div>
                           {fine.creator ? (
-                            <div className="text-sm text-sky-300">
-                              {fine.creator}
-                            </div>
+                            <div className="text-sm text-sky-300">{fine.creator}</div>
                           ) : null}
                         </td>
 
@@ -219,22 +290,18 @@ export default function StaffFines() {
                         </td>
 
                         <td className="px-4 py-3">
-                          {FormatDate(new Date(fine.loanDueDate), true)}
+                          {fine.loanDueDate ? FormatDate(new Date(fine.loanDueDate), true) : "-"}
                         </td>
 
                         <td className="px-4 py-3">{fine.daysOverdue}</td>
 
-                        <td className="px-4 py-3">
-                          {FormatMoney(fine.dailyFine)}
-                        </td>
+                        <td className="px-4 py-3">{FormatMoney(fine.dailyFine)}</td>
 
                         <td className="px-4 py-3 text-red-300">
                           {FormatMoney(fine.fineAmount)}
                         </td>
 
-                        <td className="px-4 py-3">
-                          {FormatMoney(fine.paidAmount)}
-                        </td>
+                        <td className="px-4 py-3">{FormatMoney(fine.paidAmount)}</td>
 
                         <td className="px-4 py-3 font-semibold">
                           {FormatMoney(fine.remainingAmount)}
@@ -272,8 +339,7 @@ export default function StaffFines() {
                           <td colSpan={11} className="px-4 py-4">
                             <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-slate-950/40 p-4">
                               <div className="text-sm text-slate-300">
-                                Enter payment amount up to{" "}
-                                {FormatMoney(fine.remainingAmount)}.
+                                Enter payment amount up to {FormatMoney(fine.remainingAmount)}.
                               </div>
 
                               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -282,26 +348,17 @@ export default function StaffFines() {
                                   min="0.01"
                                   step="0.01"
                                   value={paymentAmount}
-                                  onChange={(event) =>
-                                    setPaymentAmount(event.target.value)
-                                  }
+                                  onChange={(event) => setPaymentAmount(event.target.value)}
                                   placeholder="Payment amount"
                                   className="w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-2 text-white outline-none focus:border-sky-400 sm:max-w-xs"
                                 />
 
                                 <div className="flex gap-2">
                                   <PrimaryButton
-                                    title={
-                                      isPayPending
-                                        ? "Processing..."
-                                        : "Confirm Payment"
-                                    }
+                                    title={isPayPending ? "Processing..." : "Confirm Payment"}
                                     disabledValue={isPayPending}
                                     onClick={() =>
-                                      PayFine(
-                                        fine.fineId,
-                                        fine.remainingAmount
-                                      )
+                                      PayFine(fine.fineId, fine.remainingAmount)
                                     }
                                   />
 

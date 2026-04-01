@@ -17,20 +17,33 @@ import Login from "./pages/Login.jsx";
 import Registration from "./pages/Registration.jsx";
 import Report from "./pages/Report.jsx";
 import Search from "./pages/Search.jsx";
-import StaffFines from "./pages/StaffFines.jsx";
 import StaffRegistration from "./pages/StaffRegistration.jsx";
 import TestPage from "./pages/TestPage.jsx";
-import StaffLoans from "./pages/StaffLoans.jsx";
 import Logout from "./pages/Logout.jsx";
 import CreateSignupCode from "./pages/CreateSignupCode.jsx";
 import { ReadStoredUser } from "./api";
-import Holds from "./pages/Holds.jsx";
 import PopularityReport from "./pages/PopularityReport.jsx";
 import PatronSummaryReport from "./pages/PatronSummaryReport.jsx";
 import OverdueReport from "./pages/OverdueReport.jsx";
 import TestingReport from "./pages/TestingReport.jsx";
 import { MessageProvider } from "./context/MessageContext.jsx";
 import FineSummaryReport from "./pages/FineSummaryReport";
+import AccountHolds from "./pages/AccountHolds";
+import StaffLoans from "./pages/StaffLoans";
+import StaffFines from "./pages/StaffFines";
+import Holds from "./pages/Holds";
+import Lost from "./pages/Lost";
+
+function AccountRouter({ patronPage, staffPage }) {
+
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  if (!user) return null;
+
+  return user.user_type === "patron"
+    ? patronPage
+    : staffPage;
+}
 
 function App() {
   const user = ReadStoredUser();
@@ -64,6 +77,10 @@ function App() {
     ...(userType === "staff" && (roleCode === 1 || roleCode === 2)
       ? [{ to: "/stafffines", label: "Fines" }]
       : []),
+    
+    ...(userType === "staff" && (roleCode === 1 || roleCode === 2)
+      ? [{ to: "/lost", label: "Lost Items" }]
+      : []),
 
     ...(userType === "staff" && roleCode === 2
       ? [{ to: "/changerole", label: "User Management" }]
@@ -82,7 +99,7 @@ function App() {
     // Logout moved to the bottom, only showing if a user is logged in
     ...(user ? [{ to: "/logout", label: "Logout" }] : []),
   ];
-  const version = "1.1.0";
+  const version = "1.2.0";
 
   return (
     <MessageProvider>
@@ -157,11 +174,35 @@ function App() {
                   <Route path="/test" element={<TestPage />} />
                   <Route path="/account" element={<Account />}>
                     <Route
-                      path="accountinfo"
-                      element={<Navigate to="/account" replace />}
+                      path="holds"
+                      element={
+                        <AccountRouter
+                          patronPage={<AccountHolds />}
+                          staffPage={<Holds />}
+                        />
+                      }
                     />
-                    <Route path="loans" element={<Loans />} />
-                    <Route path="fines" element={<Fines />} />
+
+                    <Route
+                      path="loans"
+                      element={
+                        <AccountRouter
+                          patronPage={<Loans />}
+                          staffPage={<StaffLoans />}
+                        />
+                      }
+                    />
+
+                    <Route
+                      path="fines"
+                      element={
+                        <AccountRouter
+                          patronPage={<Fines />}
+                          staffPage={<StaffFines />}
+                        />
+                      }
+                    />
+
                     <Route path="activity" element={<AccountActivity />} />
                     <Route path="settings" element={<AccountSettings />} />
                   </Route>
@@ -184,11 +225,13 @@ function App() {
                   <Route path="/createsignupcode" element={<CreateSignupCode />} />
                   <Route path="/holds" element={<Holds />} />
                   <Route path="/staffloans" element={<StaffLoans />} />
+                  <Route path="/staff/lost" element={<Lost />} />
                   <Route path="/report/PopularityReport" element={<PopularityReport />} />
                   <Route path="/report/patron-summary" element={<PatronSummaryReport />} />
                   <Route path="/report/overduereport" element={<OverdueReport />} />
                   <Route path="/report/fine-summary" element={<FineSummaryReport />} />
                   <Route path="/report/testing" element={<TestingReport />} />
+                  <Route path="/lost" element={<Lost />} />
                 </Routes>
               </div>
             </main>
