@@ -29,10 +29,9 @@ function BuildRequestUrls(url) {
   ) {
     return [url];
   }
-  console.log(localApiOrigin);
+  console.log("print this");
   return [url, `${localApiOrigin}${url.replace(/^\/api/, "")}`];
 }
-
 function ShouldRetryAgainstBackend(error) {
   if (!(error instanceof Error)) {
     return false;
@@ -261,14 +260,16 @@ async function FetchJsonOnce(url, options) {
 export async function FetchJson(url, options) {
   const requestUrls = await BuildRequestUrls(url);
   console.log("Attempting request to:", requestUrls);
-
+  
+  const requestUrlFixed = `https://library-database-baclend-api.onrender.com${requestUrls[0]}`;
+  console.log("Attempting request to fixed URL:", requestUrlFixed);
   let lastError = null;
 
   for (let index = 0; index < requestUrls.length; index += 1) {
     const requestUrl = requestUrls[index];
 
     try {
-      return await FetchJsonOnce(requestUrl, options);
+      return await FetchJsonOnce(requestUrlFixed, options);
     } catch (caughtError) {
       const error = NormalizeRequestError(caughtError);
       lastError = error;
