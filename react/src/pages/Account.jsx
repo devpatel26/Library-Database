@@ -43,16 +43,15 @@ export default function Account() {
     ? `${user.user_type ?? ""}:${user.patron_id ?? ""}:${user.staff_id ?? ""}`
     : "";
   const isPatron = user?.user_type === "patron";
-  const navLinks = isPatron
-    ? [
+  const navLinks = [
         { to: ".", label: "Account", end: true },
+        { to: "holds", label: "Holds" },
         { to: "loans", label: "Loans" },
         { to: "fines", label: "Fines" },
         { to: "activity", label: "Activity" },
         { to: "settings", label: "Settings" },
-      ]
-    : [{ to: ".", label: "Account", end: true }];
-
+  ];
+    
   useEffect(() => {
     let isMounted = true;
     const currentUser = ReadStoredUser();
