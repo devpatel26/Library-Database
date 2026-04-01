@@ -1,4 +1,4 @@
-import { NavLink, useOutlet,useNavigate,useLocation} from "react-router-dom";
+import { NavLink, useOutlet} from "react-router-dom";
 import { useEffect, useState } from "react";
 import { FetchJson, GetErrorMessage, ReadStoredUser } from "../api";
 
@@ -34,8 +34,6 @@ function FormatDateOfBirth(dateOfBirth) {
 }
 
 export default function Account() {
-  const navigate = useNavigate();
-  const location = useLocation();
   const [account, setAccount] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

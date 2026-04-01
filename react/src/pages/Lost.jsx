@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import PrimaryButton, { SecondaryButton } from "../components/Buttons";
 import { FetchJson, ReadStoredUser } from "../api";
 import { FormatDate } from "../components/TimeFormats";
@@ -22,27 +22,7 @@ export default function Lost() {
   const [searchBy, setSearchBy] = useState("all");
   const [searchText, setSearchText] = useState("");
 
-  useEffect(() => {
-
-    const user = ReadStoredUser();
-
-    if (!user) {
-      showWarning("Please login first.");
-      window.location.href = "/login";
-      return;
-    }
-
-    if (user.user_type !== "staff") {
-      showWarning("Only staff can access lost items.");
-      window.location.href = "/";
-      return;
-    }
-
-    LoadLost();
-
-  }, []);
-
-  async function LoadLost() {
+  const LoadLost = useCallback(async () => {
 
     try {
 
@@ -62,7 +42,27 @@ export default function Lost() {
       setIsLoading(false);
 
     }
-  }
+  }, [showError]);
+
+  useEffect(() => {
+
+    const user = ReadStoredUser();
+
+    if (!user) {
+      showWarning("Please login first.");
+      window.location.href = "/login";
+      return;
+    }
+
+    if (user.user_type !== "staff") {
+      showWarning("Only staff can access lost items.");
+      window.location.href = "/";
+      return;
+    }
+
+    LoadLost();
+
+  }, [LoadLost, showWarning]);
 
   async function MarkFound(loanId) {
 
