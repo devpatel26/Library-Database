@@ -6,6 +6,7 @@ import Fines from "./pages/Fines.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import Home from "./pages/Home.jsx";
 import ItemEntry from "./pages/ItemEntry.jsx";
+import ItemManager from "./pages/ItemManager.jsx";
 import Books from "./pages/Books.jsx";
 import Periodicals from "./pages/Periodicals.jsx";
 import AudiovisualMedia from "./pages/AudiovisualMedia.jsx";
@@ -64,8 +65,8 @@ function App() {
       ? [{ to: "/stafffines", label: "Fines" }]
       : []),
 
-    ...(userType === "staff" && (roleCode === 1 || roleCode === 2)
-      ? [{ to: "/changerole", label: "Patron Roles" }]
+    ...(userType === "staff" && roleCode === 2
+      ? [{ to: "/changerole", label: "User Management" }]
       : []),
 
     ...(userType === "staff" && roleCode === 2
@@ -107,8 +108,8 @@ function App() {
           <div className="flex flex-1 mx-auto max-w-[1400px] w-full relative">
             
             {/* HOVER-EXPANDING LEFT SIDEBAR */}
-            <div className="relative z-50 hidden md:block w-12 flex-shrink-0">
-              <nav className="absolute top-0 left-0 h-full w-12 hover:w-64 transition-all duration-300 ease-in-out border-r border-white/10 bg-slate-950/95 shadow-2xl overflow-hidden group">
+            <div className="group relative z-50 hidden w-12 flex-shrink-0 transition-[width] duration-300 ease-in-out hover:w-64 md:block">
+              <nav className="relative h-full w-full border-r border-white/10 bg-slate-950/95 shadow-2xl overflow-hidden">
                 
                 {/* Hamburger Icon */}
                 <div className="flex h-16 w-12 items-center justify-center text-slate-400 group-hover:opacity-0 transition-opacity duration-200">
@@ -149,7 +150,7 @@ function App() {
             </div>
 
             {/* MAIN ROUTE CONTENT */}
-            <main className="w-full flex-1 px-4 py-8 sm:px-8 sm:py-10 overflow-hidden">
+            <main className="min-w-0 flex-1 px-4 py-8 sm:px-8 sm:py-10 overflow-hidden">
               <div className="mx-auto max-w-5xl">
                 <Routes>
                   <Route path="/" element={<Home />} />
@@ -172,6 +173,7 @@ function App() {
                     <Route path="periodicals" element={<Periodicals />} />
                     <Route path="audiovisualmedia" element={<AudiovisualMedia />} />
                     <Route path="equipment" element={<Equipment />} />
+                    <Route path="manage" element={<ItemManager />} />
                   </Route>
                   <Route path="/changerole" element={<ChangeRole />} />
                   <Route path="/staffregistration" element={<StaffRegistration />} />

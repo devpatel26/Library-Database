@@ -1,5 +1,4 @@
 import { SubmitButton } from "../components/Buttons";
-import Dropdown from "../components/Dropdown";
 import { useMessage } from "../hooks/useMessage";
 // import languages, { bookformats, genres } from "../data/dummy/formdropdowns";
 
@@ -22,7 +21,7 @@ export default function Periodicals() {
         setLanguages(languageData);
         const genreData = await FetchJson("/api/genres");
         setGenres(genreData);
-        const formatData = await FetchJson("/api/book_types");
+        const formatData = await FetchJson("/api/periodical_types");
         setFormat(formatData);
       } catch (err) {
         setError(GetErrorMessage(err, "Failed to load dropdowns."));

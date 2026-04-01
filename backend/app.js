@@ -825,6 +825,220 @@ function BuildSearchQuery({ q, category, availableOnly, sort, limit }) {
     };
 }
 
+function NormalizeManagedUserType(value) {
+    const normalizedValue = SafeText(value).trim().toLowerCase();
+
+    if (normalizedValue === "patron" || normalizedValue === "staff") {
+        return normalizedValue;
+    }
+
+    return "all";
+}
+
+function NormalizeManagedItemCategory(value) {
+    const normalizedValue = SafeText(value).trim().toLowerCase();
+
+    if (normalizedValue === "audiovisual_media") {
+        return "audiovisualmedia";
+    }
+
+    if (
+        normalizedValue === "book" ||
+        normalizedValue === "periodical" ||
+        normalizedValue === "audiovisualmedia" ||
+        normalizedValue === "equipment"
+    ) {
+        return normalizedValue;
+    }
+
+    return "all";
+}
+
+function ParseBooleanFlag(value) {
+    if (value === true || value === false) {
+        return value ? 1 : 0;
+    }
+
+    const normalizedValue = SafeText(value).trim().toLowerCase();
+
+    if (["1", "true", "yes", "on"].includes(normalizedValue)) {
+        return 1;
+    }
+
+    if (["0", "false", "no", "off"].includes(normalizedValue)) {
+        return 0;
+    }
+
+    return null;
+}
+
+function NormalizeRequiredText(value, maxLength) {
+    const normalizedValue = SafeText(value).trim();
+
+    if (!normalizedValue || normalizedValue.length > maxLength) {
+        return null;
+    }
+
+    return normalizedValue;
+}
+
+function NormalizeOptionalText(value, maxLength) {
+    const normalizedValue = SafeText(value).trim();
+
+    if (!normalizedValue) {
+        return null;
+    }
+
+    if (normalizedValue.length > maxLength) {
+        return null;
+    }
+
+    return normalizedValue;
+}
+
+function NormalizeDateInput(value, { allowEmpty = false } = {}) {
+    const normalizedValue = SafeText(value).trim();
+
+    if (!normalizedValue) {
+        return allowEmpty ? "" : null;
+    }
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(normalizedValue)) {
+        return null;
+    }
+
+    return normalizedValue;
+}
+
+async function GetManagedItemBaseRow(itemId) {
+    const [rows] = await pool.query(
+        `
+        SELECT
+            i.item_id AS itemId,
+            i.available,
+            i.on_hold AS onHold,
+            i.unavailable,
+            i.available + i.on_hold + i.unavailable AS totalCopies,
+            CASE
+                WHEN b.item_id IS NOT NULL THEN 'book'
+                WHEN per.item_id IS NOT NULL THEN 'periodical'
+                WHEN am.item_id IS NOT NULL THEN 'audiovisualmedia'
+                WHEN e.item_id IS NOT NULL THEN 'equipment'
+                ELSE NULL
+            END AS category
+        FROM items i
+        LEFT JOIN books b ON b.item_id = i.item_id
+        LEFT JOIN periodicals per ON per.item_id = i.item_id
+        LEFT JOIN audiovisual_media am ON am.item_id = i.item_id
+        LEFT JOIN equipment e ON e.item_id = i.item_id
+        WHERE i.item_id = ?
+        `,
+        [itemId]
+    );
+
+    return rows[0] ?? null;
+}
+
+async function GetManagedItemDetail(itemId) {
+    const baseRow = await GetManagedItemBaseRow(itemId);
+
+    if (!baseRow || !baseRow.category) {
+        return null;
+    }
+
+    if (baseRow.category === "book") {
+        const [rows] = await pool.query(
+            `
+            SELECT
+                b.title,
+                b.shelf_number AS shelfNumber,
+                b.genre_code AS genreCode,
+                b.language_code AS languageCode,
+                b.book_type_code AS formatCode,
+                b.publisher,
+                b.publication_date AS publicationDate,
+                b.summary,
+                a.first_name AS authorFirstName,
+                a.last_name AS authorLastName
+            FROM books b
+            LEFT JOIN authors a
+                ON a.author_id = (
+                    SELECT MIN(a2.author_id)
+                    FROM authors a2
+                    WHERE a2.item_id = b.item_id
+                )
+            WHERE b.item_id = ?
+            `,
+            [itemId]
+        );
+
+        return rows.length === 0 ? null : { ...baseRow, ...rows[0] };
+    }
+
+    if (baseRow.category === "periodical") {
+        const [rows] = await pool.query(
+            `
+            SELECT
+                p.title,
+                p.shelf_number AS shelfNumber,
+                p.genre_code AS genreCode,
+                p.language_code AS languageCode,
+                p.periodical_type_code AS formatCode,
+                p.publisher,
+                p.publication_date AS publicationDate,
+                p.summary
+            FROM periodicals p
+            WHERE p.item_id = ?
+            `,
+            [itemId]
+        );
+
+        return rows.length === 0 ? null : { ...baseRow, ...rows[0] };
+    }
+
+    if (baseRow.category === "audiovisualmedia") {
+        const [rows] = await pool.query(
+            `
+            SELECT
+                am.title,
+                am.shelf_number AS shelfNumber,
+                am.genre_code AS genreCode,
+                am.language_code AS languageCode,
+                am.audiovisual_media_type_code AS formatCode,
+                am.publisher,
+                am.publication_date AS publicationDate,
+                am.summary,
+                am.runtime,
+                c.first_name AS contributorFirstName,
+                c.last_name AS contributorLastName,
+                c.role AS contributorRole
+            FROM audiovisual_media am
+            LEFT JOIN contributors c
+                ON c.contributor_id = (
+                    SELECT MIN(c2.contributor_id)
+                    FROM contributors c2
+                    WHERE c2.item_id = am.item_id
+                )
+            WHERE am.item_id = ?
+            `,
+            [itemId]
+        );
+
+        return rows.length === 0 ? null : { ...baseRow, ...rows[0] };
+    }
+
+    const [rows] = await pool.query(
+        `
+        SELECT equipment_name AS title
+        FROM equipment
+        WHERE item_id = ?
+        `,
+        [itemId]
+    );
+
+    return rows.length === 0 ? null : { ...baseRow, ...rows[0] };
+}
+
 function GetPatronItemSelectColumns() {
     return `
         CASE
@@ -1568,10 +1782,806 @@ app.get(["/search", "/api/search"], async (req, res) => {
     }
 });
 
+app.get(["/admin/users", "/api/admin/users"], async (req, res) => {
+  try {
+    const user = await RequireStaffUser(req, res, { adminOnly: true });
+
+    if (!user) {
+      return;
+    }
+
+    const userType = NormalizeManagedUserType(req.query.userType);
+    const searchText = SafeText(req.query.q).trim();
+    const like = `%${searchText}%`;
+
+    const patronWhereClause = searchText
+      ? `
+        WHERE
+          CAST(p.patron_id AS CHAR) LIKE ?
+          OR CONCAT_WS(' ', p.first_name, p.last_name) LIKE ?
+          OR p.email LIKE ?
+      `
+      : "";
+    const staffWhereClause = searchText
+      ? `
+        WHERE
+          CAST(s.staff_id AS CHAR) LIKE ?
+          OR CONCAT_WS(' ', s.first_name, s.last_name) LIKE ?
+          OR s.email LIKE ?
+          OR s.address LIKE ?
+          OR COALESCE(s.phone_number, '') LIKE ?
+      `
+      : "";
+
+    const queries = {
+      patron: {
+        sql: `
+          SELECT
+            'patron' AS userType,
+            p.patron_id AS userId,
+            p.first_name AS firstName,
+            p.last_name AS lastName,
+            p.email,
+            p.date_of_birth AS dateOfBirth,
+            p.patron_role_code AS roleCode,
+            pr.patron_role AS roleName,
+            p.is_active AS isActive,
+            NULL AS phoneNumber,
+            NULL AS address
+          FROM patrons p
+          LEFT JOIN patron_roles pr ON pr.patron_role_code = p.patron_role_code
+          ${patronWhereClause}
+        `,
+        params: searchText ? [like, like, like] : [],
+      },
+      staff: {
+        sql: `
+          SELECT
+            'staff' AS userType,
+            s.staff_id AS userId,
+            s.first_name AS firstName,
+            s.last_name AS lastName,
+            s.email,
+            s.date_of_birth AS dateOfBirth,
+            s.staff_role_code AS roleCode,
+            sr.staff_role AS roleName,
+            s.is_active AS isActive,
+            s.phone_number AS phoneNumber,
+            s.address
+          FROM staff s
+          LEFT JOIN staff_roles sr ON sr.staff_role_code = s.staff_role_code
+          ${staffWhereClause}
+        `,
+        params: searchText ? [like, like, like, like, like] : [],
+      },
+    };
+
+    const selectedQueries = userType === "all"
+      ? [queries.patron, queries.staff]
+      : [queries[userType]];
+
+    const [rows] = await pool.query(
+      `
+      SELECT *
+      FROM (
+        ${selectedQueries.map((query) => query.sql).join(" UNION ALL ")}
+      ) AS managedUsers
+      ORDER BY lastName ASC, firstName ASC, userType ASC, userId ASC
+      `,
+      selectedQueries.flatMap((query) => query.params)
+    );
+
+    return res.json(rows);
+  } catch (error) {
+    console.error("Admin users list error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to load users."),
+    });
+  }
+});
+
+app.put(["/admin/users/:userType/:userId", "/api/admin/users/:userType/:userId"], async (req, res) => {
+  try {
+    const user = await RequireStaffUser(req, res, { adminOnly: true });
+
+    if (!user) {
+      return;
+    }
+
+    const userType = NormalizeManagedUserType(req.params.userType);
+    const userId = ParsePositiveInteger(req.params.userId);
+
+    if (userType === "all" || !userId) {
+      return res.status(400).json({ error: "A valid user type and user ID are required." });
+    }
+
+    const firstName = NormalizeRequiredText(req.body?.firstName, 20);
+    const lastName = NormalizeRequiredText(req.body?.lastName, 20);
+    const email = NormalizeRequiredText(
+      req.body?.email,
+      userType === "patron" ? 40 : 100
+    );
+    const dateOfBirth = NormalizeDateInput(req.body?.dateOfBirth, {
+      allowEmpty: userType === "patron",
+    });
+    const roleCode = ParsePositiveInteger(req.body?.roleCode);
+    const isActive = ParseBooleanFlag(req.body?.isActive);
+
+    if (!firstName || !lastName || !email || !roleCode || isActive === null) {
+      return res.status(400).json({ error: "Missing or invalid required fields." });
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: "Enter a valid email address." });
+    }
+
+    if (dateOfBirth === null) {
+      return res.status(400).json({ error: "Enter a valid date of birth." });
+    }
+
+    const isSelfStaffAccount = userType === "staff" && Number(user.staffId) === Number(userId);
+
+    if (isSelfStaffAccount && !isActive) {
+      return res.status(400).json({
+        error: "You cannot deactivate the admin account you are currently using.",
+      });
+    }
+
+    if (isSelfStaffAccount && roleCode !== 2) {
+      return res.status(400).json({
+        error: "You cannot remove admin access from the account you are currently using.",
+      });
+    }
+
+    const [accountRows] = await pool.query(
+      userType === "patron"
+        ? `
+          SELECT patron_id AS userId
+          FROM patrons
+          WHERE patron_id = ?
+        `
+        : `
+          SELECT staff_id AS userId
+          FROM staff
+          WHERE staff_id = ?
+        `,
+      [userId]
+    );
+
+    if (accountRows.length === 0) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    const [emailMatches] = await pool.query(
+      `
+      SELECT user_type AS userType, account_id AS accountId
+      FROM (
+        SELECT 'patron' AS user_type, patron_id AS account_id, email
+        FROM patrons
+
+        UNION ALL
+
+        SELECT 'staff' AS user_type, staff_id AS account_id, email
+        FROM staff
+      ) AS accounts
+      WHERE LOWER(email) = LOWER(?)
+      LIMIT 1
+      `,
+      [email]
+    );
+
+    if (
+      emailMatches.length > 0 &&
+      (
+        emailMatches[0].userType !== userType ||
+        Number(emailMatches[0].accountId) !== Number(userId)
+      )
+    ) {
+      return res.status(409).json({ error: "That email address is already in use." });
+    }
+
+    if (userType === "patron") {
+      const [roleRows] = await pool.query(
+        `
+        SELECT patron_role_code AS roleCode
+        FROM patron_roles
+        WHERE patron_role_code = ?
+        `,
+        [roleCode]
+      );
+
+      if (roleRows.length === 0) {
+        return res.status(400).json({ error: "Select a valid patron role." });
+      }
+
+      await pool.query(
+        `
+        UPDATE patrons
+        SET first_name = ?,
+            last_name = ?,
+            email = ?,
+            date_of_birth = ?,
+            patron_role_code = ?,
+            is_active = ?
+        WHERE patron_id = ?
+        `,
+        [firstName, lastName, email, dateOfBirth || null, roleCode, isActive, userId]
+      );
+    } else {
+      const address = NormalizeRequiredText(req.body?.address, 100);
+      const phoneNumber = NormalizeOptionalText(req.body?.phoneNumber, 10);
+
+      if (!address) {
+        return res.status(400).json({ error: "Address is required for staff accounts." });
+      }
+
+      if (phoneNumber && !/^\d{10}$/.test(phoneNumber)) {
+        return res.status(400).json({
+          error: "Phone number must contain exactly 10 digits.",
+        });
+      }
+
+      const [roleRows] = await pool.query(
+        `
+        SELECT staff_role_code AS roleCode
+        FROM staff_roles
+        WHERE staff_role_code = ?
+        `,
+        [roleCode]
+      );
+
+      if (roleRows.length === 0) {
+        return res.status(400).json({ error: "Select a valid staff role." });
+      }
+
+      await pool.query(
+        `
+        UPDATE staff
+        SET first_name = ?,
+            last_name = ?,
+            email = ?,
+            date_of_birth = ?,
+            staff_role_code = ?,
+            phone_number = ?,
+            address = ?,
+            is_active = ?
+        WHERE staff_id = ?
+        `,
+        [firstName, lastName, email, dateOfBirth, roleCode, phoneNumber, address, isActive, userId]
+      );
+    }
+
+    return res.json({ message: "User updated successfully." });
+  } catch (error) {
+    console.error("Admin user update error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to update user."),
+    });
+  }
+});
+
+app.delete(["/admin/users/:userType/:userId", "/api/admin/users/:userType/:userId"], async (req, res) => {
+  try {
+    const user = await RequireStaffUser(req, res, { adminOnly: true });
+
+    if (!user) {
+      return;
+    }
+
+    const userType = NormalizeManagedUserType(req.params.userType);
+    const userId = ParsePositiveInteger(req.params.userId);
+
+    if (userType === "all" || !userId) {
+      return res.status(400).json({ error: "A valid user type and user ID are required." });
+    }
+
+    if (userType === "staff" && Number(user.staffId) === Number(userId)) {
+      return res.status(400).json({
+        error: "You cannot delete the admin account you are currently using.",
+      });
+    }
+
+    if (userType === "patron") {
+      const [patrons] = await pool.query(
+        `
+        SELECT patron_id AS userId
+        FROM patrons
+        WHERE patron_id = ?
+        `,
+        [userId]
+      );
+
+      if (patrons.length === 0) {
+        return res.status(404).json({ error: "Patron not found." });
+      }
+
+      const [usageRows] = await pool.query(
+        `
+        SELECT
+          (SELECT COUNT(*) FROM holds WHERE patron_id = ?) AS holdCount,
+          (SELECT COUNT(*) FROM loans WHERE patron_id = ?) AS loanCount,
+          (SELECT COUNT(*) FROM fines WHERE patron_id = ?) AS fineCount
+        `,
+        [userId, userId, userId]
+      );
+
+      const usage = usageRows[0] ?? {};
+
+      if (Number(usage.holdCount) > 0 || Number(usage.loanCount) > 0 || Number(usage.fineCount) > 0) {
+        return res.status(400).json({
+          error: "This patron has related holds, loans, or fines and cannot be deleted.",
+        });
+      }
+
+      await pool.query(
+        `
+        DELETE FROM patrons
+        WHERE patron_id = ?
+        `,
+        [userId]
+      );
+
+      return res.json({ message: "Patron deleted successfully." });
+    }
+
+    const [staffRows] = await pool.query(
+      `
+      SELECT staff_id AS userId
+      FROM staff
+      WHERE staff_id = ?
+      `,
+      [userId]
+    );
+
+    if (staffRows.length === 0) {
+      return res.status(404).json({ error: "Staff account not found." });
+    }
+
+    await pool.query(
+      `
+      DELETE FROM staff
+      WHERE staff_id = ?
+      `,
+      [userId]
+    );
+
+    return res.json({ message: "Staff account deleted successfully." });
+  } catch (error) {
+    console.error("Admin user delete error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to delete user."),
+    });
+  }
+});
+
+app.get(["/items/manage", "/api/items/manage"], async (req, res) => {
+  try {
+    const user = await RequireStaffUser(req, res);
+
+    if (!user) {
+      return;
+    }
+
+    await ClearExpiredHolds();
+
+    const q = SafeText(req.query.q).trim();
+    const category = NormalizeManagedItemCategory(req.query.category);
+    const limit = Math.min(Math.max(Number(req.query.limit) || 100, 1), 200);
+    const { sql, params } = BuildSearchQuery({
+      q,
+      category,
+      availableOnly: false,
+      sort: "title",
+      limit,
+    });
+
+    const [rows] = await pool.query(sql, params);
+
+    return res.json(
+      rows.map((row) => ({
+        ...row,
+        totalCopies:
+          Number(row.available ?? 0) +
+          Number(row.onHold ?? 0) +
+          Number(row.unavailable ?? 0),
+      }))
+    );
+  } catch (error) {
+    console.error("Managed items list error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to load items."),
+    });
+  }
+});
+
+app.get(["/items/manage/:itemId", "/api/items/manage/:itemId"], async (req, res) => {
+  try {
+    const user = await RequireStaffUser(req, res);
+
+    if (!user) {
+      return;
+    }
+
+    await ClearExpiredHolds();
+
+    const itemId = ParsePositiveInteger(req.params.itemId);
+
+    if (!itemId) {
+      return res.status(400).json({ error: "A valid item ID is required." });
+    }
+
+    const detail = await GetManagedItemDetail(itemId);
+
+    if (!detail) {
+      return res.status(404).json({ error: "Item not found." });
+    }
+
+    return res.json(detail);
+  } catch (error) {
+    console.error("Managed item detail error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to load item."),
+    });
+  }
+});
+
+app.put(["/items/manage/:itemId", "/api/items/manage/:itemId"], async (req, res) => {
+  let connection;
+
+  try {
+    const user = await RequireStaffUser(req, res);
+
+    if (!user) {
+      return;
+    }
+
+    await ClearExpiredHolds();
+
+    const itemId = ParsePositiveInteger(req.params.itemId);
+
+    if (!itemId) {
+      return res.status(400).json({ error: "A valid item ID is required." });
+    }
+
+    const existingItem = await GetManagedItemBaseRow(itemId);
+
+    if (!existingItem || !existingItem.category) {
+      return res.status(404).json({ error: "Item not found." });
+    }
+
+    const totalCopies = ParsePositiveInteger(req.body?.totalCopies);
+    const lockedCopies =
+      Number(existingItem.onHold ?? 0) + Number(existingItem.unavailable ?? 0);
+
+    if (!totalCopies) {
+      return res.status(400).json({ error: "Enter a valid total copies value." });
+    }
+
+    if (totalCopies < lockedCopies) {
+      return res.status(400).json({
+        error: `Total copies cannot be less than ${lockedCopies} while copies are on hold or unavailable.`,
+      });
+    }
+
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    await connection.query(
+      `
+      UPDATE items
+      SET available = ?
+      WHERE item_id = ?
+      `,
+      [totalCopies - lockedCopies, itemId]
+    );
+
+    if (existingItem.category === "book") {
+      const title = NormalizeRequiredText(req.body?.title, 45);
+      const shelfNumber = ParsePositiveInteger(req.body?.shelfNumber);
+      const genreCode = ParsePositiveInteger(req.body?.genreCode);
+      const languageCode = ParsePositiveInteger(req.body?.languageCode);
+      const formatCode = ParsePositiveInteger(req.body?.formatCode);
+      const publisher = NormalizeRequiredText(req.body?.publisher, 50);
+      const publicationDate = NormalizeDateInput(req.body?.publicationDate);
+      const summary = NormalizeRequiredText(req.body?.summary, 1000);
+      const authorFirstName = NormalizeRequiredText(req.body?.authorFirstName, 30);
+      const authorLastName = NormalizeRequiredText(req.body?.authorLastName, 30);
+
+      if (
+        !title ||
+        !shelfNumber ||
+        !genreCode ||
+        !languageCode ||
+        !formatCode ||
+        !publisher ||
+        !publicationDate ||
+        !summary ||
+        !authorFirstName ||
+        !authorLastName
+      ) {
+        await connection.rollback();
+        return res.status(400).json({ error: "Missing or invalid book fields." });
+      }
+
+      await connection.query(
+        `
+        UPDATE books
+        SET title = ?,
+            shelf_number = ?,
+            genre_code = ?,
+            language_code = ?,
+            book_type_code = ?,
+            publisher = ?,
+            publication_date = ?,
+            summary = ?
+        WHERE item_id = ?
+        `,
+        [
+          title,
+          shelfNumber,
+          genreCode,
+          languageCode,
+          formatCode,
+          publisher,
+          publicationDate,
+          summary,
+          itemId,
+        ]
+      );
+
+      const [authorRows] = await connection.query(
+        `
+        SELECT author_id AS authorId
+        FROM authors
+        WHERE item_id = ?
+        ORDER BY author_id ASC
+        LIMIT 1
+        `,
+        [itemId]
+      );
+
+      if (authorRows.length > 0) {
+        await connection.query(
+          `
+          UPDATE authors
+          SET first_name = ?,
+              last_name = ?
+          WHERE author_id = ?
+          `,
+          [authorFirstName, authorLastName, authorRows[0].authorId]
+        );
+      } else {
+        await connection.query(
+          `
+          INSERT INTO authors (item_id, first_name, last_name)
+          VALUES (?, ?, ?)
+          `,
+          [itemId, authorFirstName, authorLastName]
+        );
+      }
+    } else if (existingItem.category === "periodical") {
+      const title = NormalizeRequiredText(req.body?.title, 45);
+      const shelfNumber = ParsePositiveInteger(req.body?.shelfNumber);
+      const genreCode = ParsePositiveInteger(req.body?.genreCode);
+      const languageCode = ParsePositiveInteger(req.body?.languageCode);
+      const formatCode = ParsePositiveInteger(req.body?.formatCode);
+      const publisher = NormalizeRequiredText(req.body?.publisher, 50);
+      const publicationDate = NormalizeDateInput(req.body?.publicationDate);
+      const summary = NormalizeRequiredText(req.body?.summary, 1000);
+
+      if (
+        !title ||
+        !shelfNumber ||
+        !genreCode ||
+        !languageCode ||
+        !formatCode ||
+        !publisher ||
+        !publicationDate ||
+        !summary
+      ) {
+        await connection.rollback();
+        return res.status(400).json({ error: "Missing or invalid periodical fields." });
+      }
+
+      await connection.query(
+        `
+        UPDATE periodicals
+        SET title = ?,
+            shelf_number = ?,
+            genre_code = ?,
+            language_code = ?,
+            periodical_type_code = ?,
+            publisher = ?,
+            publication_date = ?,
+            summary = ?
+        WHERE item_id = ?
+        `,
+        [
+          title,
+          shelfNumber,
+          genreCode,
+          languageCode,
+          formatCode,
+          publisher,
+          publicationDate,
+          summary,
+          itemId,
+        ]
+      );
+    } else if (existingItem.category === "audiovisualmedia") {
+      const title = NormalizeRequiredText(req.body?.title, 45);
+      const shelfNumber = ParsePositiveInteger(req.body?.shelfNumber);
+      const genreCode = ParsePositiveInteger(req.body?.genreCode);
+      const languageCode = ParsePositiveInteger(req.body?.languageCode);
+      const formatCode = ParsePositiveInteger(req.body?.formatCode);
+      const publisher = NormalizeRequiredText(req.body?.publisher, 50);
+      const publicationDate = NormalizeDateInput(req.body?.publicationDate);
+      const summary = NormalizeRequiredText(req.body?.summary, 1000);
+      const runtime = ParsePositiveInteger(req.body?.runtime);
+
+      if (
+        !title ||
+        !shelfNumber ||
+        !genreCode ||
+        !languageCode ||
+        !formatCode ||
+        !publisher ||
+        !publicationDate ||
+        !summary ||
+        !runtime
+      ) {
+        await connection.rollback();
+        return res.status(400).json({
+          error: "Missing or invalid audiovisual media fields.",
+        });
+      }
+
+      await connection.query(
+        `
+        UPDATE audiovisual_media
+        SET title = ?,
+            shelf_number = ?,
+            genre_code = ?,
+            language_code = ?,
+            audiovisual_media_type_code = ?,
+            publisher = ?,
+            publication_date = ?,
+            summary = ?,
+            runtime = ?
+        WHERE item_id = ?
+        `,
+        [
+          title,
+          shelfNumber,
+          genreCode,
+          languageCode,
+          formatCode,
+          publisher,
+          publicationDate,
+          summary,
+          runtime,
+          itemId,
+        ]
+      );
+    } else {
+      const title = NormalizeRequiredText(req.body?.title, 20);
+
+      if (!title) {
+        await connection.rollback();
+        return res.status(400).json({ error: "Enter a valid equipment name." });
+      }
+
+      await connection.query(
+        `
+        UPDATE equipment
+        SET equipment_name = ?
+        WHERE item_id = ?
+        `,
+        [title, itemId]
+      );
+    }
+
+    await connection.commit();
+
+    return res.json({ message: "Item updated successfully." });
+  } catch (error) {
+    if (connection) {
+      await connection.rollback();
+    }
+
+    console.error("Managed item update error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to update item."),
+    });
+  } finally {
+    connection?.release();
+  }
+});
+
+app.delete(["/items/manage/:itemId", "/api/items/manage/:itemId"], async (req, res) => {
+  let connection;
+
+  try {
+    const user = await RequireStaffUser(req, res);
+
+    if (!user) {
+      return;
+    }
+
+    await ClearExpiredHolds();
+
+    const itemId = ParsePositiveInteger(req.params.itemId);
+
+    if (!itemId) {
+      return res.status(400).json({ error: "A valid item ID is required." });
+    }
+
+    const existingItem = await GetManagedItemBaseRow(itemId);
+
+    if (!existingItem || !existingItem.category) {
+      return res.status(404).json({ error: "Item not found." });
+    }
+
+    const [usageRows] = await pool.query(
+      `
+      SELECT
+        (SELECT COUNT(*) FROM holds WHERE item_id = ?) AS holdCount,
+        (SELECT COUNT(*) FROM loans WHERE item_id = ?) AS loanCount
+      `,
+      [itemId, itemId]
+    );
+
+    const usage = usageRows[0] ?? {};
+
+    if (Number(usage.holdCount) > 0 || Number(usage.loanCount) > 0) {
+      return res.status(400).json({
+        error: "This item has hold or loan history and cannot be deleted.",
+      });
+    }
+
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    if (existingItem.category === "book") {
+      await connection.query(`DELETE FROM authors WHERE item_id = ?`, [itemId]);
+      await connection.query(`DELETE FROM books WHERE item_id = ?`, [itemId]);
+    } else if (existingItem.category === "periodical") {
+      await connection.query(`DELETE FROM periodicals WHERE item_id = ?`, [itemId]);
+    } else if (existingItem.category === "audiovisualmedia") {
+      await connection.query(`DELETE FROM contributors WHERE item_id = ?`, [itemId]);
+      await connection.query(`DELETE FROM audiovisual_media WHERE item_id = ?`, [itemId]);
+    } else {
+      await connection.query(`DELETE FROM equipment WHERE item_id = ?`, [itemId]);
+    }
+
+    await connection.query(`DELETE FROM items WHERE item_id = ?`, [itemId]);
+    await connection.commit();
+
+    return res.json({ message: "Item deleted successfully." });
+  } catch (error) {
+    if (connection) {
+      await connection.rollback();
+    }
+
+    console.error("Managed item delete error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to delete item."),
+    });
+  } finally {
+    connection?.release();
+  }
+});
+
 //
 // update patron roles
 app.put(["/changerole","/api/changerole"], async (req,res) => {
   try {
+    const user = await RequireStaffUser(req, res, { adminOnly: true });
+
+    if (!user) {
+      return;
+    }
+
     const {
       patronId,
       role,
@@ -1603,8 +2613,30 @@ app.put(["/changerole","/api/changerole"], async (req,res) => {
 // // get roles
 app.get(["/patronroles", "/api/patronroles"], async (req, res) => {
   try {
+    const user = await RequireStaffUser(req, res, { adminOnly: true });
+
+    if (!user) {
+      return;
+    }
+
     const [rows] = await pool.query(
       `SELECT * FROM patron_roles WHERE patron_role_code NOT IN (2,3) ORDER BY patron_role_code ASC`,
+    );
+    res.json(rows);
+  } catch (error) {
+    SendServerError(res, error, "Internal Server Error");
+  }
+});
+app.get(["/staffroles", "/api/staffroles"], async (req, res) => {
+  try {
+    const user = await RequireStaffUser(req, res, { adminOnly: true });
+
+    if (!user) {
+      return;
+    }
+
+    const [rows] = await pool.query(
+      `SELECT * FROM staff_roles ORDER BY staff_role_code ASC`,
     );
     res.json(rows);
   } catch (error) {
@@ -1644,6 +2676,17 @@ app.get(["/book_types", "/api/book_types"], async (req, res) => {
     SendServerError(res, error, "Internal Server Error");
   }
 });
+// get periodical formats
+app.get(["/periodical_types", "/api/periodical_types"], async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT * FROM periodical_types ORDER BY periodical_type_code ASC`,
+    );
+    res.json(rows);
+  } catch (error) {
+    SendServerError(res, error, "Internal Server Error");
+  }
+});
 // get avm formats
 app.get(
   ["/audiovisual_media_types", "/api/audiovisual_media_types"],
@@ -1663,6 +2706,12 @@ app.get(
 // book insertion
 app.post(["/itementry/book", "/api/itementry/book"], async (req, res) => {
   try {
+    const user = await RequireStaffUser(req, res);
+
+    if (!user) {
+      return;
+    }
+
     const {
       title,
       available,
@@ -1768,6 +2817,12 @@ app.post(
   ["/itementry/audiovisual_media", "/api/itementry/audiovisual_media"],
   async (req, res) => {
     try {
+      const user = await RequireStaffUser(req, res);
+
+      if (!user) {
+        return;
+      }
+
       const {
         title,
         available,
@@ -1866,6 +2921,12 @@ app.post(
 // periodical insertion
 app.post(["/itementry/periodical", "/api/itementry/periodical"], async (req, res) => {
   try {
+    const user = await RequireStaffUser(req, res);
+
+    if (!user) {
+      return;
+    }
+
     const {
       title,
       available,
@@ -1959,6 +3020,12 @@ app.post(
   ["/itementry/equipment", "/api/itementry/equipment"],
   async (req, res) => {
     try {
+      const user = await RequireStaffUser(req, res);
+
+      if (!user) {
+        return;
+      }
+
       const { title, available } = req.body;
       if (!title || !available ) {
         return res.status(400).json({ error: "Missing required fields." });
