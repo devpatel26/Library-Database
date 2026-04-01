@@ -107,10 +107,10 @@ function App() {
   const adminLinks =
     userType === "staff" && roleCode === 2
       ? [
-          { to: "/createsignupcode", label: "Create Signup Code" },
-          { to: "/changerole", label: "User Management" },
+          { to: "/changerole", label: "All Users" },
           { to: "/report", label: "Reports" },
           { to: "/staffregistration", label: "Staff Signup" },
+          { to: "/createsignupcode", label: "New Signup Code" },
         ]
       : [];
 
@@ -158,10 +158,10 @@ function App() {
           </header>
 
           <div className="flex">
-            <aside className="w-[260px] border-r border-white/10 bg-slate-900 p-4 space-y-6">
+            <aside className="w-[165px] border-r border-white/10 bg-slate-600/50 p-5 space-y-6">
               <NavSection title="General" links={generalLinks} />
-              <NavSection title="Staff Tools" links={staffLinks} />
-              <NavSection title="Admin Tools" links={adminLinks} />
+              <NavSection title="Staff" links={staffLinks} />
+              <NavSection title="Admin" links={adminLinks} />
               <NavSection title="Misc" links={miscLinks} />
             </aside>
 

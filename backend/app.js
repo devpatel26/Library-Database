@@ -4790,15 +4790,12 @@ app.get(["/reports/patron-summary", "/api/reports/patron-summary"], async (req, 
 app.post(["/loans/:loanId/mark-lost", "/api/loans/:loanId/mark-lost"], async (req, res) => {
   try {
     const user = await RequireStaffUser(req, res);
-
-    if (!user) {
-      return;
-    }
+    if (!user) return;
 
     const loanId = ParsePositiveInteger(req.params.loanId);
 
     if (!loanId) {
-      return res.status(400).json({ error: "A valid loanId is required." });
+      return res.status(400).json({ error: "Invalid loanId." });
     }
 
     const [loans] = await pool.query(
@@ -4806,8 +4803,7 @@ app.post(["/loans/:loanId/mark-lost", "/api/loans/:loanId/mark-lost"], async (re
       SELECT
         loan_id AS loanId,
         loan_status_code AS loanStatusCode,
-        return_date AS returnDate,
-        loan_due_date AS loanDueDate
+        return_date AS returnDate
       FROM loans
       WHERE loan_id = ?
       `,
@@ -4821,7 +4817,7 @@ app.post(["/loans/:loanId/mark-lost", "/api/loans/:loanId/mark-lost"], async (re
     const loan = loans[0];
 
     if (loan.returnDate) {
-      return res.status(400).json({ error: "This loan has already been returned." });
+      return res.status(400).json({ error: "This loan has already been closed." });
     }
 
     await pool.query(
@@ -4834,11 +4830,11 @@ app.post(["/loans/:loanId/mark-lost", "/api/loans/:loanId/mark-lost"], async (re
       [loanId]
     );
 
-    return res.json({ message: "Loan marked as lost successfully." });
+    return res.json({ message: "Loan marked as lost." });
   } catch (error) {
     console.error("Mark lost error:", error);
     return res.status(500).json({
-      error: FormatServerError(error, "Failed to mark loan as lost."),
+      error: FormatServerError(error, "Failed to mark lost."),
     });
   }
 });
@@ -4983,7 +4979,7 @@ SELECT
 l.loan_id AS loanId,
 l.item_id AS itemId,
 l.patron_id AS patronId,
-l.return_date AS returnDate,
+l.return_date AS LostDate,
 p.first_name,
 p.last_name,
 
@@ -5004,7 +5000,7 @@ LEFT JOIN periodicals per ON per.item_id=l.item_id
 LEFT JOIN audiovisual_media am ON am.item_id=l.item_id
 LEFT JOIN equipment e ON e.item_id=l.item_id
 
-WHERE l.loan_status_code = 3
+WHERE l.loan_status_code = 4
 ORDER BY l.return_date DESC
 `);
 
@@ -5055,7 +5051,7 @@ app.post(["/loans/:loanId/found", "/api/loans/:loanId/found"], async (req, res) 
 
     const loan = loans[0];
 
-    if (Number(loan.loanStatusCode) !== 3) {
+    if (Number(loan.loanStatusCode) !== 4) {
       return res.status(400).json({ error: "Only lost items can be marked as found." });
     }
 
@@ -5137,7 +5133,7 @@ app.post(["/loans/:loanId/delete-lost", "/api/loans/:loanId/delete-lost"], async
 
     const loan = loans[0];
 
-    if (Number(loan.loanStatusCode) !== 3) {
+    if (Number(loan.loanStatusCode) !== 4) {
       return res.status(400).json({ error: "Only lost items can be permanently deleted." });
     }
 
@@ -5148,7 +5144,7 @@ app.post(["/loans/:loanId/delete-lost", "/api/loans/:loanId/delete-lost"], async
     await pool.query(
       `
       UPDATE loans
-      SET loan_status_code = 5,
+      SET loan_status_code = 6,
           return_date = CURRENT_DATE
       WHERE loan_id = ?
       `,
@@ -5189,52 +5185,6 @@ app.post(["/loans/:loanId/delete-lost", "/api/loans/:loanId/delete-lost"], async
 });
 
 
-// Mark lost endpoint
-app.post("/api/loans/:loanId/mark-lost", async (req, res) => {
-
-  try {
-
-    const user = await RequireStaffUser(req, res);
-    if (!user) return;
-
-    const loanId = ParsePositiveInteger(req.params.loanId);
-
-    if (!loanId) {
-      return res.status(400).json({ error: "Invalid loanId." });
-    }
-
-    const [loans] = await pool.query(
-      "SELECT item_id FROM loans WHERE loan_id = ?",
-      [loanId]
-    );
-
-    if (loans.length === 0) {
-      return res.status(404).json({ error: "Loan not found." });
-    }
-
-    await pool.query(
-      `
-      UPDATE loans
-      SET loan_status_code = 3
-      WHERE loan_id = ?
-      `,
-      [loanId]
-    );
-
-    return res.json({ message: "Loan marked as lost." });
-
-  } catch (error) {
-
-    console.error("Mark lost error:", error);
-
-    return res.status(500).json({
-      error: FormatServerError(error, "Failed to mark lost."),
-    });
-
-  }
-
-});
-
 // Get lost items report
 app.get(["/loans/lost", "/api/loans/lost"], async (req, res) => {
   try {
@@ -5249,7 +5199,7 @@ app.get(["/loans/lost", "/api/loans/lost"], async (req, res) => {
         l.loan_id AS loanId,
         l.item_id AS itemId,
         l.patron_id AS patronId,
-        l.return_date AS returnDate,
+        l.return_date AS lostDate,
         p.first_name,
         p.last_name,
         COALESCE(
@@ -5277,7 +5227,7 @@ app.get(["/loans/lost", "/api/loans/lost"], async (req, res) => {
       LEFT JOIN periodicals per ON per.item_id = l.item_id
       LEFT JOIN audiovisual_media am ON am.item_id = l.item_id
       LEFT JOIN equipment e ON e.item_id = l.item_id
-      WHERE l.loan_status_code = 3
+      WHERE l.loan_status_code = 4
       ORDER BY l.return_date DESC, l.loan_id DESC
     `);
 

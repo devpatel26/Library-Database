@@ -223,7 +223,7 @@ Patron: {loan.patronName} ({loan.patronId})
 </div>
 
 <div className="text-slate-400">
-Lost Date: {loan.returnDate ? FormatDate(new Date(loan.returnDate), true) : "-"}
+Lost Date: {loan.lostDate ? FormatDate(new Date(loan.lostDate), true) : "-"}
 </div>
 
 </div>
