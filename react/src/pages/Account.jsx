@@ -1,4 +1,4 @@
-import { NavLink, useOutlet} from "react-router-dom";
+import { NavLink, useOutlet } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { FetchJson, GetErrorMessage, ReadStoredUser } from "../api";
 
@@ -45,19 +45,19 @@ export default function Account() {
   const isPatron = user?.user_type === "patron";
   const isStaff = user?.user_type === "staff";
 
-const navLinks = isPatron
-  ? [
+  const navLinks = isPatron
+    ? [
       { to: ".", label: "Account", end: true },
       { to: "loans", label: "Loans/Holds" },
       { to: "fines", label: "Fines" },
       { to: "activity", label: "Activity" },
       { to: "settings", label: "Settings" },
     ]
-  : [
+    : [
       { to: ".", label: "Account", end: true },
     ];
 
-    
+
   useEffect(() => {
     let isMounted = true;
     const currentUser = ReadStoredUser();
@@ -107,10 +107,9 @@ const navLinks = isPatron
               to={link.to}
               end={link.end}
               className={({ isActive }) => (
-                `block rounded-md px-3 py-2 text-sm transition ${
-                  isActive
-                    ? "bg-sky-400/10 text-white"
-                    : "text-slate-200 hover:bg-slate-800 hover:text-white"
+                `block rounded-md px-3 py-2 text-sm transition ${isActive
+                  ? "bg-sky-400/10 text-white"
+                  : "text-slate-200 hover:bg-slate-800 hover:text-white"
                 }`
               )}
             >
@@ -120,7 +119,9 @@ const navLinks = isPatron
         </nav>
       </aside>
       <main className="flex-1 space-y-8 rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
-        <h1 className="text-3xl font-bold text-white">My Account</h1>
+        <h1 className="text-3xl font-bold text-white">
+          My Account
+        </h1>
         {outlet ? (
           outlet
         ) : (
@@ -134,7 +135,9 @@ const navLinks = isPatron
             {loading && <p className="text-slate-300">Loading account...</p>}
 
             {!loading && error && (
-              <p className="text-rose-300">{error}</p>
+              <p className="text-rose-300">
+                {error}
+              </p>
             )}
 
             {!loading && !error && account && (
@@ -185,7 +188,9 @@ const navLinks = isPatron
             )}
 
             {!loading && !error && !account && (
-              <p className="text-slate-300">No account found.</p>
+              <p className="text-slate-300">
+                No account found.
+              </p>
             )}
           </section>
         )}

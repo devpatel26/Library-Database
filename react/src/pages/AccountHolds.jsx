@@ -24,11 +24,21 @@ export default function AccountHolds() {
 
           <thead className="bg-slate-800 text-slate-300">
             <tr>
-              <th className="p-3 text-left">Hold ID</th>
-              <th className="p-3 text-left">Item</th>
-              <th className="p-3 text-left">Creator</th>
-              <th className="p-3 text-left">Start</th>
-              <th className="p-3 text-left">Expire</th>
+              <th className="p-3 text-left">
+                Hold ID
+              </th>
+              <th className="p-3 text-left">
+                Item
+              </th>
+              <th className="p-3 text-left">
+                Creator
+              </th>
+              <th className="p-3 text-left">
+                Start
+              </th>
+              <th className="p-3 text-left">
+                Expire
+              </th>
             </tr>
           </thead>
 

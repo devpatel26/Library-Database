@@ -20,7 +20,7 @@ function BuildDisplayDate(value, includeTime = false) {
 
 export default function Item({ itemData }) {
   const user = ReadStoredUser();
-  const { showSuccess, showError, showWarning, /*showInfo */} = useMessage();
+  const { showSuccess, showError, showWarning, /*showInfo */ } = useMessage();
 
   const [activeStaffAction, setActiveStaffAction] = useState("");
   const [patronIdInput, setPatronIdInput] = useState("");

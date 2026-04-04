@@ -147,7 +147,9 @@ export default function AccountSettings() {
             onSubmit={HandleContactSubmit}
             className="rounded-2xl border border-white/10 bg-slate-950/40 p-6"
           >
-            <h2 className="text-xl font-semibold text-white">Contact Info</h2>
+            <h2 className="text-xl font-semibold text-white">
+              Contact Info
+            </h2>
             <p className="mt-2 text-sm text-slate-400">
               Patron self-service currently supports email updates.
             </p>
@@ -182,7 +184,9 @@ export default function AccountSettings() {
             onSubmit={HandlePasswordSubmit}
             className="rounded-2xl border border-white/10 bg-slate-950/40 p-6"
           >
-            <h2 className="text-xl font-semibold text-white">Password</h2>
+            <h2 className="text-xl font-semibold text-white">
+              Password
+            </h2>
             <p className="mt-2 text-sm text-slate-400">
               Choose a new password with at least 8 characters.
             </p>

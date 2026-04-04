@@ -56,25 +56,24 @@ function NavSection({ title, links }) {
       <div className="space-y-1">
         {links.map(({ to, label }) => (
           <NavLink
-  key={to}
-  to={to}
-  className={({ isActive }) =>
-    `relative block rounded-xl px-4 py-3 text-sm font-medium transition ${
-      isActive
-        ? "bg-sky-500/20 text-white"
-        : "text-slate-300 hover:bg-slate-800 hover:text-white"
-    }`
-  }
->
-  {({ isActive }) => (
-    <>
-      {isActive && (
-        <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r bg-sky-400"></span>
-      )}
-      {label}
-    </>
-  )}
-</NavLink>
+            key={to}
+            to={to}
+            className={({ isActive }) =>
+              `relative block rounded-xl px-4 py-3 text-sm font-medium transition ${isActive
+                ? "bg-sky-500/20 text-white"
+                : "text-slate-300 hover:bg-slate-800 hover:text-white"
+              }`
+            }
+          >
+            {({ isActive }) => (
+              <>
+                {isActive && (
+                  <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r bg-sky-400"></span>
+                )}
+                {label}
+              </>
+            )}
+          </NavLink>
         ))}
       </div>
     </div>
@@ -96,22 +95,22 @@ function App() {
   const staffLinks =
     userType === "staff" && (roleCode === 1 || roleCode === 2)
       ? [
-          { to: "/itementry", label: "Item Entry" },
-          { to: "/staffloans", label: "Loans" },
-          { to: "/holds", label: "Holds" },
-          { to: "/stafffines", label: "Fines" },
-          { to: "/lost", label: "Lost Items" },
-        ]
+        { to: "/itementry", label: "Item Entry" },
+        { to: "/staffloans", label: "Loans" },
+        { to: "/holds", label: "Holds" },
+        { to: "/stafffines", label: "Fines" },
+        { to: "/lost", label: "Lost Items" },
+      ]
       : [];
 
   const adminLinks =
     userType === "staff" && roleCode === 2
       ? [
-          { to: "/changerole", label: "All Users" },
-          { to: "/report", label: "Reports" },
-          { to: "/staffregistration", label: "Staff Signup" },
-          { to: "/createsignupcode", label: "New Signup Code" },
-        ]
+        { to: "/changerole", label: "All Users" },
+        { to: "/report", label: "Reports" },
+        { to: "/staffregistration", label: "Staff Signup" },
+        { to: "/createsignupcode", label: "New Signup Code" },
+      ]
       : [];
 
   const miscLinks = [{ to: "/test", label: "Test Page" }];
@@ -128,7 +127,9 @@ function App() {
                 alt="logo"
               />
               <div>
-                <h1 className="text-xl font-bold tracking-widest">DATAHAVEN</h1>
+                <h1 className="text-xl font-bold tracking-widest">
+                  DATAHAVEN
+                </h1>
                 <p className="text-xs text-slate-400">
                   Library Database System
                 </p>
@@ -145,7 +146,9 @@ function App() {
             ) : (
               <div className="flex items-center gap-4">
                 <span className="text-slate-300">
-                  Hello <span className="font-semibold text-white">{user.first_name}</span>
+                  Hello <span className="font-semibold text-white">
+                    {user.first_name}
+                  </span>
                 </span>
                 <NavLink
                   to="/logout"

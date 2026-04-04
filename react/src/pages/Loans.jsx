@@ -151,7 +151,9 @@ export default function Loans() {
             </p>
             <div className="mt-4 space-y-4">
               {data.history.length === 0 ? (
-                <p className="text-slate-300">No completed loans found.</p>
+                <p className="text-slate-300">
+                  No completed loans found.
+                </p>
               ) : (
                 data.history.map((item) => (
                   <LoanHistoryCard key={item.loanId} itemData={item} />

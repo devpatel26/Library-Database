@@ -76,7 +76,7 @@ export default function Lost() {
 
       LoadLost();
 
-    } catch  {
+    } catch {
 
       showError("Failed to update item.");
 
@@ -96,7 +96,7 @@ export default function Lost() {
 
       LoadLost();
 
-    } catch  {
+    } catch {
 
       showError("Delete failed.");
 
@@ -129,7 +129,7 @@ export default function Lost() {
 
       const value = fields[searchBy]?.toLowerCase() ?? "";
 
-      if (["loanId","patronId","itemId"].includes(searchBy)) {
+      if (["loanId", "patronId", "itemId"].includes(searchBy)) {
         return value === text;
       }
 
@@ -141,115 +141,137 @@ export default function Lost() {
 
   return (
 
-<section className="mx-auto flex w-full max-w-6xl flex-col rounded-3xl border border-white/10 bg-slate-900/70 p-6 shadow-xl">
+    <section className="mx-auto flex w-full max-w-6xl flex-col rounded-3xl border border-white/10 bg-slate-900/70 p-6 shadow-xl">
 
-<p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
-Staff
-</p>
+      <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
+        Staff
+      </p>
 
-<h1 className="mt-3 text-4xl font-semibold text-white">
-Lost Items
-</h1>
+      <h1 className="mt-3 text-4xl font-semibold text-white">
+        Lost Items
+      </h1>
 
-<div className="mt-6 grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="mt-6 grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2">
 
-<div>
-<label className="text-xs text-sky-300 uppercase">Search By</label>
+        <div>
+          <label className="text-xs text-sky-300 uppercase">
+            Search By
+          </label>
 
-<select
-value={searchBy}
-onChange={(e)=>setSearchBy(e.target.value)}
-className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white"
->
+          <select
+            value={searchBy}
+            onChange={(e) => setSearchBy(e.target.value)}
+            className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white"
+          >
 
-<option value="all">All</option>
-<option value="loanId">Loan ID</option>
-<option value="patronName">Patron Name</option>
-<option value="patronId">Patron ID</option>
-<option value="itemId">Item ID</option>
-<option value="title">Item Title</option>
-<option value="creator">Creator</option>
+            <option value="all">
+              All
+            </option>
+            <option value="loanId">
+              Loan ID
+            </option>
+            <option value="patronName">
+              Patron Name
+            </option>
+            <option value="patronId">
+              Patron ID
+            </option>
+            <option value="itemId">
+              Item ID
+            </option>
+            <option value="title">
+              Item Title
+            </option>
+            <option value="creator">
+              Creator
+            </option>
 
-</select>
-</div>
+          </select>
+        </div>
 
-<div>
-<label className="text-xs text-sky-300 uppercase">Search Text</label>
+        <div>
+          <label className="text-xs text-sky-300 uppercase">
+            Search Text
+          </label>
 
-<input
-type="text"
-value={searchText}
-onChange={(e)=>setSearchText(e.target.value)}
-className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white"
-/>
-</div>
+          <input
+            type="text"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white"
+          />
+        </div>
 
-</div>
+      </div>
 
-<div className="mt-6 space-y-4">
+      <div className="mt-6 space-y-4">
 
-{isLoading ? (
+        {isLoading ? (
 
-<div className="text-slate-300">Loading lost items...</div>
+          <div className="text-slate-300">
+            Loading lost items...
+          </div>
 
-) : filteredLost.length === 0 ? (
+        ) : filteredLost.length === 0 ? (
 
-<div className="text-slate-300">No lost items.</div>
+          <div className="text-slate-300">
+            No lost items.
+          </div>
 
-) : (
+        ) : (
 
-filteredLost.map((loan)=>(
-<div
-key={loan.loanId}
-className="grid grid-cols-1 gap-4 rounded-xl bg-white/5 p-4 outline outline-1 outline-white/10 lg:grid-cols-4"
->
+          filteredLost.map((loan) => (
+            <div
+              key={loan.loanId}
+              className="grid grid-cols-1 gap-4 rounded-xl bg-white/5 p-4 outline outline-1 outline-white/10 lg:grid-cols-4"
+            >
 
-<div className="lg:col-span-3">
+              <div className="lg:col-span-3">
 
-<div className="text-xl font-bold text-white">
-{loan.title}
-</div>
+                <div className="text-xl font-bold text-white">
+                  {loan.title}
+                </div>
 
-<div className="text-slate-400">
-Loan ID: {loan.loanId}
-</div>
+                <div className="text-slate-400">
+                  Loan ID: {loan.loanId}
+                </div>
 
-<div className="text-slate-400">
-Item ID: {loan.itemId}
-</div>
+                <div className="text-slate-400">
+                  Item ID: {loan.itemId}
+                </div>
 
-<div className="text-slate-300 mt-2">
-Patron: {loan.patronName} ({loan.patronId})
-</div>
+                <div className="text-slate-300 mt-2">
+                  Patron: {loan.patronName} ({loan.patronId})
+                </div>
 
-<div className="text-slate-400">
-Lost Date: {loan.lostDate ? FormatDate(new Date(loan.lostDate), true) : "-"}
-</div>
+                <div className="text-slate-400">
+                  Lost Date: {loan.lostDate ? FormatDate(new Date(loan.lostDate), true) : "-"}
+                </div>
 
-</div>
+              </div>
 
-<div className="flex flex-col gap-2 items-end">
+              <div className="flex flex-col gap-2 items-end">
 
-<PrimaryButton
-title="Found"
-onClick={()=>MarkFound(loan.loanId)}
-/>
+                <PrimaryButton
+                  title="Found"
+                  onClick={() => MarkFound(loan.loanId)}
+                />
 
-<SecondaryButton
-title="Permanent Delete"
-onClick={()=>PermanentlyDelete(loan.loanId)}
-/>
+                <SecondaryButton
+                  title="Permanent Delete"
+                  onClick={() => PermanentlyDelete(loan.loanId)}
+                />
 
-</div>
+              </div>
 
-</div>
-))
+            </div>
+          ))
 
-)}
+        )}
 
-</div>
+      </div>
 
-</section>
+    </section>
 
   );
 }

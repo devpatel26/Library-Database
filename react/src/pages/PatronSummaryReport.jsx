@@ -32,9 +32,13 @@ function SummaryCard({ title, value, subtitle = "" }) {
       <p className="text-xs font-semibold uppercase tracking-[0.25em] text-sky-300">
         {title}
       </p>
-      <p className="mt-3 text-3xl font-semibold text-white">{value}</p>
+      <p className="mt-3 text-3xl font-semibold text-white">
+        {value}
+      </p>
       {subtitle ? (
-        <p className="mt-2 text-sm text-slate-400">{subtitle}</p>
+        <p className="mt-2 text-sm text-slate-400">
+          {subtitle}
+        </p>
       ) : null}
     </div>
   );
@@ -109,9 +113,9 @@ export default function PatronSummaryReport() {
 
     const roleCode = Number(
       user.role ??
-        user.role_code ??
-        user.staff_role_code ??
-        user.staffRoleCode
+      user.role_code ??
+      user.staff_role_code ??
+      user.staffRoleCode
     );
 
     if (user.user_type !== "staff" || roleCode !== 2) {
@@ -311,9 +315,9 @@ export default function PatronSummaryReport() {
 
     const patronsWithAnyActivity = filteredPatrons.filter(
       (patron) =>
-      SafeNumber(patron.totalLoansHistory) > 0 ||
-      SafeNumber(patron.totalHoldsHistory) > 0 ||
-      SafeNumber(patron.totalFineRecords) > 0
+        SafeNumber(patron.totalLoansHistory) > 0 ||
+        SafeNumber(patron.totalHoldsHistory) > 0 ||
+        SafeNumber(patron.totalFineRecords) > 0
     ).length;
 
 
@@ -455,14 +459,30 @@ export default function PatronSummaryReport() {
                   onChange={(event) => setActivityFilter(event.target.value)}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
                 >
-                  <option>All</option>
-                  <option>Has Current Loans</option>
-                  <option>Has Holds</option>
-                  <option>Has Outstanding Fines</option>
-                  <option>Has Loan History</option>
-                  <option>Has Fine History</option>
-                  <option>Has Any Activity</option>
-                  <option>No Activity</option>
+                  <option>
+                    All
+                  </option>
+                  <option>
+                    Has Current Loans
+                  </option>
+                  <option>
+                    Has Holds
+                  </option>
+                  <option>
+                    Has Outstanding Fines
+                  </option>
+                  <option>
+                    Has Loan History
+                  </option>
+                  <option>
+                    Has Fine History
+                  </option>
+                  <option>
+                    Has Any Activity
+                  </option>
+                  <option>
+                    No Activity
+                  </option>
                 </select>
               </div>
 
@@ -475,9 +495,15 @@ export default function PatronSummaryReport() {
                   onChange={(event) => setSearchBy(event.target.value)}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
                 >
-                  <option>All</option>
-                  <option>Patron Name</option>
-                  <option>Patron ID</option>
+                  <option>
+                    All
+                  </option>
+                  <option>
+                    Patron Name
+                  </option>
+                  <option>
+                    Patron ID
+                  </option>
                 </select>
               </div>
 
@@ -503,17 +529,39 @@ export default function PatronSummaryReport() {
                   onChange={(event) => setSortBy(event.target.value)}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
                 >
-                  <option value="totalLoansHistory">Total Loans History</option>
-                  <option value="currentLoans">Current Loans</option>
-                  <option value="returnedLoans">Returned Loans</option>
-                  <option value="totalHoldsHistory">Total Holds History</option>
-                  <option value="activeHolds">Active Holds</option>
-                  <option value="totalFineRecords">Fine Records</option>
-                  <option value="outstandingBalance">Outstanding Balance</option>
-                  <option value="totalPaidAmount">Total Paid Amount</option>
-                  <option value="lastActivityDate">Last Activity Date</option>
-                  <option value="patronName">Patron Name</option>
-                  <option value="patronId">Patron ID</option>
+                  <option value="totalLoansHistory">
+                    Total Loans History
+                  </option>
+                  <option value="currentLoans">
+                    Current Loans
+                  </option>
+                  <option value="returnedLoans">
+                    Returned Loans
+                  </option>
+                  <option value="totalHoldsHistory">
+                    Total Holds History
+                  </option>
+                  <option value="activeHolds">
+                    Active Holds
+                  </option>
+                  <option value="totalFineRecords">
+                    Fine Records
+                  </option>
+                  <option value="outstandingBalance">
+                    Outstanding Balance
+                  </option>
+                  <option value="totalPaidAmount">
+                    Total Paid Amount
+                  </option>
+                  <option value="lastActivityDate">
+                    Last Activity Date
+                  </option>
+                  <option value="patronName">
+                    Patron Name
+                  </option>
+                  <option value="patronId">
+                    Patron ID
+                  </option>
                 </select>
               </div>
 
@@ -526,8 +574,12 @@ export default function PatronSummaryReport() {
                   onChange={(event) => setSortDirection(event.target.value)}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
                 >
-                  <option value="desc">Descending</option>
-                  <option value="asc">Ascending</option>
+                  <option value="desc">
+                    Descending
+                  </option>
+                  <option value="asc">
+                    Ascending
+                  </option>
                 </select>
               </div>
             </div>
@@ -546,20 +598,48 @@ export default function PatronSummaryReport() {
               <table className="min-w-full text-left text-sm">
                 <thead>
                   <tr className="border-b border-white/10 text-slate-300">
-                    <th className="px-3 py-2">Patron ID</th>
-                    <th className="px-3 py-2">Patron Name</th>
-                    <th className="px-3 py-2">Total Loans</th>
-                    <th className="px-3 py-2">Current Loans</th>
-                    <th className="px-3 py-2">Returned Loans</th>
-                    <th className="px-3 py-2">Total Holds</th>
-                    <th className="px-3 py-2">Active Holds</th>
-                    <th className="px-3 py-2">Fine Records</th>
-                    <th className="px-3 py-2">Outstanding Balance</th>
-                    <th className="px-3 py-2">Paid Amount</th>
-                    <th className="px-3 py-2">Last Loan Date</th>
-                    <th className="px-3 py-2">Last Hold Date</th>
-                    <th className="px-3 py-2">Last Fine Date</th>
-                    <th className="px-3 py-2">Last Activity Date</th>
+                    <th className="px-3 py-2">
+                      Patron ID
+                    </th>
+                    <th className="px-3 py-2">
+                      Patron Name
+                    </th>
+                    <th className="px-3 py-2">
+                      Total Loans
+                    </th>
+                    <th className="px-3 py-2">
+                      Current Loans
+                    </th>
+                    <th className="px-3 py-2">
+                      Returned Loans
+                    </th>
+                    <th className="px-3 py-2">
+                      Total Holds
+                    </th>
+                    <th className="px-3 py-2">
+                      Active Holds
+                    </th>
+                    <th className="px-3 py-2">
+                      Fine Records
+                    </th>
+                    <th className="px-3 py-2">
+                      Outstanding Balance
+                    </th>
+                    <th className="px-3 py-2">
+                      Paid Amount
+                    </th>
+                    <th className="px-3 py-2">
+                      Last Loan Date
+                    </th>
+                    <th className="px-3 py-2">
+                      Last Hold Date
+                    </th>
+                    <th className="px-3 py-2">
+                      Last Fine Date
+                    </th>
+                    <th className="px-3 py-2">
+                      Last Activity Date
+                    </th>
                   </tr>
                 </thead>
 

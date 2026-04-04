@@ -127,17 +127,17 @@ export default function StaffLoans() {
 
       const value = SafeText(fields[searchBy]).toLowerCase();
 
-if (
-  searchBy === "loanId" ||
-  searchBy === "patronId" ||
-  searchBy === "itemId" ||
-  searchBy === "fineId" ||
-  searchBy === "holdId"
-) {
-  return value === normalizedSearch;
-}
+      if (
+        searchBy === "loanId" ||
+        searchBy === "patronId" ||
+        searchBy === "itemId" ||
+        searchBy === "fineId" ||
+        searchBy === "holdId"
+      ) {
+        return value === normalizedSearch;
+      }
 
-return value.includes(normalizedSearch);
+      return value.includes(normalizedSearch);
     });
   }, [loans, searchBy, searchText]);
 
@@ -165,13 +165,27 @@ return value.includes(normalizedSearch);
             onChange={(event) => setSearchBy(event.target.value)}
             className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
           >
-            <option value="all">All</option>
-            <option value="loanId">Loan ID</option>
-            <option value="patronName">Patron Name</option>
-            <option value="patronId">Patron ID</option>
-            <option value="itemId">Item ID</option>
-            <option value="title">Item Title</option>
-            <option value="creator">Creator</option>
+            <option value="all">
+              All
+            </option>
+            <option value="loanId">
+              Loan ID
+            </option>
+            <option value="patronName">
+              Patron Name
+            </option>
+            <option value="patronId">
+              Patron ID
+            </option>
+            <option value="itemId">
+              Item ID
+            </option>
+            <option value="title">
+              Item Title
+            </option>
+            <option value="creator">
+              Creator
+            </option>
           </select>
         </div>
 
@@ -191,9 +205,13 @@ return value.includes(normalizedSearch);
 
       <div className="mt-6 space-y-4">
         {isLoading ? (
-          <div className="text-slate-300">Loading loans...</div>
+          <div className="text-slate-300">
+            Loading loans...
+          </div>
         ) : filteredLoans.length === 0 ? (
-          <div className="text-slate-300">No matching current loans found.</div>
+          <div className="text-slate-300">
+            No matching current loans found.
+          </div>
         ) : (
           filteredLoans.map((loan) => {
             const isReturnPending = returnPendingLoanId === loan.loanId;
@@ -207,13 +225,21 @@ return value.includes(normalizedSearch);
               >
                 <div className="lg:col-span-3">
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                    <div className="text-xl font-bold text-white">{loan.title}</div>
-                    <div className="text-sm text-slate-400">Loan ID: {loan.loanId}</div>
-                    <div className="text-sm text-slate-400">Item ID: {loan.itemId}</div>
+                    <div className="text-xl font-bold text-white">
+                      {loan.title}
+                    </div>
+                    <div className="text-sm text-slate-400">
+                      Loan ID: {loan.loanId}
+                    </div>
+                    <div className="text-sm text-slate-400">
+                      Item ID: {loan.itemId}
+                    </div>
                   </div>
 
                   {loan.creator ? (
-                    <div className="mt-1 text-sky-300">{loan.creator}</div>
+                    <div className="mt-1 text-sky-300">
+                      {loan.creator}
+                    </div>
                   ) : null}
 
                   <div className="mt-2 text-slate-300">

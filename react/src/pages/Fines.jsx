@@ -23,8 +23,8 @@ function FormatDateValue(value) {
 function NormalizeStatus(fine) {
   const rawStatus = String(
     fine.fineStatus ??
-      fine.status ??
-      ""
+    fine.status ??
+    ""
   ).trim().toLowerCase();
 
   if (rawStatus.includes("waiv")) {
@@ -230,17 +230,23 @@ export default function Fines() {
       ) : null}
 
       {loading ? (
-        <p className="mt-6 text-slate-300">Loading fines...</p >
+        <p className="mt-6 text-slate-300">
+          Loading fines...
+        </p >
       ) : null}
 
       {!loading && error ? (
-        <p className="mt-6 text-rose-300">{error}</p >
+        <p className="mt-6 text-rose-300">
+          {error}
+        </p >
       ) : null}
 
       {!loading && !error ? (
         <div className="mt-6 flex flex-col gap-4">
           {fines.length === 0 ? (
-            <p className="text-slate-300">No fines found.</p >
+            <p className="text-slate-300">
+              No fines found.
+            </p >
           ) : (
             fines.map((fine) => {
               const status = NormalizeStatus(fine);
@@ -264,23 +270,37 @@ export default function Fines() {
                       </div>
 
                       <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-300">
-                        <span>Total: {FormatMoney(fineAmount)}</span>
-                        <span>Paid: {FormatMoney(paidAmount)}</span>
-                        <span>Remaining: {FormatMoney(remainingAmount)}</span>
-                        <span>Status: {status}</span>
+                        <span>
+                          Total: {FormatMoney(fineAmount)}
+                        </span>
+                        <span>
+                          Paid: {FormatMoney(paidAmount)}
+                        </span>
+                        <span>
+                          Remaining: {FormatMoney(remainingAmount)}
+                        </span>
+                        <span>
+                          Status: {status}
+                        </span>
                       </div>
 
                       <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-400">
                         {fine.assignedDate ? (
-                          <span>Assigned: {FormatDateValue(fine.assignedDate)}</span>
+                          <span>
+                            Assigned: {FormatDateValue(fine.assignedDate)}
+                          </span>
                         ) : null}
 
                         {fine.paidDate ? (
-                          <span>Paid date: {FormatDateValue(fine.paidDate)}</span>
+                          <span>
+                            Paid date: {FormatDateValue(fine.paidDate)}
+                          </span>
                         ) : null}
 
                         {fine.waivedDate ? (
-                          <span>Waived date: {FormatDateValue(fine.waivedDate)}</span>
+                          <span>
+                            Waived date: {FormatDateValue(fine.waivedDate)}
+                          </span>
                         ) : null}
                       </div>
                     </div>

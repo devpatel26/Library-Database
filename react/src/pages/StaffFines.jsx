@@ -178,17 +178,17 @@ export default function StaffFines() {
 
       const value = SafeText(fields[searchBy]).toLowerCase();
 
-if (
-  searchBy === "loanId" ||
-  searchBy === "patronId" ||
-  searchBy === "itemId" ||
-  searchBy === "fineId" ||
-  searchBy === "holdId"
-) {
-  return value === normalizedSearch;
-}
+      if (
+        searchBy === "loanId" ||
+        searchBy === "patronId" ||
+        searchBy === "itemId" ||
+        searchBy === "fineId" ||
+        searchBy === "holdId"
+      ) {
+        return value === normalizedSearch;
+      }
 
-return value.includes(normalizedSearch);
+      return value.includes(normalizedSearch);
     });
   }, [fines, searchBy, searchText]);
 
@@ -216,14 +216,30 @@ return value.includes(normalizedSearch);
             onChange={(event) => setSearchBy(event.target.value)}
             className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
           >
-            <option value="all">All</option>
-            <option value="fineId">Fine ID</option>
-            <option value="loanId">Loan ID</option>
-            <option value="patronName">Patron Name</option>
-            <option value="patronId">Patron ID</option>
-            <option value="title">Item Title</option>
-            <option value="creator">Creator</option>
-            <option value="status">Status</option>
+            <option value="all">
+              All
+            </option>
+            <option value="fineId">
+              Fine ID
+            </option>
+            <option value="loanId">
+              Loan ID
+            </option>
+            <option value="patronName">
+              Patron Name
+            </option>
+            <option value="patronId">
+              Patron ID
+            </option>
+            <option value="title">
+              Item Title
+            </option>
+            <option value="creator">
+              Creator
+            </option>
+            <option value="status">
+              Status
+            </option>
           </select>
         </div>
 
@@ -243,25 +259,51 @@ return value.includes(normalizedSearch);
 
       <div className="mt-8">
         {isLoading ? (
-          <div className="text-slate-300">Loading fines...</div>
+          <div className="text-slate-300">
+            Loading fines...
+          </div>
         ) : filteredFines.length === 0 ? (
-          <div className="text-slate-300">No matching fines found.</div>
+          <div className="text-slate-300">
+            No matching fines found.
+          </div>
         ) : (
           <div className="mt-6 w-full overflow-x-auto">
             <table className="w-full table-auto text-left text-sm">
               <thead>
                 <tr className="bg-slate-800 text-left text-sm text-slate-200">
-                  <th className="px-4 py-3">Fine ID</th>
-                  <th className="px-4 py-3">Title</th>
-                  <th className="px-4 py-3">Patron</th>
-                  <th className="px-4 py-3">Due Date</th>
-                  <th className="px-4 py-3">Days Overdue</th>
-                  <th className="px-4 py-3">Daily Fine</th>
-                  <th className="px-4 py-3">Total Fine</th>
-                  <th className="px-4 py-3">Paid</th>
-                  <th className="px-4 py-3">Remaining</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Actions</th>
+                  <th className="px-4 py-3">
+                    Fine ID
+                  </th>
+                  <th className="px-4 py-3">
+                    Title
+                  </th>
+                  <th className="px-4 py-3">
+                    Patron
+                  </th>
+                  <th className="px-4 py-3">
+                    Due Date
+                  </th>
+                  <th className="px-4 py-3">
+                    Days Overdue
+                  </th>
+                  <th className="px-4 py-3">
+                    Daily Fine
+                  </th>
+                  <th className="px-4 py-3">
+                    Total Fine
+                  </th>
+                  <th className="px-4 py-3">
+                    Paid
+                  </th>
+                  <th className="px-4 py-3">
+                    Remaining
+                  </th>
+                  <th className="px-4 py-3">
+                    Status
+                  </th>
+                  <th className="px-4 py-3">
+                    Actions
+                  </th>
                 </tr>
               </thead>
 

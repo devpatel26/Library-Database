@@ -128,40 +128,40 @@ export default function Home() {
     },
     user
       ? {
-          to: "/account",
-          eyebrow: "Account",
-          title: "Open your library card view",
-          description:
-            "Check your loans, holds, recent activity, and any outstanding fines.",
-        }
+        to: "/account",
+        eyebrow: "Account",
+        title: "Open your library card view",
+        description:
+          "Check your loans, holds, recent activity, and any outstanding fines.",
+      }
       : {
-          to: "/login",
-          eyebrow: "Sign In",
-          title: "Log in to start borrowing",
-          description:
-            "Access patron tools, save your place in the workflow, and manage your account.",
-        },
+        to: "/login",
+        eyebrow: "Sign In",
+        title: "Log in to start borrowing",
+        description:
+          "Access patron tools, save your place in the workflow, and manage your account.",
+      },
     ...(isStaff
       ? [
-          {
-            to: "/staffloans",
-            eyebrow: "Desk",
-            title: "Manage circulation",
-            description:
-              "Handle active loans and keep checkouts moving like a real service desk.",
-          },
-        ]
+        {
+          to: "/staffloans",
+          eyebrow: "Desk",
+          title: "Manage circulation",
+          description:
+            "Handle active loans and keep checkouts moving like a real service desk.",
+        },
+      ]
       : []),
     ...(isAdmin
       ? [
-          {
-            to: "/report",
-            eyebrow: "Reports",
-            title: "Review library activity",
-            description:
-              "Open reporting tools for popularity, overdue items, and account summaries.",
-          },
-        ]
+        {
+          to: "/report",
+          eyebrow: "Reports",
+          title: "Review library activity",
+          description:
+            "Open reporting tools for popularity, overdue items, and account summaries.",
+        },
+      ]
       : []),
   ];
 

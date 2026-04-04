@@ -12,7 +12,7 @@ export default function AudiovisualMedia() {
   const [format, setFormat] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const { showSuccess, showError, /*showWarning*/} = useMessage();
+  const { showSuccess, showError, /*showWarning*/ } = useMessage();
   useEffect(() => {
     async function LoadDropdowns() {
       try {
@@ -33,7 +33,9 @@ export default function AudiovisualMedia() {
   }, []);
   return (
     <section className="rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
-      <h2 className="text-3xl font-bold text-white">Audiovisual Media Entry</h2>
+      <h2 className="text-3xl font-bold text-white">
+        Audiovisual Media Entry
+      </h2>
       <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
         Enter audiovisual media information below.
       </p>
@@ -67,10 +69,10 @@ export default function AudiovisualMedia() {
                 body: JSON.stringify(avmData),
               });
 
-            showSuccess("AVM entry successful!");
-                setTimeout(() => {
-                  window.location.reload();
-                }, 800);
+              showSuccess("AVM entry successful!");
+              setTimeout(() => {
+                window.location.reload();
+              }, 800);
             } catch (error) {
               console.error(error);
               showError(error.message || "AVM entry failed.");
@@ -81,7 +83,9 @@ export default function AudiovisualMedia() {
             <div className="grid grid-cols-1 grid-rows-5 gap-x-6 ">
               <div>
                 <div className="sm:col-span-2">
-                  <label htmlFor="title">Title</label>
+                  <label htmlFor="title">
+                    Title
+                  </label>
                   <div className="mt-2">
                     <input
                       required
@@ -94,7 +98,9 @@ export default function AudiovisualMedia() {
               </div>
               <div className="grid grid-cols-3 gap-x-6">
                 <div className="sm:col-span-1">
-                  <label htmlFor="available">Copies</label>
+                  <label htmlFor="available">
+                    Copies
+                  </label>
                   <div className="mt-2">
                     <input
                       required
@@ -106,7 +112,9 @@ export default function AudiovisualMedia() {
                   </div>
                 </div>
                 <div className="sm:col-span-1">
-                  <label htmlFor="shelfnumber">Shelf Number</label>
+                  <label htmlFor="shelfnumber">
+                    Shelf Number
+                  </label>
                   <div className="mt-2">
                     <input
                       required
@@ -119,7 +127,9 @@ export default function AudiovisualMedia() {
                 </div>
 
                 <div className="sm:col-span-1">
-                  <label htmlFor="runtime">Runtime</label>
+                  <label htmlFor="runtime">
+                    Runtime
+                  </label>
                   <div className="mt-2">
                     <input
                       required
@@ -153,7 +163,9 @@ export default function AudiovisualMedia() {
               )}
               <div className="grid grid-cols-3 gap-x-6">
                 <div className="col-span-2">
-                  <label htmlFor="publisher">Publisher</label>
+                  <label htmlFor="publisher">
+                    Publisher
+                  </label>
                   <div className="mt-2">
                     <input
                       required
@@ -164,7 +176,9 @@ export default function AudiovisualMedia() {
                   </div>
                 </div>
                 <div className="col-span-1">
-                  <label htmlFor="publicationdate">Publication Date</label>
+                  <label htmlFor="publicationdate">
+                    Publication Date
+                  </label>
                   <div className="mt-2">
                     <input
                       required
@@ -178,7 +192,9 @@ export default function AudiovisualMedia() {
               </div>
               <div>
                 <div className="sm:col-span-3">
-                  <label htmlFor="summary">Summary</label>
+                  <label htmlFor="summary">
+                    Summary
+                  </label>
                   <div className="mt-2">
                     <textarea
                       required

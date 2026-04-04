@@ -381,7 +381,9 @@ export default function ChangeRole() {
           {listLoading ? <p className="mt-4 text-slate-300">Loading users...</p> : null}
 
           {!listLoading && users.length === 0 ? (
-            <p className="mt-4 text-slate-300">No users match the current filters.</p>
+            <p className="mt-4 text-slate-300">
+              No users match the current filters.
+            </p>
           ) : null}
 
           <div className="mt-4 space-y-3">
@@ -393,11 +395,10 @@ export default function ChangeRole() {
                   key={BuildUserRecordKey(user)}
                   type="button"
                   onClick={() => HandleSelectUser(user)}
-                  className={`w-full rounded-2xl border px-4 py-4 text-left transition ${
-                    isSelected
+                  className={`w-full rounded-2xl border px-4 py-4 text-left transition ${isSelected
                       ? "border-sky-400/40 bg-sky-400/10"
                       : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center justify-between gap-4">
                     <div>
@@ -457,7 +458,9 @@ export default function ChangeRole() {
               </div>
 
               {rolesLoading ? (
-                <p className="text-slate-300">Loading role options...</p>
+                <p className="text-slate-300">
+                  Loading role options...
+                </p>
               ) : null}
 
               <div className="grid gap-4 md:grid-cols-2">

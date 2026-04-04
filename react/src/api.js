@@ -260,7 +260,7 @@ async function FetchJsonOnce(url, options) {
 export async function FetchJson(url, options) {
   const requestUrls = await BuildRequestUrls(url);
   console.log("Attempting request to:", requestUrls);
-  
+
   const requestUrlFixed = `https://library-database-baclend-api.onrender.com${requestUrls[0]}`;
   console.log("Attempting request to fixed URL:", requestUrlFixed);
   let lastError = null;

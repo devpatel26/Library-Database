@@ -22,25 +22,37 @@ export default function Fine({ data, onPay, payPending = false }) {
     <div className="grow basis-80 rounded-2xl border border-white/10 bg-white/5 p-5 outline-1 -outline-offset-1 outline-white/6">
       {data.title ? (
         <div>
-          <h2 className="text-xl font-semibold text-white">{data.title}</h2>
+          <h2 className="text-xl font-semibold text-white">
+            {data.title}
+          </h2>
           {data.creator ? (
-            <p className="text-sm text-sky-300">{data.creator}</p>
+            <p className="text-sm text-sky-300">
+              {data.creator}
+            </p>
           ) : null}
         </div>
       ) : (
-        <h2 className="text-xl font-semibold text-white">Account Fine</h2>
+        <h2 className="text-xl font-semibold text-white">
+          Account Fine
+        </h2>
       )}
 
       <div className="mt-4 space-y-1 text-sm text-slate-200">
-        <p>Total Fine: {FormatCurrency(fineAmount)}</p>
-        <p>Paid: {FormatCurrency(paidAmount)}</p>
+        <p>
+          Total Fine: {FormatCurrency(fineAmount)}
+        </p>
+        <p>
+          Paid: {FormatCurrency(paidAmount)}
+        </p>
         <p className="font-semibold text-white">
           Remaining: {FormatCurrency(remainingAmount)}
         </p>
         {fineDate ? <p>Assigned: {fineDate}</p> : null}
         {data.loanDueDate ? <p>Original Due Date: {data.loanDueDate}</p> : null}
         {data.daysOverdue !== null && data.daysOverdue !== undefined ? (
-          <p>Days Overdue: {data.daysOverdue}</p>
+          <p>
+            Days Overdue: {data.daysOverdue}
+          </p>
         ) : null}
         <p>Status: {fineStatus}</p>
         {data.paidDate ? <p>Paid On: {data.paidDate}</p> : null}

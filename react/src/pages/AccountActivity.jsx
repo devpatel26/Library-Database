@@ -99,7 +99,9 @@ export default function AccountActivity() {
       {!loading && !error ? (
         <div className="space-y-4">
           {activities.length === 0 ? (
-            <p className="text-slate-300">No account activity found.</p>
+            <p className="text-slate-300">
+              No account activity found.
+            </p>
           ) : (
             activities.map((activity) => (
               <article

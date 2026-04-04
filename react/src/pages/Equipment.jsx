@@ -3,10 +3,12 @@ import { useMessage } from "../hooks/useMessage";
 import { FetchJson } from "../api";
 
 export default function Equipment() {
-  const { showSuccess, showError} = useMessage();
+  const { showSuccess, showError } = useMessage();
   return (
     <section className="rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
-      <h2 className="text-3xl font-bold text-white">Equipment Entry</h2>
+      <h2 className="text-3xl font-bold text-white">
+        Equipment Entry
+      </h2>
       <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
         Enter equipment information below.
       </p>
@@ -43,7 +45,9 @@ export default function Equipment() {
           <div className="space-y-4">
             <div className="grid grid-cols-4 gap-x-6 ">
               <div className="col-span-2">
-                <label htmlFor="title">Equipment Name</label>
+                <label htmlFor="title">
+                  Equipment Name
+                </label>
                 <div className="mt-2">
                   <input
                     required
@@ -54,7 +58,9 @@ export default function Equipment() {
                 </div>
               </div>
               <div className="sm:col-span-1">
-                <label htmlFor="available">Copies</label>
+                <label htmlFor="available">
+                  Copies
+                </label>
                 <div className="mt-2">
                   <input
                     required

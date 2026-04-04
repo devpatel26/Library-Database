@@ -494,11 +494,10 @@ export default function ItemManager() {
                   key={item.itemId}
                   type="button"
                   onClick={() => setSelectedItemId(item.itemId)}
-                  className={`w-full rounded-2xl border px-4 py-4 text-left transition ${
-                    isSelected
+                  className={`w-full rounded-2xl border px-4 py-4 text-left transition ${isSelected
                       ? "border-sky-400/40 bg-sky-400/10"
                       : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
-                  }`}
+                    }`}
                 >
                   <p className="font-semibold text-white">{item.title}</p>
                   <p className="mt-1 text-sm text-slate-400">

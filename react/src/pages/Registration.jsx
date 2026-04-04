@@ -3,7 +3,7 @@ import { FetchJson } from "../api";
 import { useMessage } from "../hooks/useMessage";
 
 export default function Registration() {
-  const { showSuccess, showError} = useMessage();
+  const { showSuccess, showError } = useMessage();
   return (
     // mx-auto flex w-full max-w-lg flex-col items-center rounded-3xl border border-white/10 bg-slate-900/70 p-6 text-center shadow-xl shadow-slate-950/3
     // rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30 text-center grid justify-items-center

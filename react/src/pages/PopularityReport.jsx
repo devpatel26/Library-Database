@@ -138,9 +138,9 @@ export default function PopularityReport() {
 
     const roleCode = Number(
       user.role ??
-        user.role_code ??
-        user.staff_role_code ??
-        user.staffRoleCode
+      user.role_code ??
+      user.staff_role_code ??
+      user.staffRoleCode
     );
 
     if (user.user_type !== "staff" || roleCode !== 2) {
@@ -432,7 +432,9 @@ export default function PopularityReport() {
       </p>
 
       {isLoading ? (
-        <div className="mt-8 text-slate-300">Loading popularity report...</div>
+        <div className="mt-8 text-slate-300">
+          Loading popularity report...
+        </div>
       ) : (
         <>
           <div className="mt-8">
@@ -502,11 +504,21 @@ export default function PopularityReport() {
                   onChange={(event) => setCategoryFilter(event.target.value)}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
                 >
-                  <option>All</option>
-                  <option>Book</option>
-                  <option>Periodical</option>
-                  <option>Audiovisual Media</option>
-                  <option>Equipment</option>
+                  <option>
+                    All
+                  </option>
+                  <option>
+                    Book
+                  </option>
+                  <option>
+                    Periodical
+                  </option>
+                  <option>
+                    Audiovisual Media
+                  </option>
+                  <option>
+                    Equipment
+                  </option>
                 </select>
               </div>
 
@@ -536,13 +548,27 @@ export default function PopularityReport() {
                   onChange={(event) => setSearchBy(event.target.value)}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
                 >
-                  <option>All</option>
-                  <option>Title</option>
-                  <option>Creator</option>
-                  <option>Item ID</option>
-                  <option>Category</option>
-                  <option>Genre</option>
-                  <option>Publisher</option>
+                  <option>
+                    All
+                  </option>
+                  <option>
+                    Title
+                  </option>
+                  <option>
+                    Creator
+                  </option>
+                  <option>
+                    Item ID
+                  </option>
+                  <option>
+                    Category
+                  </option>
+                  <option>
+                    Genre
+                  </option>
+                  <option>
+                    Publisher
+                  </option>
                 </select>
               </div>
 
@@ -568,14 +594,30 @@ export default function PopularityReport() {
                   onChange={(event) => setSortBy(event.target.value)}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
                 >
-                  <option value="loanCount">Loan Count</option>
-                  <option value="title">Title</option>
-                  <option value="creator">Creator</option>
-                  <option value="category">Category</option>
-                  <option value="genre">Genre</option>
-                  <option value="publisher">Publisher</option>
-                  <option value="publicationDate">Publication Date</option>
-                  <option value="itemId">Item ID</option>
+                  <option value="loanCount">
+                    Loan Count
+                  </option>
+                  <option value="title">
+                    Title
+                  </option>
+                  <option value="creator">
+                    Creator
+                  </option>
+                  <option value="category">
+                    Category
+                  </option>
+                  <option value="genre">
+                    Genre
+                  </option>
+                  <option value="publisher">
+                    Publisher
+                  </option>
+                  <option value="publicationDate">
+                    Publication Date
+                  </option>
+                  <option value="itemId">
+                    Item ID
+                  </option>
                 </select>
               </div>
 
@@ -588,8 +630,12 @@ export default function PopularityReport() {
                   onChange={(event) => setSortDirection(event.target.value)}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
                 >
-                  <option value="desc">Descending</option>
-                  <option value="asc">Ascending</option>
+                  <option value="desc">
+                    Descending
+                  </option>
+                  <option value="asc">
+                    Ascending
+                  </option>
                 </select>
               </div>
             </div>
@@ -608,16 +654,36 @@ export default function PopularityReport() {
               <table className="w-full table-fixed text-left text-sm">
                 <thead>
                   <tr className="border-b border-white/10 text-slate-300">
-                    <th className="px-2 py-2 w-[58px]">Item ID</th>
-                    <th className="px-2 py-2 w-[108px]">Title</th>
-                    <th className="px-2 py-2 w-[100px]">Creator</th>
-                    <th className="px-2 py-2 w-[82px]">Category</th>
-                    <th className="px-2 py-2 w-[88px]">Genre</th>
-                    <th className="px-2 py-2 w-[92px]">Publisher</th>
-                    <th className="px-2 py-2 w-[96px]">Publication Date</th>
-                    <th className="px-2 py-2 w-[68px]">Loan Count</th>
-                    <th className="px-2 py-2 w-[120px]">Summary</th>
-                    <th className="px-2 py-2 w-[92px]">Action</th>
+                    <th className="px-2 py-2 w-[58px]">
+                      Item ID
+                    </th>
+                    <th className="px-2 py-2 w-[108px]">
+                      Title
+                    </th>
+                    <th className="px-2 py-2 w-[100px]">
+                      Creator
+                    </th>
+                    <th className="px-2 py-2 w-[82px]">
+                      Category
+                    </th>
+                    <th className="px-2 py-2 w-[88px]">
+                      Genre
+                    </th>
+                    <th className="px-2 py-2 w-[92px]">
+                      Publisher
+                    </th>
+                    <th className="px-2 py-2 w-[96px]">
+                      Publication Date
+                    </th>
+                    <th className="px-2 py-2 w-[68px]">
+                      Loan Count
+                    </th>
+                    <th className="px-2 py-2 w-[120px]">
+                      Summary
+                    </th>
+                    <th className="px-2 py-2 w-[92px]">
+                      Action
+                    </th>
                   </tr>
                 </thead>
 
@@ -638,7 +704,9 @@ export default function PopularityReport() {
                       return (
                         <React.Fragment key={item.itemId}>
                           <tr className="border-b border-white/5 text-slate-200 align-top">
-                            <td className="px-2 py-3">{item.itemId}</td>
+                            <td className="px-2 py-3">
+                              {item.itemId}
+                            </td>
 
                             <td className="px-2 py-3 font-semibold text-white align-top">
                               <div className="break-words">
@@ -725,14 +793,30 @@ export default function PopularityReport() {
                                       <table className="min-w-[900px] text-left text-sm">
                                         <thead>
                                           <tr className="border-b border-white/10 text-slate-300">
-                                            <th className="px-3 py-2">Loan ID</th>
-                                            <th className="px-3 py-2">Item ID</th>
-                                            <th className="px-3 py-2">Patron</th>
-                                            <th className="px-3 py-2">Patron ID</th>
-                                            <th className="px-3 py-2">Borrow Date</th>
-                                            <th className="px-3 py-2">Due Date</th>
-                                            <th className="px-3 py-2">Return Date</th>
-                                            <th className="px-3 py-2">Status</th>
+                                            <th className="px-3 py-2">
+                                              Loan ID
+                                            </th>
+                                            <th className="px-3 py-2">
+                                              Item ID
+                                            </th>
+                                            <th className="px-3 py-2">
+                                              Patron
+                                            </th>
+                                            <th className="px-3 py-2">
+                                              Patron ID
+                                            </th>
+                                            <th className="px-3 py-2">
+                                              Borrow Date
+                                            </th>
+                                            <th className="px-3 py-2">
+                                              Due Date
+                                            </th>
+                                            <th className="px-3 py-2">
+                                              Return Date
+                                            </th>
+                                            <th className="px-3 py-2">
+                                              Status
+                                            </th>
                                           </tr>
                                         </thead>
 
@@ -757,25 +841,25 @@ export default function PopularityReport() {
                                               <td className="px-3 py-3">
                                                 {loan.loanStartDate
                                                   ? FormatDate(
-                                                      new Date(loan.loanStartDate),
-                                                      true
-                                                    )
+                                                    new Date(loan.loanStartDate),
+                                                    true
+                                                  )
                                                   : "-"}
                                               </td>
                                               <td className="px-3 py-3">
                                                 {loan.loanDueDate
                                                   ? FormatDate(
-                                                      new Date(loan.loanDueDate),
-                                                      true
-                                                    )
+                                                    new Date(loan.loanDueDate),
+                                                    true
+                                                  )
                                                   : "-"}
                                               </td>
                                               <td className="px-3 py-3">
                                                 {loan.returnDate
                                                   ? FormatDate(
-                                                      new Date(loan.returnDate),
-                                                      true
-                                                    )
+                                                    new Date(loan.returnDate),
+                                                    true
+                                                  )
                                                   : "-"}
                                               </td>
                                               <td className="px-3 py-3 font-medium text-sky-300">

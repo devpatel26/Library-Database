@@ -13,15 +13,15 @@ dotenv.config({ path: path.resolve(backendDirectory, ".env") });
 const app = express();
 const port = Number(process.env.PORT) || 3000;
 const sessionMaxAgeSeconds = Math.max(
-    Number(process.env.SESSION_MAX_AGE_SECONDS) || 60 * 60 * 12,
-    60
+  Number(process.env.SESSION_MAX_AGE_SECONDS) || 60 * 60 * 12,
+  60
 );
 const passwordResetMaxAgeSeconds = Math.max(
-    Number(process.env.PASSWORD_RESET_MAX_AGE_SECONDS) || 60 * 30,
-    60 * 5
+  Number(process.env.PASSWORD_RESET_MAX_AGE_SECONDS) || 60 * 30,
+  60 * 5
 );
 
- const sessionSecret = 
+const sessionSecret =
   process.env.SESSION_SECRET || 'team8';
 // const sessionSecret =
 //     process.env.SESSION_SECRET?.trim() ||
@@ -77,353 +77,353 @@ const pool = mysql.createPool({
 .promise();  */
 
 const searchSorts = {
-    title: "title ASC",
-    newest: "publicationDate DESC, title ASC",
-    availability: "available DESC, title ASC",
+  title: "title ASC",
+  newest: "publicationDate DESC, title ASC",
+  availability: "available DESC, title ASC",
 };
 
 app.use(cors());
 app.use(express.json());
 
 function FormatServerError(error, fallbackMessage) {
-    if (process.env.NODE_ENV === "production") {
-        return fallbackMessage;
-    }
-
-    if (error instanceof Error && error.message) {
-        return error.message;
-    }
-
+  if (process.env.NODE_ENV === "production") {
     return fallbackMessage;
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return fallbackMessage;
 }
 
 function SendServerError(res, error, fallbackMessage) {
-    console.error(error);
-    res.status(500).json({ error: FormatServerError(error, fallbackMessage) });
+  console.error(error);
+  res.status(500).json({ error: FormatServerError(error, fallbackMessage) });
 }
 
 function GetMissingDatabaseConfigKeys() {
-    return ["DB_HOST", "DB_USER", "DB_NAME"].filter((key) => {
-        const value = process.env[key];
-        return typeof value !== "string" || value.trim() === "";
-    });
+  return ["DB_HOST", "DB_USER", "DB_NAME"].filter((key) => {
+    const value = process.env[key];
+    return typeof value !== "string" || value.trim() === "";
+  });
 }
 
 function LogDatabaseConfigurationHelp() {
+  console.error(
+    'The backend reads "backend/.env".'
+  );
+  console.error(
+    'Check "backend/.env" and make sure DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, and DB_NAME match your local MySQL setup.'
+  );
+  if (!process.env.DB_PASSWORD) {
     console.error(
-        'The backend reads "backend/.env".'
+      'DB_PASSWORD is currently empty, so MySQL is being contacted without a password ("using password: NO").'
     );
-    console.error(
-        'Check "backend/.env" and make sure DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, and DB_NAME match your local MySQL setup.'
-    );
-    if (!process.env.DB_PASSWORD) {
-        console.error(
-            'DB_PASSWORD is currently empty, so MySQL is being contacted without a password ("using password: NO").'
-        );
-    }
-    console.error(
-        'Create or update "backend/.env" with your local MySQL credentials.'
-    );
+  }
+  console.error(
+    'Create or update "backend/.env" with your local MySQL credentials.'
+  );
 }
 
 function ParsePositiveInteger(value) {
-    const parsedValue = Number(value);
+  const parsedValue = Number(value);
 
-    if (!Number.isInteger(parsedValue) || parsedValue < 1) {
-        return null;
-    }
+  if (!Number.isInteger(parsedValue) || parsedValue < 1) {
+    return null;
+  }
 
-    return parsedValue;
+  return parsedValue;
 }
 
 function EncodeBase64Url(value) {
-    return Buffer.from(value, "utf8").toString("base64url");
+  return Buffer.from(value, "utf8").toString("base64url");
 }
 
 function DecodeBase64Url(value) {
-    try {
-        return Buffer.from(value, "base64url");
-    } catch {
-        return null;
-    }
+  try {
+    return Buffer.from(value, "base64url");
+  } catch {
+    return null;
+  }
 }
 
 function BuildSessionToken({ userType, patronId, staffId }) {
-    const issuedAt = Math.floor(Date.now() / 1000);
-    const subjectId = userType === "patron" ? patronId : staffId;
-    const payload = {
-        subjectType: userType,
-        subjectId,
-        issuedAt,
-        expiresAt: issuedAt + sessionMaxAgeSeconds,
-    };
-    const encodedPayload = EncodeBase64Url(JSON.stringify(payload));
-    const signature = crypto
-        .createHmac("sha256", sessionSecret)
-        .update(encodedPayload)
-        .digest("base64url");
+  const issuedAt = Math.floor(Date.now() / 1000);
+  const subjectId = userType === "patron" ? patronId : staffId;
+  const payload = {
+    subjectType: userType,
+    subjectId,
+    issuedAt,
+    expiresAt: issuedAt + sessionMaxAgeSeconds,
+  };
+  const encodedPayload = EncodeBase64Url(JSON.stringify(payload));
+  const signature = crypto
+    .createHmac("sha256", sessionSecret)
+    .update(encodedPayload)
+    .digest("base64url");
 
-    return {
-        token: `${encodedPayload}.${signature}`,
-        expiresAt: new Date(payload.expiresAt * 1000).toISOString(),
-    };
+  return {
+    token: `${encodedPayload}.${signature}`,
+    expiresAt: new Date(payload.expiresAt * 1000).toISOString(),
+  };
 }
 
 function BuildPasswordResetFingerprint(passwordHash) {
-    return crypto
-        .createHash("sha256")
-        .update(String(passwordHash ?? ""))
-        .digest("base64url");
+  return crypto
+    .createHash("sha256")
+    .update(String(passwordHash ?? ""))
+    .digest("base64url");
 }
 
 function BuildPasswordResetToken({ userType, patronId, staffId, passwordHash }) {
-    const issuedAt = Math.floor(Date.now() / 1000);
-    const subjectId = userType === "patron" ? patronId : staffId;
-    const payload = {
-        subjectType: userType,
-        subjectId,
-        passwordDigest: BuildPasswordResetFingerprint(passwordHash),
-        nonce: crypto.randomBytes(8).toString("hex"),
-        issuedAt,
-        expiresAt: issuedAt + passwordResetMaxAgeSeconds,
-    };
-    const encodedPayload = EncodeBase64Url(JSON.stringify(payload));
-    const signature = crypto
-        .createHmac("sha256", passwordResetSecret)
-        .update(encodedPayload)
-        .digest("base64url");
+  const issuedAt = Math.floor(Date.now() / 1000);
+  const subjectId = userType === "patron" ? patronId : staffId;
+  const payload = {
+    subjectType: userType,
+    subjectId,
+    passwordDigest: BuildPasswordResetFingerprint(passwordHash),
+    nonce: crypto.randomBytes(8).toString("hex"),
+    issuedAt,
+    expiresAt: issuedAt + passwordResetMaxAgeSeconds,
+  };
+  const encodedPayload = EncodeBase64Url(JSON.stringify(payload));
+  const signature = crypto
+    .createHmac("sha256", passwordResetSecret)
+    .update(encodedPayload)
+    .digest("base64url");
 
-    return {
-        token: `${encodedPayload}.${signature}`,
-        expiresAt: new Date(payload.expiresAt * 1000).toISOString(),
-    };
+  return {
+    token: `${encodedPayload}.${signature}`,
+    expiresAt: new Date(payload.expiresAt * 1000).toISOString(),
+  };
 }
 
 function ParsePasswordResetToken(token) {
-    if (!token) {
-        return null;
-    }
+  if (!token) {
+    return null;
+  }
 
-    const [encodedPayload, encodedSignature] = token.split(".");
+  const [encodedPayload, encodedSignature] = token.split(".");
 
-    if (!encodedPayload || !encodedSignature) {
-        return null;
-    }
+  if (!encodedPayload || !encodedSignature) {
+    return null;
+  }
 
-    const expectedSignature = crypto
-        .createHmac("sha256", passwordResetSecret)
-        .update(encodedPayload)
-        .digest();
-    const providedSignature = DecodeBase64Url(encodedSignature);
+  const expectedSignature = crypto
+    .createHmac("sha256", passwordResetSecret)
+    .update(encodedPayload)
+    .digest();
+  const providedSignature = DecodeBase64Url(encodedSignature);
 
-    if (
-        !providedSignature ||
-        providedSignature.length !== expectedSignature.length ||
-        !crypto.timingSafeEqual(expectedSignature, providedSignature)
-    ) {
-        return null;
-    }
+  if (
+    !providedSignature ||
+    providedSignature.length !== expectedSignature.length ||
+    !crypto.timingSafeEqual(expectedSignature, providedSignature)
+  ) {
+    return null;
+  }
 
-    const payloadBuffer = DecodeBase64Url(encodedPayload);
+  const payloadBuffer = DecodeBase64Url(encodedPayload);
 
-    if (!payloadBuffer) {
-        return null;
-    }
+  if (!payloadBuffer) {
+    return null;
+  }
 
-    let payload;
+  let payload;
 
-    try {
-        payload = JSON.parse(payloadBuffer.toString("utf8"));
-    } catch {
-        return null;
-    }
+  try {
+    payload = JSON.parse(payloadBuffer.toString("utf8"));
+  } catch {
+    return null;
+  }
 
-    const expiresAt = Number(payload?.expiresAt);
-    const subjectId = ParsePositiveInteger(payload?.subjectId);
-    const subjectType =
-        payload?.subjectType === "patron" || payload?.subjectType === "staff"
-            ? payload.subjectType
-            : null;
-    const passwordDigest =
-        typeof payload?.passwordDigest === "string" &&
-        payload.passwordDigest.trim() !== ""
-            ? payload.passwordDigest.trim()
-            : "";
+  const expiresAt = Number(payload?.expiresAt);
+  const subjectId = ParsePositiveInteger(payload?.subjectId);
+  const subjectType =
+    payload?.subjectType === "patron" || payload?.subjectType === "staff"
+      ? payload.subjectType
+      : null;
+  const passwordDigest =
+    typeof payload?.passwordDigest === "string" &&
+      payload.passwordDigest.trim() !== ""
+      ? payload.passwordDigest.trim()
+      : "";
 
-    if (!subjectType || !subjectId || !Number.isFinite(expiresAt) || !passwordDigest) {
-        return null;
-    }
+  if (!subjectType || !subjectId || !Number.isFinite(expiresAt) || !passwordDigest) {
+    return null;
+  }
 
-    if (expiresAt <= Math.floor(Date.now() / 1000)) {
-        return null;
-    }
+  if (expiresAt <= Math.floor(Date.now() / 1000)) {
+    return null;
+  }
 
-    return {
-        userType: subjectType,
-        subjectId,
-        passwordDigest,
-    };
+  return {
+    userType: subjectType,
+    subjectId,
+    passwordDigest,
+  };
 }
 
 function GetApplicationOrigin(req) {
-    const origin = String(req.get("origin") ?? "").trim();
+  const origin = String(req.get("origin") ?? "").trim();
 
-    if (/^https?:\/\//i.test(origin)) {
-        return origin.replace(/\/+$/, "");
+  if (/^https?:\/\//i.test(origin)) {
+    return origin.replace(/\/+$/, "");
+  }
+
+  const referer = String(req.get("referer") ?? "").trim();
+
+  if (/^https?:\/\//i.test(referer)) {
+    try {
+      return new URL(referer).origin;
+    } catch {
+      // Fall through to the configured default origin.
     }
+  }
 
-    const referer = String(req.get("referer") ?? "").trim();
-
-    if (/^https?:\/\//i.test(referer)) {
-        try {
-            return new URL(referer).origin;
-        } catch {
-            // Fall through to the configured default origin.
-        }
-    }
-
-    return defaultAppOrigin.replace(/\/+$/, "");
+  return defaultAppOrigin.replace(/\/+$/, "");
 }
 
 function ReadSessionToken(req) {
-    const authorizationHeader = String(req.get("authorization") ?? "");
-    const match = authorizationHeader.match(/^Bearer\s+(.+)$/i);
-    return match ? match[1].trim() : "";
+  const authorizationHeader = String(req.get("authorization") ?? "");
+  const match = authorizationHeader.match(/^Bearer\s+(.+)$/i);
+  return match ? match[1].trim() : "";
 }
 
 function ParseSessionToken(token) {
-    if (!token) {
-        return null;
-    }
+  if (!token) {
+    return null;
+  }
 
-    const [encodedPayload, encodedSignature] = token.split(".");
+  const [encodedPayload, encodedSignature] = token.split(".");
 
-    if (!encodedPayload || !encodedSignature) {
-        return null;
-    }
+  if (!encodedPayload || !encodedSignature) {
+    return null;
+  }
 
-    const expectedSignature = crypto
-        .createHmac("sha256", sessionSecret)
-        .update(encodedPayload)
-        .digest();
-    const providedSignature = DecodeBase64Url(encodedSignature);
+  const expectedSignature = crypto
+    .createHmac("sha256", sessionSecret)
+    .update(encodedPayload)
+    .digest();
+  const providedSignature = DecodeBase64Url(encodedSignature);
 
-    if (
-        !providedSignature ||
-        providedSignature.length !== expectedSignature.length ||
-        !crypto.timingSafeEqual(expectedSignature, providedSignature)
-    ) {
-        return null;
-    }
+  if (
+    !providedSignature ||
+    providedSignature.length !== expectedSignature.length ||
+    !crypto.timingSafeEqual(expectedSignature, providedSignature)
+  ) {
+    return null;
+  }
 
-    const payloadBuffer = DecodeBase64Url(encodedPayload);
+  const payloadBuffer = DecodeBase64Url(encodedPayload);
 
-    if (!payloadBuffer) {
-        return null;
-    }
+  if (!payloadBuffer) {
+    return null;
+  }
 
-    let payload;
+  let payload;
 
-    try {
-        payload = JSON.parse(payloadBuffer.toString("utf8"));
-    } catch {
-        return null;
-    }
+  try {
+    payload = JSON.parse(payloadBuffer.toString("utf8"));
+  } catch {
+    return null;
+  }
 
-    const expiresAt = Number(payload?.expiresAt);
-    const subjectId = ParsePositiveInteger(payload?.subjectId);
-    const subjectType =
-        payload?.subjectType === "patron" || payload?.subjectType === "staff"
-            ? payload.subjectType
-            : null;
+  const expiresAt = Number(payload?.expiresAt);
+  const subjectId = ParsePositiveInteger(payload?.subjectId);
+  const subjectType =
+    payload?.subjectType === "patron" || payload?.subjectType === "staff"
+      ? payload.subjectType
+      : null;
 
-    if (!subjectType || !subjectId || !Number.isFinite(expiresAt)) {
-        return null;
-    }
+  if (!subjectType || !subjectId || !Number.isFinite(expiresAt)) {
+    return null;
+  }
 
-    if (expiresAt <= Math.floor(Date.now() / 1000)) {
-        return null;
-    }
+  if (expiresAt <= Math.floor(Date.now() / 1000)) {
+    return null;
+  }
 
-    return subjectType === "patron"
-        ? { userType: "patron", patronId: subjectId }
-        : { userType: "staff", staffId: subjectId };
+  return subjectType === "patron"
+    ? { userType: "patron", patronId: subjectId }
+    : { userType: "staff", staffId: subjectId };
 }
 
 function HashPassword(password) {
-    const normalizedPassword = String(password ?? "");
-    const salt = crypto.randomBytes(16).toString("hex");
-    const derivedKey = crypto
-        .scryptSync(normalizedPassword, salt, 64)
-        .toString("hex");
+  const normalizedPassword = String(password ?? "");
+  const salt = crypto.randomBytes(16).toString("hex");
+  const derivedKey = crypto
+    .scryptSync(normalizedPassword, salt, 64)
+    .toString("hex");
 
-    return `scrypt:${salt}:${derivedKey}`;
+  return `scrypt:${salt}:${derivedKey}`;
 }
 
 function IsScryptPasswordHash(value) {
-    return typeof value === "string" && value.startsWith("scrypt:");
+  return typeof value === "string" && value.startsWith("scrypt:");
 }
 
 function VerifyScryptPassword(password, storedPasswordHash) {
-    const [, salt, storedKeyHex] = String(storedPasswordHash).split(":");
+  const [, salt, storedKeyHex] = String(storedPasswordHash).split(":");
 
-    if (!salt || !storedKeyHex) {
-        return false;
-    }
+  if (!salt || !storedKeyHex) {
+    return false;
+  }
 
-    const storedKey = Buffer.from(storedKeyHex, "hex");
-    const derivedKey = crypto.scryptSync(String(password ?? ""), salt, 64);
+  const storedKey = Buffer.from(storedKeyHex, "hex");
+  const derivedKey = crypto.scryptSync(String(password ?? ""), salt, 64);
 
-    return (
-        storedKey.length === derivedKey.length &&
-        crypto.timingSafeEqual(storedKey, derivedKey)
-    );
+  return (
+    storedKey.length === derivedKey.length &&
+    crypto.timingSafeEqual(storedKey, derivedKey)
+  );
 }
 
 async function VerifyPassword(password, storedPasswordHash) {
-    if (!storedPasswordHash) {
-        return false;
-    }
+  if (!storedPasswordHash) {
+    return false;
+  }
 
-    if (IsScryptPasswordHash(storedPasswordHash)) {
-        return VerifyScryptPassword(password, storedPasswordHash);
-    }
+  if (IsScryptPasswordHash(storedPasswordHash)) {
+    return VerifyScryptPassword(password, storedPasswordHash);
+  }
 
-    return String(password ?? "") === storedPasswordHash;
+  return String(password ?? "") === storedPasswordHash;
 }
 
 async function UpgradeLegacyPasswordIfNeeded({
-    tableName,
-    idColumn,
-    idValue,
-    submittedPassword,
-    storedPasswordHash,
+  tableName,
+  idColumn,
+  idValue,
+  submittedPassword,
+  storedPasswordHash,
 }) {
-    if (IsScryptPasswordHash(storedPasswordHash)) {
-        return;
-    }
+  if (IsScryptPasswordHash(storedPasswordHash)) {
+    return;
+  }
 
-    const upgradedPasswordHash = HashPassword(submittedPassword);
+  const upgradedPasswordHash = HashPassword(submittedPassword);
 
-    await pool.query(
-        `
+  await pool.query(
+    `
         UPDATE ${tableName}
         SET password_hash = ?
         WHERE ${idColumn} = ?
         `,
-        [upgradedPasswordHash, idValue]
-    );
+    [upgradedPasswordHash, idValue]
+  );
 }
 
 async function FindPasswordResetAccountByEmail(email) {
-    const normalizedEmail = String(email ?? "").trim();
+  const normalizedEmail = String(email ?? "").trim();
 
-    if (!normalizedEmail) {
-        return null;
-    }
+  if (!normalizedEmail) {
+    return null;
+  }
 
-    const [patronRows] = await pool.query(
-        `
+  const [patronRows] = await pool.query(
+    `
         SELECT
             patron_id AS patronId,
             email,
@@ -433,21 +433,21 @@ async function FindPasswordResetAccountByEmail(email) {
         WHERE LOWER(email) = LOWER(?)
         LIMIT 1
         `,
-        [normalizedEmail]
-    );
+    [normalizedEmail]
+  );
 
-    if (patronRows.length > 0) {
-        return {
-            userType: "patron",
-            patronId: patronRows[0].patronId,
-            email: patronRows[0].email,
-            passwordHash: patronRows[0].passwordHash,
-            isActive: Boolean(patronRows[0].isActive),
-        };
-    }
+  if (patronRows.length > 0) {
+    return {
+      userType: "patron",
+      patronId: patronRows[0].patronId,
+      email: patronRows[0].email,
+      passwordHash: patronRows[0].passwordHash,
+      isActive: Boolean(patronRows[0].isActive),
+    };
+  }
 
-    const [staffRows] = await pool.query(
-        `
+  const [staffRows] = await pool.query(
+    `
         SELECT
             staff_id AS staffId,
             email,
@@ -457,26 +457,26 @@ async function FindPasswordResetAccountByEmail(email) {
         WHERE LOWER(email) = LOWER(?)
         LIMIT 1
         `,
-        [normalizedEmail]
-    );
+    [normalizedEmail]
+  );
 
-    if (staffRows.length === 0) {
-        return null;
-    }
+  if (staffRows.length === 0) {
+    return null;
+  }
 
-    return {
-        userType: "staff",
-        staffId: staffRows[0].staffId,
-        email: staffRows[0].email,
-        passwordHash: staffRows[0].passwordHash,
-        isActive: Boolean(staffRows[0].isActive),
-    };
+  return {
+    userType: "staff",
+    staffId: staffRows[0].staffId,
+    email: staffRows[0].email,
+    passwordHash: staffRows[0].passwordHash,
+    isActive: Boolean(staffRows[0].isActive),
+  };
 }
 
 async function FindPasswordResetAccountBySubject({ userType, subjectId }) {
-    if (userType === "patron") {
-        const [rows] = await pool.query(
-            `
+  if (userType === "patron") {
+    const [rows] = await pool.query(
+      `
             SELECT
                 patron_id AS patronId,
                 email,
@@ -485,24 +485,24 @@ async function FindPasswordResetAccountBySubject({ userType, subjectId }) {
             FROM patrons
             WHERE patron_id = ?
             `,
-            [subjectId]
-        );
+      [subjectId]
+    );
 
-        if (rows.length === 0) {
-            return null;
-        }
-
-        return {
-            userType: "patron",
-            patronId: rows[0].patronId,
-            email: rows[0].email,
-            passwordHash: rows[0].passwordHash,
-            isActive: Boolean(rows[0].isActive),
-        };
+    if (rows.length === 0) {
+      return null;
     }
 
-    const [rows] = await pool.query(
-        `
+    return {
+      userType: "patron",
+      patronId: rows[0].patronId,
+      email: rows[0].email,
+      passwordHash: rows[0].passwordHash,
+      isActive: Boolean(rows[0].isActive),
+    };
+  }
+
+  const [rows] = await pool.query(
+    `
         SELECT
             staff_id AS staffId,
             email,
@@ -511,32 +511,32 @@ async function FindPasswordResetAccountBySubject({ userType, subjectId }) {
         FROM staff
         WHERE staff_id = ?
         `,
-        [subjectId]
-    );
+    [subjectId]
+  );
 
-    if (rows.length === 0) {
-        return null;
-    }
+  if (rows.length === 0) {
+    return null;
+  }
 
-    return {
-        userType: "staff",
-        staffId: rows[0].staffId,
-        email: rows[0].email,
-        passwordHash: rows[0].passwordHash,
-        isActive: Boolean(rows[0].isActive),
-    };
+  return {
+    userType: "staff",
+    staffId: rows[0].staffId,
+    email: rows[0].email,
+    passwordHash: rows[0].passwordHash,
+    isActive: Boolean(rows[0].isActive),
+  };
 }
 
 async function GetRequestUser(req) {
-    const sessionUser = ParseSessionToken(ReadSessionToken(req));
+  const sessionUser = ParseSessionToken(ReadSessionToken(req));
 
-    if (!sessionUser) {
-        return null;
-    }
+  if (!sessionUser) {
+    return null;
+  }
 
-    if (sessionUser.userType === "patron") {
-        const [rows] = await pool.query(
-            `
+  if (sessionUser.userType === "patron") {
+    const [rows] = await pool.query(
+      `
             SELECT
                 patron_id AS patronId,
                 patron_role_code AS roleCode,
@@ -544,22 +544,22 @@ async function GetRequestUser(req) {
             FROM patrons
             WHERE patron_id = ?
             `,
-            [sessionUser.patronId]
-        );
+      [sessionUser.patronId]
+    );
 
-        if (rows.length === 0 || !rows[0].isActive) {
-            return null;
-        }
-
-        return {
-            userType: "patron",
-            patronId: rows[0].patronId,
-            roleCode: rows[0].roleCode,
-        };
+    if (rows.length === 0 || !rows[0].isActive) {
+      return null;
     }
 
-    const [rows] = await pool.query(
-        `
+    return {
+      userType: "patron",
+      patronId: rows[0].patronId,
+      roleCode: rows[0].roleCode,
+    };
+  }
+
+  const [rows] = await pool.query(
+    `
         SELECT
             staff_id AS staffId,
             staff_role_code AS roleCode,
@@ -567,117 +567,117 @@ async function GetRequestUser(req) {
         FROM staff
         WHERE staff_id = ?
         `,
-        [sessionUser.staffId]
-    );
+    [sessionUser.staffId]
+  );
 
-    if (rows.length === 0 || !rows[0].isActive) {
-        return null;
-    }
+  if (rows.length === 0 || !rows[0].isActive) {
+    return null;
+  }
 
-    return {
-        userType: "staff",
-        staffId: rows[0].staffId,
-        roleCode: rows[0].roleCode,
-    };
+  return {
+    userType: "staff",
+    staffId: rows[0].staffId,
+    roleCode: rows[0].roleCode,
+  };
 }
 
 async function RequireAuthenticatedUser(req, res) {
-    const user = await GetRequestUser(req);
+  const user = await GetRequestUser(req);
 
-    if (!user) {
-        res.status(401).json({ error: "Please log in to continue." });
-        return null;
-    }
+  if (!user) {
+    res.status(401).json({ error: "Please log in to continue." });
+    return null;
+  }
 
-    return user;
+  return user;
 }
 
 async function RequirePatronUser(req, res) {
-    const user = await RequireAuthenticatedUser(req, res);
+  const user = await RequireAuthenticatedUser(req, res);
 
-    if (!user) {
-        return null;
-    }
+  if (!user) {
+    return null;
+  }
 
-    if (user.userType !== "patron" || !user.patronId) {
-        res.status(403).json({
-            error: "This action is only available to patron accounts.",
-        });
-        return null;
-    }
+  if (user.userType !== "patron" || !user.patronId) {
+    res.status(403).json({
+      error: "This action is only available to patron accounts.",
+    });
+    return null;
+  }
 
-    return user;
+  return user;
 }
 
 async function RequireStaffUser(req, res, { adminOnly = false } = {}) {
-    const user = await RequireAuthenticatedUser(req, res);
+  const user = await RequireAuthenticatedUser(req, res);
 
-    if (!user) {
-        return null;
-    }
+  if (!user) {
+    return null;
+  }
 
-    if (user.userType !== "staff" || !user.staffId) {
-        res.status(403).json({
-            error: "This action is only available to staff accounts.",
-        });
-        return null;
-    }
+  if (user.userType !== "staff" || !user.staffId) {
+    res.status(403).json({
+      error: "This action is only available to staff accounts.",
+    });
+    return null;
+  }
 
-    if (![1, 2].includes(user.roleCode)) {
-        res.status(403).json({ error: "Your staff account does not have access." });
-        return null;
-    }
+  if (![1, 2].includes(user.roleCode)) {
+    res.status(403).json({ error: "Your staff account does not have access." });
+    return null;
+  }
 
-    if (adminOnly && user.roleCode !== 2) {
-        res.status(403).json({ error: "Only admin accounts can perform this action." });
-        return null;
-    }
+  if (adminOnly && user.roleCode !== 2) {
+    res.status(403).json({ error: "Only admin accounts can perform this action." });
+    return null;
+  }
 
-    return user;
+  return user;
 }
 
 async function LogDatabaseConnectionStatus() {
-    const missingConfigKeys = GetMissingDatabaseConfigKeys();
+  const missingConfigKeys = GetMissingDatabaseConfigKeys();
 
-    if (missingConfigKeys.length > 0) {
-        console.error(
-            `Database configuration is incomplete. Missing: ${missingConfigKeys.join(", ")}.`
-        );
-        LogDatabaseConfigurationHelp();
-        return;
+  if (missingConfigKeys.length > 0) {
+    console.error(
+      `Database configuration is incomplete. Missing: ${missingConfigKeys.join(", ")}.`
+    );
+    LogDatabaseConfigurationHelp();
+    return;
+  }
+
+  try {
+    await pool.query("SELECT 1");
+    console.log(`Database connection established for "${process.env.DB_NAME}".`);
+  } catch (error) {
+    console.error(
+      `Database connection check failed for "${process.env.DB_NAME}":`,
+      error
+    );
+
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "ER_ACCESS_DENIED_ERROR"
+    ) {
+      console.error(
+        "MySQL rejected the username/password from backend/.env."
+      );
+      LogDatabaseConfigurationHelp();
     }
-
-    try {
-        await pool.query("SELECT 1");
-        console.log(`Database connection established for "${process.env.DB_NAME}".`);
-    } catch (error) {
-        console.error(
-            `Database connection check failed for "${process.env.DB_NAME}":`,
-            error
-        );
-
-        if (
-            error &&
-            typeof error === "object" &&
-            "code" in error &&
-            error.code === "ER_ACCESS_DENIED_ERROR"
-        ) {
-            console.error(
-                "MySQL rejected the username/password from backend/.env."
-            );
-            LogDatabaseConfigurationHelp();
-        }
-    }
+  }
 }
 
 function BuildSearchQuery({ q, category, availableOnly, sort, limit }) {
-    const like = `%${q}%`;
-    const availableClause = availableOnly ? " AND i.available > 0" : "";
-    const orderBy = searchSorts[sort] ?? searchSorts.title;
+  const like = `%${q}%`;
+  const availableClause = availableOnly ? " AND i.available > 0" : "";
+  const orderBy = searchSorts[sort] ?? searchSorts.title;
 
-    const queries = {
-        book: {
-            sql: `
+  const queries = {
+    book: {
+      sql: `
                 SELECT i.item_id AS itemId, 'book' AS category, b.title,
                     (
                         SELECT GROUP_CONCAT(CONCAT(a.first_name, ' ', a.last_name) SEPARATOR ', ')
@@ -712,10 +712,10 @@ function BuildSearchQuery({ q, category, availableOnly, sort, limit }) {
                     )
                 )${availableClause}
             `,
-            params: [like, like, like, like],
-        },
-        periodical: {
-            sql: `
+      params: [like, like, like, like],
+    },
+    periodical: {
+      sql: `
                 SELECT i.item_id AS itemId, 'periodical' AS category, p.title,
                     NULL AS creator,
                     pt.periodical_type AS type,
@@ -740,10 +740,10 @@ function BuildSearchQuery({ q, category, availableOnly, sort, limit }) {
                     OR p.summary LIKE ?
                 )${availableClause}
             `,
-            params: [like, like, like],
-        },
-        audiovisualmedia: {
-            sql: `
+      params: [like, like, like],
+    },
+    audiovisualmedia: {
+      sql: `
                 SELECT i.item_id AS itemId, 'audiovisualmedia' AS category, am.title,
                     (
                         SELECT CONCAT(c.first_name, ' ', c.last_name)
@@ -779,10 +779,10 @@ function BuildSearchQuery({ q, category, availableOnly, sort, limit }) {
                     )
                 )${availableClause}
             `,
-            params: [like, like, like, like],
-        },
-        equipment: {
-            sql: `
+      params: [like, like, like, like],
+    },
+    equipment: {
+      sql: `
                 SELECT i.item_id AS itemId, 'equipment' AS category,
                     e.equipment_name AS title,
                     NULL AS creator,
@@ -801,19 +801,19 @@ function BuildSearchQuery({ q, category, availableOnly, sort, limit }) {
                 JOIN equipment e ON e.item_id = i.item_id
                 WHERE e.equipment_name LIKE ?${availableClause}
             `,
-            params: [like],
-        },
-    };
+      params: [like],
+    },
+  };
 
-    const normalizedCategory = category === "audiovisual_media"
-        ? "audiovisualmedia"
-        : category;
-    const chosenQueries = normalizedCategory !== "all" && queries[normalizedCategory]
-        ? [queries[normalizedCategory]]
-        : Object.values(queries);
+  const normalizedCategory = category === "audiovisual_media"
+    ? "audiovisualmedia"
+    : category;
+  const chosenQueries = normalizedCategory !== "all" && queries[normalizedCategory]
+    ? [queries[normalizedCategory]]
+    : Object.values(queries);
 
-    return {
-        sql: `
+  return {
+    sql: `
             SELECT *
             FROM (
                 ${chosenQueries.map((query) => query.sql).join(" UNION ALL ")}
@@ -821,98 +821,98 @@ function BuildSearchQuery({ q, category, availableOnly, sort, limit }) {
             ORDER BY ${orderBy}
             LIMIT ?
         `,
-        params: [...chosenQueries.flatMap((query) => query.params), limit],
-    };
+    params: [...chosenQueries.flatMap((query) => query.params), limit],
+  };
 }
 
 function NormalizeManagedUserType(value) {
-    const normalizedValue = SafeText(value).trim().toLowerCase();
+  const normalizedValue = SafeText(value).trim().toLowerCase();
 
-    if (normalizedValue === "patron" || normalizedValue === "staff") {
-        return normalizedValue;
-    }
+  if (normalizedValue === "patron" || normalizedValue === "staff") {
+    return normalizedValue;
+  }
 
-    return "all";
+  return "all";
 }
 
 function NormalizeManagedItemCategory(value) {
-    const normalizedValue = SafeText(value).trim().toLowerCase();
+  const normalizedValue = SafeText(value).trim().toLowerCase();
 
-    if (normalizedValue === "audiovisual_media") {
-        return "audiovisualmedia";
-    }
+  if (normalizedValue === "audiovisual_media") {
+    return "audiovisualmedia";
+  }
 
-    if (
-        normalizedValue === "book" ||
-        normalizedValue === "periodical" ||
-        normalizedValue === "audiovisualmedia" ||
-        normalizedValue === "equipment"
-    ) {
-        return normalizedValue;
-    }
+  if (
+    normalizedValue === "book" ||
+    normalizedValue === "periodical" ||
+    normalizedValue === "audiovisualmedia" ||
+    normalizedValue === "equipment"
+  ) {
+    return normalizedValue;
+  }
 
-    return "all";
+  return "all";
 }
 
 function ParseBooleanFlag(value) {
-    if (value === true || value === false) {
-        return value ? 1 : 0;
-    }
+  if (value === true || value === false) {
+    return value ? 1 : 0;
+  }
 
-    const normalizedValue = SafeText(value).trim().toLowerCase();
+  const normalizedValue = SafeText(value).trim().toLowerCase();
 
-    if (["1", "true", "yes", "on"].includes(normalizedValue)) {
-        return 1;
-    }
+  if (["1", "true", "yes", "on"].includes(normalizedValue)) {
+    return 1;
+  }
 
-    if (["0", "false", "no", "off"].includes(normalizedValue)) {
-        return 0;
-    }
+  if (["0", "false", "no", "off"].includes(normalizedValue)) {
+    return 0;
+  }
 
-    return null;
+  return null;
 }
 
 function NormalizeRequiredText(value, maxLength) {
-    const normalizedValue = SafeText(value).trim();
+  const normalizedValue = SafeText(value).trim();
 
-    if (!normalizedValue || normalizedValue.length > maxLength) {
-        return null;
-    }
+  if (!normalizedValue || normalizedValue.length > maxLength) {
+    return null;
+  }
 
-    return normalizedValue;
+  return normalizedValue;
 }
 
 function NormalizeOptionalText(value, maxLength) {
-    const normalizedValue = SafeText(value).trim();
+  const normalizedValue = SafeText(value).trim();
 
-    if (!normalizedValue) {
-        return null;
-    }
+  if (!normalizedValue) {
+    return null;
+  }
 
-    if (normalizedValue.length > maxLength) {
-        return null;
-    }
+  if (normalizedValue.length > maxLength) {
+    return null;
+  }
 
-    return normalizedValue;
+  return normalizedValue;
 }
 
 function NormalizeDateInput(value, { allowEmpty = false } = {}) {
-    const normalizedValue = SafeText(value).trim();
+  const normalizedValue = SafeText(value).trim();
 
-    if (!normalizedValue) {
-        return allowEmpty ? "" : null;
-    }
+  if (!normalizedValue) {
+    return allowEmpty ? "" : null;
+  }
 
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(normalizedValue)) {
-        return null;
-    }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(normalizedValue)) {
+    return null;
+  }
 
-    return normalizedValue;
+  return normalizedValue;
 }
 
 async function GetManagedItemBaseRow(itemId) {
-    const [rows] = await pool.query(
-        `
+  const [rows] = await pool.query(
+    `
         SELECT
             i.item_id AS itemId,
             i.available,
@@ -933,22 +933,22 @@ async function GetManagedItemBaseRow(itemId) {
         LEFT JOIN equipment e ON e.item_id = i.item_id
         WHERE i.item_id = ?
         `,
-        [itemId]
-    );
+    [itemId]
+  );
 
-    return rows[0] ?? null;
+  return rows[0] ?? null;
 }
 
 async function GetManagedItemDetail(itemId) {
-    const baseRow = await GetManagedItemBaseRow(itemId);
+  const baseRow = await GetManagedItemBaseRow(itemId);
 
-    if (!baseRow || !baseRow.category) {
-        return null;
-    }
+  if (!baseRow || !baseRow.category) {
+    return null;
+  }
 
-    if (baseRow.category === "book") {
-        const [rows] = await pool.query(
-            `
+  if (baseRow.category === "book") {
+    const [rows] = await pool.query(
+      `
             SELECT
                 b.title,
                 b.shelf_number AS shelfNumber,
@@ -969,15 +969,15 @@ async function GetManagedItemDetail(itemId) {
                 )
             WHERE b.item_id = ?
             `,
-            [itemId]
-        );
+      [itemId]
+    );
 
-        return rows.length === 0 ? null : { ...baseRow, ...rows[0] };
-    }
+    return rows.length === 0 ? null : { ...baseRow, ...rows[0] };
+  }
 
-    if (baseRow.category === "periodical") {
-        const [rows] = await pool.query(
-            `
+  if (baseRow.category === "periodical") {
+    const [rows] = await pool.query(
+      `
             SELECT
                 p.title,
                 p.shelf_number AS shelfNumber,
@@ -990,15 +990,15 @@ async function GetManagedItemDetail(itemId) {
             FROM periodicals p
             WHERE p.item_id = ?
             `,
-            [itemId]
-        );
+      [itemId]
+    );
 
-        return rows.length === 0 ? null : { ...baseRow, ...rows[0] };
-    }
+    return rows.length === 0 ? null : { ...baseRow, ...rows[0] };
+  }
 
-    if (baseRow.category === "audiovisualmedia") {
-        const [rows] = await pool.query(
-            `
+  if (baseRow.category === "audiovisualmedia") {
+    const [rows] = await pool.query(
+      `
             SELECT
                 am.title,
                 am.shelf_number AS shelfNumber,
@@ -1021,26 +1021,26 @@ async function GetManagedItemDetail(itemId) {
                 )
             WHERE am.item_id = ?
             `,
-            [itemId]
-        );
+      [itemId]
+    );
 
-        return rows.length === 0 ? null : { ...baseRow, ...rows[0] };
-    }
+    return rows.length === 0 ? null : { ...baseRow, ...rows[0] };
+  }
 
-    const [rows] = await pool.query(
-        `
+  const [rows] = await pool.query(
+    `
         SELECT equipment_name AS title
         FROM equipment
         WHERE item_id = ?
         `,
-        [itemId]
-    );
+    [itemId]
+  );
 
-    return rows.length === 0 ? null : { ...baseRow, ...rows[0] };
+  return rows.length === 0 ? null : { ...baseRow, ...rows[0] };
 }
 
 function GetPatronItemSelectColumns() {
-    return `
+  return `
         CASE
             WHEN b.item_id IS NOT NULL THEN 'book'
             WHEN per.item_id IS NOT NULL THEN 'periodical'
@@ -1113,7 +1113,7 @@ function GetPatronItemSelectColumns() {
 }
 
 function GetPatronItemJoinClauses(itemIdColumn) {
-    return `
+  return `
         LEFT JOIN books b ON b.item_id = ${itemIdColumn}
         LEFT JOIN book_types bt ON bt.book_type_code = b.book_type_code
         LEFT JOIN languages bookLanguage ON bookLanguage.language_code = b.language_code
@@ -1132,7 +1132,7 @@ function GetPatronItemJoinClauses(itemIdColumn) {
 }
 
 function BuildPatronLoanQuery({ statusClause, orderBy }) {
-    return `
+  return `
         SELECT
             l.loan_id AS loanId,
             l.item_id AS itemId,
@@ -1158,16 +1158,16 @@ function BuildPatronLoanQuery({ statusClause, orderBy }) {
 }
 
 app.get(["/account", "/api/account"], async (req, res) => {
-    try {
-        const user = await RequireAuthenticatedUser(req, res);
+  try {
+    const user = await RequireAuthenticatedUser(req, res);
 
-        if (!user) {
-            return;
-        }
+    if (!user) {
+      return;
+    }
 
-        if (user.userType === "patron") {
-            const [rows] = await pool.query(
-                `
+    if (user.userType === "patron") {
+      const [rows] = await pool.query(
+        `
                 SELECT
                     patron_id,
                     NULL AS staff_id,
@@ -1183,18 +1183,18 @@ app.get(["/account", "/api/account"], async (req, res) => {
                 FROM patrons
                 WHERE patron_id = ?
                 `,
-                [user.patronId]
-            );
+        [user.patronId]
+      );
 
-            if (rows.length === 0) {
-                return res.status(404).json({ error: "Patron not found" });
-            }
+      if (rows.length === 0) {
+        return res.status(404).json({ error: "Patron not found" });
+      }
 
-            return res.json(rows[0]);
-        }
+      return res.json(rows[0]);
+    }
 
-        const [rows] = await pool.query(
-            `
+    const [rows] = await pool.query(
+      `
             SELECT
                 NULL AS patron_id,
                 staff_id,
@@ -1210,39 +1210,39 @@ app.get(["/account", "/api/account"], async (req, res) => {
             FROM staff
             WHERE staff_id = ?
             `,
-            [user.staffId]
-        );
+      [user.staffId]
+    );
 
-        if (rows.length === 0) {
-            return res.status(404).json({ error: "Staff account not found" });
-        }
-
-        res.json(rows[0]);
-    } catch (error) {
-        SendServerError(res, error, "Internal Server Error");
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Staff account not found" });
     }
+
+    res.json(rows[0]);
+  } catch (error) {
+    SendServerError(res, error, "Internal Server Error");
+  }
 });
 
 app.put(["/account/contact", "/api/account/contact"], async (req, res) => {
-    try {
-        const user = await RequireAuthenticatedUser(req, res);
+  try {
+    const user = await RequireAuthenticatedUser(req, res);
 
-        if (!user) {
-            return;
-        }
+    if (!user) {
+      return;
+    }
 
-        const email = String(req.body?.email ?? "").trim();
+    const email = String(req.body?.email ?? "").trim();
 
-        if (!email) {
-            return res.status(400).json({ error: "Email is required." });
-        }
+    if (!email) {
+      return res.status(400).json({ error: "Email is required." });
+    }
 
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            return res.status(400).json({ error: "Enter a valid email address." });
-        }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: "Enter a valid email address." });
+    }
 
-        const [matches] = await pool.query(
-            `
+    const [matches] = await pool.query(
+      `
             SELECT user_type AS userType, account_id AS accountId
             FROM (
                 SELECT 'patron' AS user_type, patron_id AS account_id, email
@@ -1256,132 +1256,132 @@ app.put(["/account/contact", "/api/account/contact"], async (req, res) => {
             WHERE LOWER(email) = LOWER(?)
             LIMIT 1
             `,
-            [email]
-        );
+      [email]
+    );
 
-        const accountId = user.userType === "patron" ? user.patronId : user.staffId;
+    const accountId = user.userType === "patron" ? user.patronId : user.staffId;
 
-        if (
-            matches.length > 0 &&
-            (
-                matches[0].userType !== user.userType ||
-                Number(matches[0].accountId) !== Number(accountId)
-            )
-        ) {
-            return res.status(409).json({ error: "That email address is already in use." });
-        }
+    if (
+      matches.length > 0 &&
+      (
+        matches[0].userType !== user.userType ||
+        Number(matches[0].accountId) !== Number(accountId)
+      )
+    ) {
+      return res.status(409).json({ error: "That email address is already in use." });
+    }
 
-        const tableName = user.userType === "patron" ? "patrons" : "staff";
-        const idColumn = user.userType === "patron" ? "patron_id" : "staff_id";
+    const tableName = user.userType === "patron" ? "patrons" : "staff";
+    const idColumn = user.userType === "patron" ? "patron_id" : "staff_id";
 
-        await pool.query(
-            `
+    await pool.query(
+      `
             UPDATE ${tableName}
             SET email = ?
             WHERE ${idColumn} = ?
             `,
-            [email, accountId]
-        );
+      [email, accountId]
+    );
 
-        return res.json({
-            message: "Contact information updated successfully.",
-            email,
-        });
-    } catch (error) {
-        SendServerError(res, error, "Internal Server Error");
-    }
+    return res.json({
+      message: "Contact information updated successfully.",
+      email,
+    });
+  } catch (error) {
+    SendServerError(res, error, "Internal Server Error");
+  }
 });
 
 app.put(["/account/password", "/api/account/password"], async (req, res) => {
-    try {
-        const user = await RequireAuthenticatedUser(req, res);
+  try {
+    const user = await RequireAuthenticatedUser(req, res);
 
-        if (!user) {
-            return;
-        }
+    if (!user) {
+      return;
+    }
 
-        const currentPassword = String(req.body?.currentPassword ?? "");
-        const newPassword = String(req.body?.newPassword ?? "");
-        const confirmPassword = String(req.body?.confirmPassword ?? "");
+    const currentPassword = String(req.body?.currentPassword ?? "");
+    const newPassword = String(req.body?.newPassword ?? "");
+    const confirmPassword = String(req.body?.confirmPassword ?? "");
 
-        if (!currentPassword || !newPassword || !confirmPassword) {
-            return res.status(400).json({
-                error: "Current password, new password, and confirmation are required.",
-            });
-        }
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return res.status(400).json({
+        error: "Current password, new password, and confirmation are required.",
+      });
+    }
 
-        if (newPassword !== confirmPassword) {
-            return res.status(400).json({ error: "Passwords do not match." });
-        }
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ error: "Passwords do not match." });
+    }
 
-        if (newPassword.length < 8) {
-            return res.status(400).json({
-                error: "New password must be at least 8 characters long.",
-            });
-        }
+    if (newPassword.length < 8) {
+      return res.status(400).json({
+        error: "New password must be at least 8 characters long.",
+      });
+    }
 
-        const account = await FindPasswordResetAccountBySubject({
-            userType: user.userType,
-            subjectId: user.userType === "patron" ? user.patronId : user.staffId,
-        });
+    const account = await FindPasswordResetAccountBySubject({
+      userType: user.userType,
+      subjectId: user.userType === "patron" ? user.patronId : user.staffId,
+    });
 
-        if (!account || !account.isActive) {
-            return res.status(404).json({ error: "Account not found." });
-        }
+    if (!account || !account.isActive) {
+      return res.status(404).json({ error: "Account not found." });
+    }
 
-        const passwordMatchesCurrent = await VerifyPassword(
-            currentPassword,
-            account.passwordHash,
-        );
+    const passwordMatchesCurrent = await VerifyPassword(
+      currentPassword,
+      account.passwordHash,
+    );
 
-        if (!passwordMatchesCurrent) {
-            return res.status(400).json({ error: "Current password is incorrect." });
-        }
+    if (!passwordMatchesCurrent) {
+      return res.status(400).json({ error: "Current password is incorrect." });
+    }
 
-        const newPasswordMatchesCurrent = await VerifyPassword(
-            newPassword,
-            account.passwordHash,
-        );
+    const newPasswordMatchesCurrent = await VerifyPassword(
+      newPassword,
+      account.passwordHash,
+    );
 
-        if (newPasswordMatchesCurrent) {
-            return res.status(400).json({
-                error: "Choose a password that is different from your current password.",
-            });
-        }
+    if (newPasswordMatchesCurrent) {
+      return res.status(400).json({
+        error: "Choose a password that is different from your current password.",
+      });
+    }
 
-        const nextPasswordHash = HashPassword(newPassword);
-        const tableName = user.userType === "patron" ? "patrons" : "staff";
-        const idColumn = user.userType === "patron" ? "patron_id" : "staff_id";
-        const idValue = user.userType === "patron" ? user.patronId : user.staffId;
+    const nextPasswordHash = HashPassword(newPassword);
+    const tableName = user.userType === "patron" ? "patrons" : "staff";
+    const idColumn = user.userType === "patron" ? "patron_id" : "staff_id";
+    const idValue = user.userType === "patron" ? user.patronId : user.staffId;
 
-        await pool.query(
-            `
+    await pool.query(
+      `
             UPDATE ${tableName}
             SET password_hash = ?
             WHERE ${idColumn} = ?
             `,
-            [nextPasswordHash, idValue]
-        );
+      [nextPasswordHash, idValue]
+    );
 
-        return res.json({ message: "Password updated successfully." });
-    } catch (error) {
-        SendServerError(res, error, "Internal Server Error");
-    }
+    return res.json({ message: "Password updated successfully." });
+  } catch (error) {
+    SendServerError(res, error, "Internal Server Error");
+  }
 });
 
 // Fines endpoint
 app.get(["/fines", "/api/fines"], async (req, res) => {
-    try {
-        const user = await RequirePatronUser(req, res);
+  try {
+    const user = await RequirePatronUser(req, res);
 
-        if (!user) {
-            return;
-        }
+    if (!user) {
+      return;
+    }
 
-        await SyncCurrentFines();
+    await SyncCurrentFines();
 
-        const [rows] = await pool.query(
-            `
+    const [rows] = await pool.query(
+      `
             SELECT
                 f.fine_id AS fineId,
                 f.loan_id AS loanId,
@@ -1429,43 +1429,43 @@ app.get(["/fines", "/api/fines"], async (req, res) => {
                 f.fine_date DESC,
                 f.fine_id DESC
             `,
-            [user.patronId]
-        );
+      [user.patronId]
+    );
 
-        return res.json(rows);
-    } catch (error) {
-        SendServerError(res, error, "Internal Server Error");
-    }
+    return res.json(rows);
+  } catch (error) {
+    SendServerError(res, error, "Internal Server Error");
+  }
 });
 
 // Loans and Holds endpoint
 app.get(["/loans", "/api/loans"], async (req, res) => {
-    try {
-        await ClearExpiredHolds();
-        const user = await RequirePatronUser(req, res);
+  try {
+    await ClearExpiredHolds();
+    const user = await RequirePatronUser(req, res);
 
-        if (!user) {
-            return;
-        }
+    if (!user) {
+      return;
+    }
 
-        const [loans] = await pool.query(
-            BuildPatronLoanQuery({
-                statusClause: "l.loan_status_code = 1",
-                orderBy: "l.loan_due_date ASC, l.loan_id ASC",
-            }),
-            [user.patronId]
-        );
+    const [loans] = await pool.query(
+      BuildPatronLoanQuery({
+        statusClause: "l.loan_status_code = 1",
+        orderBy: "l.loan_due_date ASC, l.loan_id ASC",
+      }),
+      [user.patronId]
+    );
 
-        const [history] = await pool.query(
-            BuildPatronLoanQuery({
-                statusClause: "l.loan_status_code <> 1",
-                orderBy: "l.loan_due_date DESC, l.loan_id DESC",
-            }),
-            [user.patronId]
-        );
+    const [history] = await pool.query(
+      BuildPatronLoanQuery({
+        statusClause: "l.loan_status_code <> 1",
+        orderBy: "l.loan_due_date DESC, l.loan_id DESC",
+      }),
+      [user.patronId]
+    );
 
-        const [holds] = await pool.query(
-            `
+    const [holds] = await pool.query(
+      `
             SELECT * FROM (
                 SELECT
                     h.hold_id AS holdId,
@@ -1581,28 +1581,28 @@ app.get(["/loans", "/api/loans"], async (req, res) => {
             ) AS patron_holds
             ORDER BY holdEnd ASC
             `,
-            [user.patronId, user.patronId, user.patronId, user.patronId]
-        );
+      [user.patronId, user.patronId, user.patronId, user.patronId]
+    );
 
-        res.json({ loans, holds, history });
-    } catch (error) {
-        SendServerError(res, error, "Internal Server Error");
-    }
+    res.json({ loans, holds, history });
+  } catch (error) {
+    SendServerError(res, error, "Internal Server Error");
+  }
 });
 
 app.get(["/account/activity", "/api/account/activity"], async (req, res) => {
-    try {
-        await ClearExpiredHolds();
-        const user = await RequirePatronUser(req, res);
+  try {
+    await ClearExpiredHolds();
+    const user = await RequirePatronUser(req, res);
 
-        if (!user) {
-            return;
-        }
+    if (!user) {
+      return;
+    }
 
-        await SyncCurrentFines();
+    await SyncCurrentFines();
 
-        const [holdRows] = await pool.query(
-            `
+    const [holdRows] = await pool.query(
+      `
             SELECT
                 CONCAT('hold-', h.hold_id) AS activityId,
                 h.hold_origin_date AS activityDate,
@@ -1615,11 +1615,11 @@ app.get(["/account/activity", "/api/account/activity"], async (req, res) => {
             ${GetPatronItemJoinClauses("h.item_id")}
             WHERE h.patron_id = ?
             `,
-            [user.patronId]
-        );
+      [user.patronId]
+    );
 
-        const [loanRows] = await pool.query(
-            `
+    const [loanRows] = await pool.query(
+      `
             SELECT
                 CONCAT('loan-', l.loan_id) AS activityId,
                 l.loan_origin_date AS activityDate,
@@ -1636,11 +1636,11 @@ app.get(["/account/activity", "/api/account/activity"], async (req, res) => {
             ${GetPatronItemJoinClauses("l.item_id")}
             WHERE l.patron_id = ?
             `,
-            [user.patronId]
-        );
+      [user.patronId]
+    );
 
-        const [fineRows] = await pool.query(
-            `
+    const [fineRows] = await pool.query(
+      `
             SELECT
                 f.fine_id AS fineId,
                 f.loan_id AS loanId,
@@ -1656,130 +1656,130 @@ app.get(["/account/activity", "/api/account/activity"], async (req, res) => {
             ${GetPatronItemJoinClauses("l.item_id")}
             WHERE f.patron_id = ?
             `,
-            [user.patronId]
-        );
+      [user.patronId]
+    );
 
-        const activity = [
-            ...holdRows.map((row) => ({
-                activityId: row.activityId,
-                activityType: row.activityType,
-                activityDate: row.activityDate,
-                headline: "Placed hold",
-                title: row.title,
-                creator: row.creator,
-                detail:
-                    row.holdStatus === "ready"
-                        ? `Ready for pickup until ${row.holdEnd}`
-                        : `Hold expires ${row.holdEnd}`,
-                status: row.holdStatus === "ready" ? "Ready" : "Active",
-            })),
-            ...loanRows.map((row) => ({
-                activityId: row.activityId,
-                activityType: row.activityType,
-                activityDate: row.activityDate,
-                headline: "Checked out item",
-                title: row.title,
-                creator: row.creator,
-                detail: `Due ${row.loanEnd}`,
-                status: row.overdue
-                    ? "Overdue"
-                    : row.loanStatus === "returned"
-                        ? "Returned"
-                        : "Active",
-            })),
-            ...fineRows.flatMap((row) => {
-                const events = [];
+    const activity = [
+      ...holdRows.map((row) => ({
+        activityId: row.activityId,
+        activityType: row.activityType,
+        activityDate: row.activityDate,
+        headline: "Placed hold",
+        title: row.title,
+        creator: row.creator,
+        detail:
+          row.holdStatus === "ready"
+            ? `Ready for pickup until ${row.holdEnd}`
+            : `Hold expires ${row.holdEnd}`,
+        status: row.holdStatus === "ready" ? "Ready" : "Active",
+      })),
+      ...loanRows.map((row) => ({
+        activityId: row.activityId,
+        activityType: row.activityType,
+        activityDate: row.activityDate,
+        headline: "Checked out item",
+        title: row.title,
+        creator: row.creator,
+        detail: `Due ${row.loanEnd}`,
+        status: row.overdue
+          ? "Overdue"
+          : row.loanStatus === "returned"
+            ? "Returned"
+            : "Active",
+      })),
+      ...fineRows.flatMap((row) => {
+        const events = [];
 
-                if (row.fineDate) {
-                    events.push({
-                        activityId: `fine-${row.fineId}-assessed`,
-                        activityType: "fine",
-                        activityDate: row.fineDate,
-                        headline: "Fine assessed",
-                        title: row.title,
-                        creator: row.creator,
-                        detail: `Balance $${Number(row.fineAmount ?? 0).toFixed(2)}`,
-                        status: "Open",
-                    });
-                }
+        if (row.fineDate) {
+          events.push({
+            activityId: `fine-${row.fineId}-assessed`,
+            activityType: "fine",
+            activityDate: row.fineDate,
+            headline: "Fine assessed",
+            title: row.title,
+            creator: row.creator,
+            detail: `Balance $${Number(row.fineAmount ?? 0).toFixed(2)}`,
+            status: "Open",
+          });
+        }
 
-                if (row.paidDate) {
-                    events.push({
-                        activityId: `fine-${row.fineId}-paid`,
-                        activityType: "fine",
-                        activityDate: row.paidDate,
-                        headline: "Fine payment recorded",
-                        title: row.title,
-                        creator: row.creator,
-                        detail: `Paid $${Number(row.paidAmount ?? 0).toFixed(2)}`,
-                        status: "Paid",
-                    });
-                }
+        if (row.paidDate) {
+          events.push({
+            activityId: `fine-${row.fineId}-paid`,
+            activityType: "fine",
+            activityDate: row.paidDate,
+            headline: "Fine payment recorded",
+            title: row.title,
+            creator: row.creator,
+            detail: `Paid $${Number(row.paidAmount ?? 0).toFixed(2)}`,
+            status: "Paid",
+          });
+        }
 
-                if (row.waivedDate) {
-                    events.push({
-                        activityId: `fine-${row.fineId}-waived`,
-                        activityType: "fine",
-                        activityDate: row.waivedDate,
-                        headline: "Fine waived",
-                        title: row.title,
-                        creator: row.creator,
-                        detail: `Waived remaining $${Number(row.remainingAmount ?? 0).toFixed(2)}`,
-                        status: "Waived",
-                    });
-                }
+        if (row.waivedDate) {
+          events.push({
+            activityId: `fine-${row.fineId}-waived`,
+            activityType: "fine",
+            activityDate: row.waivedDate,
+            headline: "Fine waived",
+            title: row.title,
+            creator: row.creator,
+            detail: `Waived remaining $${Number(row.remainingAmount ?? 0).toFixed(2)}`,
+            status: "Waived",
+          });
+        }
 
-                return events;
-            }),
-        ]
-            .filter((row) => row.activityDate)
-            .sort((left, right) => {
-                const leftDate = Date.parse(left.activityDate);
-                const rightDate = Date.parse(right.activityDate);
+        return events;
+      }),
+    ]
+      .filter((row) => row.activityDate)
+      .sort((left, right) => {
+        const leftDate = Date.parse(left.activityDate);
+        const rightDate = Date.parse(right.activityDate);
 
-                if (Number.isFinite(rightDate) && Number.isFinite(leftDate) && rightDate !== leftDate) {
-                    return rightDate - leftDate;
-                }
+        if (Number.isFinite(rightDate) && Number.isFinite(leftDate) && rightDate !== leftDate) {
+          return rightDate - leftDate;
+        }
 
-                return String(right.activityId).localeCompare(String(left.activityId));
-            });
+        return String(right.activityId).localeCompare(String(left.activityId));
+      });
 
-        return res.json(activity);
-    } catch (error) {
-        SendServerError(res, error, "Internal Server Error");
-    }
+    return res.json(activity);
+  } catch (error) {
+    SendServerError(res, error, "Internal Server Error");
+  }
 });
 
 app.get(["/search", "/api/search"], async (req, res) => {
-    const q = String(req.query.q ?? "").trim();
-    const category = String(req.query.category ?? "all").toLowerCase();
-    const availableOnly = String(req.query.availableOnly ?? "false") === "true";
-    const sort = String(req.query.sort ?? "title").toLowerCase();
-    const limit = Math.min(Math.max(Number(req.query.limit) || 20, 1), 100);
+  const q = String(req.query.q ?? "").trim();
+  const category = String(req.query.category ?? "all").toLowerCase();
+  const availableOnly = String(req.query.availableOnly ?? "false") === "true";
+  const sort = String(req.query.sort ?? "title").toLowerCase();
+  const limit = Math.min(Math.max(Number(req.query.limit) || 20, 1), 100);
 
-    try {
-      await ClearExpiredHolds();
-        const { sql, params } = BuildSearchQuery({
-            q,
-            category,
-            availableOnly,
-            sort,
-            limit,
-        });
+  try {
+    await ClearExpiredHolds();
+    const { sql, params } = BuildSearchQuery({
+      q,
+      category,
+      availableOnly,
+      sort,
+      limit,
+    });
 
-        const [rows] = await pool.query(sql, params);
+    const [rows] = await pool.query(sql, params);
 
-        res.json({
-            query: { q, category, availableOnly, sort, limit },
-            count: rows.length,
-            results: rows,
-        });
-    } catch (error) {
-        console.error("Search error:", error);
-        res.status(500).json({
-            error: FormatServerError(error, "Internal Server Error"),
-        });
-    }
+    res.json({
+      query: { q, category, availableOnly, sort, limit },
+      count: rows.length,
+      results: rows,
+    });
+  } catch (error) {
+    console.error("Search error:", error);
+    res.status(500).json({
+      error: FormatServerError(error, "Internal Server Error"),
+    });
+  }
 });
 
 app.get(["/admin/users", "/api/admin/users"], async (req, res) => {
@@ -2574,7 +2574,7 @@ app.delete(["/items/manage/:itemId", "/api/items/manage/:itemId"], async (req, r
 
 //
 // update patron roles
-app.put(["/changerole","/api/changerole"], async (req,res) => {
+app.put(["/changerole", "/api/changerole"], async (req, res) => {
   try {
     const user = await RequireStaffUser(req, res, { adminOnly: true });
 
@@ -2598,7 +2598,7 @@ app.put(["/changerole","/api/changerole"], async (req,res) => {
       SET patron_role_code = ?
       WHERE patron_id = ?
       `,
-      [role,patronId])
+      [role, patronId])
     res.status(201).json({ message: "Patron role changed successfully." });
   } catch (error) {
     console.error("Patron role change error:", error);
@@ -2837,7 +2837,7 @@ app.post(
       } = req.body;
       if (
         (title,
-        !available ||
+          !available ||
           !shelfnumber ||
           !runtime ||
           !genre ||
@@ -3027,7 +3027,7 @@ app.post(
       }
 
       const { title, available } = req.body;
-      if (!title || !available ) {
+      if (!title || !available) {
         return res.status(400).json({ error: "Missing required fields." });
       }
 
@@ -3591,38 +3591,38 @@ app.post(["/holds", "/api/holds"], async (req, res) => {
 void LogDatabaseConnectionStatus();
 
 app.listen(port, () => {
-    console.log(`Server is running on port: ${port}`);
+  console.log(`Server is running on port: ${port}`);
 });
 
 // Function to clear expired holds and update item availability
 async function ClearExpiredHolds() {
-    const [expiredHolds] = await pool.query(
-        `
+  const [expiredHolds] = await pool.query(
+    `
         SELECT hold_id AS holdId, item_id AS itemId
         FROM holds
         WHERE hold_expiration_date < CURDATE()
         `
-    );
+  );
 
-    for (const hold of expiredHolds) {
-        await pool.query(
-            `
+  for (const hold of expiredHolds) {
+    await pool.query(
+      `
             UPDATE items
             SET available = available + 1,
                 on_hold = CASE WHEN on_hold > 0 THEN on_hold - 1 ELSE 0 END
             WHERE item_id = ?
             `,
-            [hold.itemId]
-        );
+      [hold.itemId]
+    );
 
-        await pool.query(
-            `
+    await pool.query(
+      `
             DELETE FROM holds
             WHERE hold_id = ?
             `,
-            [hold.holdId]
-        );
-    }
+      [hold.holdId]
+    );
+  }
 }
 
 // Get current holds for staff view
@@ -3923,7 +3923,7 @@ app.post(["/checkout", "/api/checkout"], async (req, res) => {
 app.get(["/staff/loans/current", "/api/staff/loans/current"], async (req, res) => {
   try {
     const user = await RequireStaffUser(req, res);
-    
+
 
     if (!user) {
       return;
@@ -4221,7 +4221,7 @@ async function SyncCurrentFines() {
 
 // Get current fines for staff view
 app.get(["/staff/fines/current", "/api/staff/fines/current"], async (req, res) => {
-  
+
   try {
     const user = await RequireStaffUser(req, res);
     if (!user) {
@@ -4464,11 +4464,11 @@ app.get(["/reports/popularity", "/api/reports/popularity"], async (req, res) => 
 
     const roleCode = Number(
       user.roleCode ??
-        user.role ??
-        user.role_code ??
-        user.staff_role_code ??
-        user.staffRoleCode ??
-        0
+      user.role ??
+      user.role_code ??
+      user.staff_role_code ??
+      user.staffRoleCode ??
+      0
     );
 
     if (roleCode !== 2) {
@@ -4605,11 +4605,11 @@ app.get(
 
       const roleCode = Number(
         user.roleCode ??
-          user.role ??
-          user.role_code ??
-          user.staff_role_code ??
-          user.staffRoleCode ??
-          0
+        user.role ??
+        user.role_code ??
+        user.staff_role_code ??
+        user.staffRoleCode ??
+        0
       );
 
       if (roleCode !== 2) {
@@ -4673,11 +4673,11 @@ app.get(["/reports/patron-summary", "/api/reports/patron-summary"], async (req, 
 
     const roleCode = Number(
       user.roleCode ??
-        user.role ??
-        user.role_code ??
-        user.staff_role_code ??
-        user.staffRoleCode ??
-        0
+      user.role ??
+      user.role_code ??
+      user.staff_role_code ??
+      user.staffRoleCode ??
+      0
     );
 
     if (roleCode !== 2) {
@@ -4964,17 +4964,17 @@ app.get(
         ),
       });
     }
-    
+
   }
 );
 
 // Get lost items report
-app.get("/api/loans/lost", async (req,res)=>{
+app.get("/api/loans/lost", async (req, res) => {
 
-const user = await RequireStaffUser(req,res);
-if(!user)return;
+  const user = await RequireStaffUser(req, res);
+  if (!user) return;
 
-const [rows] = await pool.query(`
+  const [rows] = await pool.query(`
 SELECT
 l.loan_id AS loanId,
 l.item_id AS itemId,
@@ -5004,12 +5004,12 @@ WHERE l.loan_status_code = 4
 ORDER BY l.return_date DESC
 `);
 
-const result = rows.map(r=>({
-...r,
-patronName: `${r.first_name} ${r.last_name}`
-}));
+  const result = rows.map(r => ({
+    ...r,
+    patronName: `${r.first_name} ${r.last_name}`
+  }));
 
-res.json(result);
+  res.json(result);
 
 });
 

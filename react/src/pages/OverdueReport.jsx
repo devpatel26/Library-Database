@@ -69,9 +69,13 @@ function SummaryCard({ title, value, subtitle = "" }) {
       <p className="text-xs font-semibold uppercase tracking-[0.25em] text-sky-300">
         {title}
       </p>
-      <p className="mt-3 text-3xl font-semibold text-white">{value}</p>
+      <p className="mt-3 text-3xl font-semibold text-white">
+        {value}
+      </p>
       {subtitle ? (
-        <p className="mt-2 text-sm text-slate-400">{subtitle}</p>
+        <p className="mt-2 text-sm text-slate-400">
+          {subtitle}
+        </p>
       ) : null}
     </div>
   );
@@ -464,7 +468,9 @@ export default function OverdueReport() {
       ) : (
         <>
           <div className="mt-8">
-            <p className="text-sm font-medium text-slate-300">{dateRangeLabel}</p>
+            <p className="text-sm font-medium text-slate-300">
+              {dateRangeLabel}
+            </p>
           </div>
 
           <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -528,11 +534,21 @@ export default function OverdueReport() {
                   onChange={(event) => setCategoryFilter(event.target.value)}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
                 >
-                  <option>All</option>
-                  <option>Book</option>
-                  <option>Periodical</option>
-                  <option>Audiovisual Media</option>
-                  <option>Equipment</option>
+                  <option>
+                    All
+                  </option>
+                  <option>
+                    Book
+                  </option>
+                  <option>
+                    Periodical
+                  </option>
+                  <option>
+                    Audiovisual Media
+                  </option>
+                  <option>
+                    Equipment
+                  </option>
                 </select>
               </div>
 
@@ -559,13 +575,27 @@ export default function OverdueReport() {
                   onChange={(event) => setSearchBy(event.target.value)}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
                 >
-                  <option>All</option>
-                  <option>Patron Name</option>
-                  <option>Patron ID</option>
-                  <option>Item Title</option>
-                  <option>Item ID</option>
-                  <option>Category</option>
-                  <option>Creator</option>
+                  <option>
+                    All
+                  </option>
+                  <option>
+                    Patron Name
+                  </option>
+                  <option>
+                    Patron ID
+                  </option>
+                  <option>
+                    Item Title
+                  </option>
+                  <option>
+                    Item ID
+                  </option>
+                  <option>
+                    Category
+                  </option>
+                  <option>
+                    Creator
+                  </option>
                 </select>
               </div>
 
@@ -591,18 +621,42 @@ export default function OverdueReport() {
                   onChange={(event) => setSortBy(event.target.value)}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
                 >
-                  <option value="daysOverdue">Days Overdue</option>
-                  <option value="loanDueDate">Due Date</option>
-                  <option value="loanStartDate">Borrow Date</option>
-                  <option value="currentFine">Estimated Fine</option>
-                  <option value="dailyFine">Daily Fine</option>
-                  <option value="patronName">Patron Name</option>
-                  <option value="patronId">Patron ID</option>
-                  <option value="title">Item Title</option>
-                  <option value="itemId">Item ID</option>
-                  <option value="category">Category</option>
-                  <option value="creator">Creator</option>
-                  <option value="loanId">Loan ID</option>
+                  <option value="daysOverdue">
+                    Days Overdue
+                  </option>
+                  <option value="loanDueDate">
+                    Due Date
+                  </option>
+                  <option value="loanStartDate">
+                    Borrow Date
+                  </option>
+                  <option value="currentFine">
+                    Estimated Fine
+                  </option>
+                  <option value="dailyFine">
+                    Daily Fine
+                  </option>
+                  <option value="patronName">
+                    Patron Name
+                  </option>
+                  <option value="patronId">
+                    Patron ID
+                  </option>
+                  <option value="title">
+                    Item Title
+                  </option>
+                  <option value="itemId">
+                    Item ID
+                  </option>
+                  <option value="category">
+                    Category
+                  </option>
+                  <option value="creator">
+                    Creator
+                  </option>
+                  <option value="loanId">
+                    Loan ID
+                  </option>
                 </select>
               </div>
 
@@ -615,8 +669,12 @@ export default function OverdueReport() {
                   onChange={(event) => setSortDirection(event.target.value)}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
                 >
-                  <option value="desc">Descending</option>
-                  <option value="asc">Ascending</option>
+                  <option value="desc">
+                    Descending
+                  </option>
+                  <option value="asc">
+                    Ascending
+                  </option>
                 </select>
               </div>
             </div>
@@ -638,17 +696,39 @@ export default function OverdueReport() {
                 <table className="min-w-full border-collapse overflow-hidden rounded-xl">
                   <thead>
                     <tr className="bg-slate-800 text-left text-sm text-slate-200">
-                      <th className="px-2 py-3">Loan ID</th>
-                      <th className="px-2 py-3">Item ID</th>
-                      <th className="px-2 py-3">Item Name</th>
-                      <th className="px-2 py-3">Category</th>
-                      <th className="px-2 py-3">Patron</th>
-                      <th className="px-2 py-3">Borrow Date</th>
-                      <th className="px-2 py-3">Due Date</th>
-                      <th className="px-2 py-3">Days Overdue</th>
-                      <th className="px-2 py-3">Daily Fine</th>
-                      <th className="px-2 py-3">Estimated Fine</th>
-                      <th className="px-2 py-3">Actions</th>
+                      <th className="px-2 py-3">
+                        Loan ID
+                      </th>
+                      <th className="px-2 py-3">
+                        Item ID
+                      </th>
+                      <th className="px-2 py-3">
+                        Item Name
+                      </th>
+                      <th className="px-2 py-3">
+                        Category
+                      </th>
+                      <th className="px-2 py-3">
+                        Patron
+                      </th>
+                      <th className="px-2 py-3">
+                        Borrow Date
+                      </th>
+                      <th className="px-2 py-3">
+                        Due Date
+                      </th>
+                      <th className="px-2 py-3">
+                        Days Overdue
+                      </th>
+                      <th className="px-2 py-3">
+                        Daily Fine
+                      </th>
+                      <th className="px-2 py-3">
+                        Estimated Fine
+                      </th>
+                      <th className="px-2 py-3">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
 
@@ -663,9 +743,15 @@ export default function OverdueReport() {
                           key={row.loanId}
                           className="border-t border-white/10 bg-slate-950/30 text-slate-300"
                         >
-                          <td className="px-4 py-3">{row.loanId}</td>
-                          <td className="px-4 py-3">{row.itemId}</td>
-                          <td className="px-4 py-3 text-white">{row.title}</td>
+                          <td className="px-4 py-3">
+                            {row.loanId}
+                          </td>
+                          <td className="px-4 py-3">
+                            {row.itemId}
+                          </td>
+                          <td className="px-4 py-3 text-white">
+                            {row.title}
+                          </td>
                           <td className="px-4 py-3">
                             {NormalizeCategory(row.category)}
                           </td>
@@ -685,7 +771,7 @@ export default function OverdueReport() {
                           <td className="px-4 py-3 font-semibold text-red-300">
                             {row.daysOverdue}
                           </td>
-                          
+
                           <td className="px-4 py-3">
                             {FormatMoney(row.dailyFine)}
                           </td>

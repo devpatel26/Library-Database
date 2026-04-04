@@ -3,7 +3,7 @@ import { FetchJson } from "../api";
 import { useMessage } from "../hooks/useMessage";
 
 export default function StaffRegistration() {
-  const { showSuccess, showError} = useMessage();
+  const { showSuccess, showError } = useMessage();
   return (
     <section className="mx-auto flex w-full max-w-3xl flex-col items-center rounded-3xl border border-white/10 bg-slate-900/70 p-8 text-center shadow-xl shadow-slate-950/30 sm:p-10">
       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
@@ -55,7 +55,9 @@ export default function StaffRegistration() {
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-9">
             <div className="sm:col-span-3">
-              <label htmlFor="firstname">First Name</label>
+              <label htmlFor="firstname">
+                First Name
+              </label>
               <div className="mt-2">
                 <input
                   required
@@ -67,7 +69,9 @@ export default function StaffRegistration() {
               </div>
             </div>
             <div className="sm:col-span-3">
-              <label htmlFor="lastname">Last Name</label>
+              <label htmlFor="lastname">
+                Last Name
+              </label>
               <div className="mt-2">
                 <input
                   required
@@ -80,7 +84,9 @@ export default function StaffRegistration() {
             </div>
             <div className="sm:col-span-3">
               <div>
-                <label htmlFor="birthday">Date of Birth</label>
+                <label htmlFor="birthday">
+                  Date of Birth
+                </label>
                 <div className="mt-2">
                   <input
                     required
@@ -95,7 +101,9 @@ export default function StaffRegistration() {
           </div>
           <div className="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-3">
             <div className="sm:col-span-2">
-              <label htmlFor="address">Address</label>
+              <label htmlFor="address">
+                Address
+              </label>
               <div className="mt-2">
                 <input
                   required
@@ -108,7 +116,9 @@ export default function StaffRegistration() {
             </div>
             <div className="sm:col-span-1">
               <div>
-                <label htmlFor="phonenumber">Phone Number</label>
+                <label htmlFor="phonenumber">
+                  Phone Number
+                </label>
                 <div className="mt-2">
                   <input
                     required
@@ -123,7 +133,9 @@ export default function StaffRegistration() {
           </div>
           <div className="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-6">
             <div className="sm:col-span-3">
-              <label htmlFor="email">Email</label>
+              <label htmlFor="email">
+                Email
+              </label>
               <div className="mt-2">
                 <input
                   required
@@ -136,7 +148,9 @@ export default function StaffRegistration() {
             </div>
             <div className="sm:col-span-3">
               <div>
-                <label htmlFor="password">Password</label>
+                <label htmlFor="password">
+                  Password
+                </label>
                 <div className="mt-2">
                   <input
                     required
@@ -151,7 +165,9 @@ export default function StaffRegistration() {
           </div>
           <div className="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-6">
             <div className="sm:col-span-2">
-              <label htmlFor="signup_code">Signup Code</label>
+              <label htmlFor="signup_code">
+                Signup Code
+              </label>
               <div className="mt-2">
                 <input
                   required
