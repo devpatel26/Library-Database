@@ -403,9 +403,6 @@ export default function ItemManager() {
   return (
     <section className="space-y-6">
       <div>
-        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
-          Staff
-        </p>
         <h2 className="mt-3 text-4xl font-semibold tracking-tight text-white">
           Manage Items
         </h2>
