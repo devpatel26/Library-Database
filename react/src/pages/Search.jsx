@@ -45,21 +45,13 @@ export default function Search() {
 
   return (
     <section className="rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
-      <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
-        Search
-      </p>
       <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">
         Search Page
       </h1>
-      <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
-        This page is for book, author, and inventory search features.
-      </p>
       <form onSubmit={HandleSubmit}>
         <div className="grid gap-x-6 gap-y-12 grid-cols-8 mt-2">
           <div className="sm:col-span-4">
-            <label htmlFor="q">
-              Search Term
-            </label>
+            <label htmlFor="q">Search Term</label>
             <div className="mt-2">
               <input
                 required
@@ -70,9 +62,7 @@ export default function Search() {
             </div>
           </div>
           <div className="sm:col-span-2">
-            <label htmlFor="category">
-              Category
-            </label>
+            <label htmlFor="category">Category</label>
             <div className="mt-2">
               <select
                 required
@@ -109,9 +99,7 @@ export default function Search() {
           </div>
 
           <div className="sm:col-span-1 grid">
-            <label htmlFor="availableOnly">
-              Available Only
-            </label>
+            <label htmlFor="availableOnly">Available Only</label>
             <div className="mt-2 mt-2 scale-150">
               <input
                 type="checkbox"
