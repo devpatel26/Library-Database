@@ -258,7 +258,7 @@ export function CarouselItem({ itemData }) {
   return (
     <div className="w-70">
       {itemData.category != "equipment" ? (
-        <div className="grid grid-rows-5 rounded-xl bg-white/2 px-3 py-1.5 outline-2 outline-white/10 ">
+        <div className="grid grid-rows-5 rounded-xl bg-white/2 px-3 py-1.5 outline-2 outline-white/10 transition transform hover:-translate-y-1 hover:shadow-lg hover:shadow-sky-500/10">
           <div className="row-span-4 m-2 mt-2">
             <CarouselItemHolder data={itemData} />
           </div>
@@ -275,7 +275,7 @@ export function CarouselItem({ itemData }) {
           </div>
         </div>
       ) : (
-        <div className=" grid grid-rows-3 rounded-xl bg-white/2 px-3 py-1.5 outline-2 outline-white/10 text-center">
+        <div className="grid grid-rows-3 rounded-xl bg-white/2 px-3 py-1.5 outline-2 outline-white/10 text-center transition transform hover:-translate-y-1 hover:shadow-lg hover:shadow-sky-500/10">
           <div className="mt-2 row-span-1 text-xl font-bold">
             {itemData.title}
           </div>
