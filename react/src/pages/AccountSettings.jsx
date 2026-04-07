@@ -39,8 +39,8 @@ export default function AccountSettings() {
         return;
       }
 
-      if (currentUser.user_type !== "patron") {
-        setError("Account settings are currently only available for patron accounts.");
+      if (!["patron", "staff"].includes(currentUser.user_type)) {
+        setError("Account settings are not available for this account.");
         setLoading(false);
         return;
       }
@@ -134,7 +134,7 @@ export default function AccountSettings() {
           Account Settings
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
-          Update your patron email address and change your password here.
+          Update your  email address and change your password here.
         </p>
       </div>
 
@@ -151,7 +151,7 @@ export default function AccountSettings() {
               Contact Info
             </h2>
             <p className="mt-2 text-sm text-slate-400">
-              Patron self-service currently supports email updates.
+               self-service currently supports email updates.
             </p>
 
             <label htmlFor="email" className="mt-4 block text-sm text-slate-200">

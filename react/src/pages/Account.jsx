@@ -53,9 +53,10 @@ export default function Account() {
       { to: "activity", label: "Activity" },
       { to: "settings", label: "Settings" },
     ]
-    : [
+    : isStaff ? [
       { to: ".", label: "Account", end: true },
-    ];
+      { to: "settings", label: "Settings" },
+    ] : [];
 
 
   useEffect(() => {
