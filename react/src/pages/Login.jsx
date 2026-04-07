@@ -1,4 +1,4 @@
-import { Link, /*useNavigate*/ } from "react-router-dom";
+import { Link /*useNavigate*/ } from "react-router-dom";
 import { FetchJson, WriteStoredAuth } from "../api";
 import { SubmitButton } from "../components/Buttons";
 import { useMessage } from "../hooks/useMessage";
@@ -82,16 +82,6 @@ export default function Login() {
       <p className="mt-4 text-sm text-slate-400">
         Don't have an account?{" "}
         <Link to="/registration" className="text-sky-300 hover:text-sky-200">
-          Register
-        </Link>
-      </p>
-
-      <p className="mt-4 text-sm text-slate-400">
-        Staff signup?{" "}
-        <Link
-          to="/staffregistration"
-          className="text-sky-300 hover:text-sky-200"
-        >
           Register
         </Link>
       </p>
