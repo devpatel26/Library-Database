@@ -59,7 +59,9 @@ export default function AccountActivity() {
 
       if (currentUser.user_type !== "patron") {
         setActivities([]);
-        setError("Account activity is currently only available for patron accounts.");
+        setError(
+          "Account activity is currently only available for patron accounts.",
+        );
         setLoading(false);
         return;
       }
@@ -82,15 +84,9 @@ export default function AccountActivity() {
   return (
     <section className="space-y-6">
       <div>
-        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
-          Activity
-        </p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">
+        <h2 className="mt-3 text-4xl font-semibold tracking-tight text-white">
           Account Activity
-        </h1>
-        <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
-          Review recent holds, checkouts, and fine events tied to your account.
-        </p>
+        </h2>
       </div>
 
       {loading ? <p className="text-slate-300">Loading activity...</p> : null}
@@ -99,9 +95,7 @@ export default function AccountActivity() {
       {!loading && !error ? (
         <div className="space-y-4">
           {activities.length === 0 ? (
-            <p className="text-slate-300">
-              No account activity found.
-            </p>
+            <p className="text-slate-300">No account activity found.</p>
           ) : (
             activities.map((activity) => (
               <article
@@ -117,13 +111,17 @@ export default function AccountActivity() {
                       {activity.headline}
                     </h2>
                     {activity.title ? (
-                      <p className="mt-3 text-base text-slate-100">{activity.title}</p>
+                      <p className="mt-3 text-base text-slate-100">
+                        {activity.title}
+                      </p>
                     ) : null}
                     {activity.creator ? (
                       <p className="text-sm text-sky-300">{activity.creator}</p>
                     ) : null}
                     {activity.detail ? (
-                      <p className="mt-2 text-sm text-slate-300">{activity.detail}</p>
+                      <p className="mt-2 text-sm text-slate-300">
+                        {activity.detail}
+                      </p>
                     ) : null}
                   </div>
 
@@ -132,7 +130,9 @@ export default function AccountActivity() {
                       {FormatActivityDate(activity.activityDate)}
                     </p>
                     {activity.status ? (
-                      <span className={`rounded-full px-3 py-1 text-xs font-medium ${GetStatusClass(activity.status)}`}>
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-medium ${GetStatusClass(activity.status)}`}
+                      >
                         {activity.status}
                       </span>
                     ) : null}

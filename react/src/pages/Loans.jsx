@@ -90,26 +90,17 @@ export default function Loans() {
   }
 
   return (
-    <section className="rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
-      <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
-        Loans
-      </p>
-      <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">
-        Patron Loans
-      </h1>
-      <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
-        Track current loans, active holds, and your completed borrowing history.
-      </p>
-
+    <section>
+      <h2 className="mt-3 text-4xl font-semibold tracking-tight text-white">
+        Borrowing
+      </h2>
+      <h3 className=" mt-2 text-lg font-semibold text-sky-300">Loans</h3>
       {loading && <p className="mt-4 text-slate-300">Loading circulation...</p>}
       {!loading && error && <p className="mt-4 text-rose-300">{error}</p>}
 
       {!loading && !error && (
         <div className="mt-4 space-y-8">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
-              Loans
-            </p>
             <div className="mt-4 flex flex-wrap justify-evenly gap-4">
               {data.loans.length === 0 ? (
                 <p className="text-slate-300">No current loans.</p>
@@ -122,9 +113,7 @@ export default function Loans() {
           </div>
 
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
-              Holds
-            </p>
+            <h3 className=" mt-2 text-lg font-semibold text-sky-300">Holds</h3>
             <div className="mt-4 flex flex-wrap justify-evenly gap-4">
               {data.holds.length === 0 ? (
                 <p className="text-slate-300">No active holds.</p>
@@ -141,19 +130,12 @@ export default function Loans() {
           </div>
 
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
-              Borrowing History
-            </p>
-            <p className="mt-2 max-w-3xl text-sm text-slate-400">
-              Completed loans are listed here. This database does not store a
-              separate return timestamp, so history is shown from the loan
-              record itself.
-            </p>
+            <h3 className=" mt-2 text-lg font-semibold text-sky-300">
+              History
+            </h3>
             <div className="mt-4 space-y-4">
               {data.history.length === 0 ? (
-                <p className="text-slate-300">
-                  No completed loans found.
-                </p>
+                <p className="text-slate-300">No completed loans found.</p>
               ) : (
                 data.history.map((item) => (
                   <LoanHistoryCard key={item.loanId} itemData={item} />

@@ -88,7 +88,9 @@ export default function AccountSettings() {
 
       setEmail(data.email ?? email);
       UpdateStoredUser({ email: data.email ?? email });
-      setContactMessage(data.message ?? "Contact information updated successfully.");
+      setContactMessage(
+        data.message ?? "Contact information updated successfully.",
+      );
     } catch (err) {
       setError(GetErrorMessage(err, "Failed to update contact information."));
     } finally {
@@ -126,17 +128,9 @@ export default function AccountSettings() {
 
   return (
     <section className="space-y-6">
-      <div>
-        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
-          Settings
-        </p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">
-          Account Settings
-        </h1>
-        <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
-          Update your  email address and change your password here.
-        </p>
-      </div>
+      <h2 className="mt-3 text-4xl font-semibold tracking-tight text-white">
+        Settings
+      </h2>
 
       {loading ? <p className="text-slate-300">Loading settings...</p> : null}
       {!loading && error ? <p className="text-rose-300">{error}</p> : null}
@@ -147,14 +141,15 @@ export default function AccountSettings() {
             onSubmit={HandleContactSubmit}
             className="rounded-2xl border border-white/10 bg-slate-950/40 p-6"
           >
-            <h2 className="text-xl font-semibold text-white">
-              Contact Info
-            </h2>
+            <h2 className="text-xl font-semibold text-white">Contact Info</h2>
             <p className="mt-2 text-sm text-slate-400">
-               self-service currently supports email updates.
+              self-service currently supports email updates.
             </p>
 
-            <label htmlFor="email" className="mt-4 block text-sm text-slate-200">
+            <label
+              htmlFor="email"
+              className="mt-4 block text-sm text-slate-200"
+            >
               Email
             </label>
             <input
@@ -184,14 +179,15 @@ export default function AccountSettings() {
             onSubmit={HandlePasswordSubmit}
             className="rounded-2xl border border-white/10 bg-slate-950/40 p-6"
           >
-            <h2 className="text-xl font-semibold text-white">
-              Password
-            </h2>
+            <h2 className="text-xl font-semibold text-white">Password</h2>
             <p className="mt-2 text-sm text-slate-400">
               Choose a new password with at least 8 characters.
             </p>
 
-            <label htmlFor="currentPassword" className="mt-4 block text-sm text-slate-200">
+            <label
+              htmlFor="currentPassword"
+              className="mt-4 block text-sm text-slate-200"
+            >
               Current Password
             </label>
             <input
@@ -200,14 +196,19 @@ export default function AccountSettings() {
               type="password"
               required
               value={passwordForm.currentPassword}
-              onChange={(event) => setPasswordForm((current) => ({
-                ...current,
-                currentPassword: event.target.value,
-              }))}
+              onChange={(event) =>
+                setPasswordForm((current) => ({
+                  ...current,
+                  currentPassword: event.target.value,
+                }))
+              }
               className={inputClassName}
             />
 
-            <label htmlFor="newPassword" className="mt-4 block text-sm text-slate-200">
+            <label
+              htmlFor="newPassword"
+              className="mt-4 block text-sm text-slate-200"
+            >
               New Password
             </label>
             <input
@@ -217,14 +218,19 @@ export default function AccountSettings() {
               required
               minLength={8}
               value={passwordForm.newPassword}
-              onChange={(event) => setPasswordForm((current) => ({
-                ...current,
-                newPassword: event.target.value,
-              }))}
+              onChange={(event) =>
+                setPasswordForm((current) => ({
+                  ...current,
+                  newPassword: event.target.value,
+                }))
+              }
               className={inputClassName}
             />
 
-            <label htmlFor="confirmPassword" className="mt-4 block text-sm text-slate-200">
+            <label
+              htmlFor="confirmPassword"
+              className="mt-4 block text-sm text-slate-200"
+            >
               Confirm New Password
             </label>
             <input
@@ -234,10 +240,12 @@ export default function AccountSettings() {
               required
               minLength={8}
               value={passwordForm.confirmPassword}
-              onChange={(event) => setPasswordForm((current) => ({
-                ...current,
-                confirmPassword: event.target.value,
-              }))}
+              onChange={(event) =>
+                setPasswordForm((current) => ({
+                  ...current,
+                  confirmPassword: event.target.value,
+                }))
+              }
               className={inputClassName}
             />
 

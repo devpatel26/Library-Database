@@ -2,7 +2,6 @@ import { NavLink, useOutlet } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { FetchJson, GetErrorMessage, ReadStoredUser } from "../api";
 
-
 function FormatDateOfBirth(dateOfBirth) {
   if (!dateOfBirth) {
     return "Not provided";
@@ -15,13 +14,13 @@ function FormatDateOfBirth(dateOfBirth) {
 
   if (dateOnlyMatch) {
     const [, year, month, day] = dateOnlyMatch;
-    const parsedDate = new Date(Date.UTC(
-      Number(year),
-      Number(month) - 1,
-      Number(day),
-    ));
+    const parsedDate = new Date(
+      Date.UTC(Number(year), Number(month) - 1, Number(day)),
+    );
 
-    return new Intl.DateTimeFormat("en-US", { timeZone: "UTC" }).format(parsedDate);
+    return new Intl.DateTimeFormat("en-US", { timeZone: "UTC" }).format(
+      parsedDate,
+    );
   }
 
   const parsedDate = new Date(dateOfBirth);
@@ -30,7 +29,9 @@ function FormatDateOfBirth(dateOfBirth) {
     return dateOfBirth;
   }
 
-  return new Intl.DateTimeFormat("en-US", { timeZone: "UTC" }).format(parsedDate);
+  return new Intl.DateTimeFormat("en-US", { timeZone: "UTC" }).format(
+    parsedDate,
+  );
 }
 
 export default function Account() {
@@ -47,17 +48,18 @@ export default function Account() {
 
   const navLinks = isPatron
     ? [
-      { to: ".", label: "Account", end: true },
-      { to: "loans", label: "Loans/Holds" },
-      { to: "fines", label: "Fines" },
-      { to: "activity", label: "Activity" },
-      { to: "settings", label: "Settings" },
-    ]
-    : isStaff ? [
-      { to: ".", label: "Account", end: true },
-      { to: "settings", label: "Settings" },
-    ] : [];
-
+        { to: ".", label: "Account", end: true },
+        { to: "loans", label: "Loans/Holds" },
+        { to: "fines", label: "Fines" },
+        { to: "activity", label: "Activity" },
+        { to: "settings", label: "Settings" },
+      ]
+    : isStaff
+      ? [
+          { to: ".", label: "Account", end: true },
+          { to: "settings", label: "Settings" },
+        ]
+      : [];
 
   useEffect(() => {
     let isMounted = true;
@@ -82,7 +84,9 @@ export default function Account() {
       } catch (err) {
         if (isMounted) {
           setAccount(null);
-          setError(GetErrorMessage(err, "Failed to load account. Please try again."));
+          setError(
+            GetErrorMessage(err, "Failed to load account. Please try again."),
+          );
         }
       } finally {
         if (isMounted) {
@@ -107,44 +111,45 @@ export default function Account() {
               key={link.to}
               to={link.to}
               end={link.end}
-              className={({ isActive }) => (
-                `block rounded-md px-3 py-2 text-sm transition ${isActive
-                  ? "bg-sky-400/10 text-white"
-                  : "text-slate-200 hover:bg-slate-800 hover:text-white"
+              className={({ isActive }) =>
+                `block rounded-md px-3 py-2 text-sm transition ${
+                  isActive
+                    ? "bg-sky-400/10 text-white"
+                    : "text-slate-200 hover:bg-slate-800 hover:text-white"
                 }`
-              )}
+              }
             >
               {link.label}
             </NavLink>
           ))}
         </nav>
       </aside>
-      <main className="flex-1 space-y-8 rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
-        <h1 className="text-3xl font-bold text-white">
-          My Account
-        </h1>
+      <main className="flex-1 space-y-6 rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
+        <h1 className="text-3xl font-bold text-white">Account</h1>
         {outlet ? (
           outlet
         ) : (
           <section className="space-y-4 text-slate-200">
             <p className="text-slate-300">
               View your account details below.
-              {isPatron ? " Use the account menu for fines, activity, loan history, and settings." : ""}
-              {isStaff ? "Warning: This is a staff account. Do not share your credentials. Basic library functionality is banned. Please use your patron account to access patron features." : ""}
+              {isPatron
+                ? " Use the account menu for fines, activity, loan history, and settings."
+                : ""}
+              {isStaff
+                ? " Warning: This is a staff account. Do not share your credentials."
+                : ""}
             </p>
 
             {loading && <p className="text-slate-300">Loading account...</p>}
 
-            {!loading && error && (
-              <p className="text-rose-300">
-                {error}
-              </p>
-            )}
+            {!loading && error && <p className="text-rose-300">{error}</p>}
 
             {!loading && !error && account && (
               <div className="space-y-2">
                 <p>
-                  <span className="font-semibold text-white">Account Type:</span>{" "}
+                  <span className="font-semibold text-white">
+                    Account Type:
+                  </span>{" "}
                   {account.user_type === "staff" ? "Staff" : "Patron"}
                 </p>
                 <p>
@@ -170,7 +175,9 @@ export default function Account() {
                   {account.is_active ? "Active" : "Inactive"}
                 </p>
                 <p>
-                  <span className="font-semibold text-white">Date of Birth:</span>{" "}
+                  <span className="font-semibold text-white">
+                    Date of Birth:
+                  </span>{" "}
                   {FormatDateOfBirth(account.date_of_birth)}
                 </p>
                 {account.phone_number && (
@@ -189,9 +196,7 @@ export default function Account() {
             )}
 
             {!loading && !error && !account && (
-              <p className="text-slate-300">
-                No account found.
-              </p>
+              <p className="text-slate-300">No account found.</p>
             )}
           </section>
         )}
@@ -199,5 +204,3 @@ export default function Account() {
     </div>
   );
 }
-
-
