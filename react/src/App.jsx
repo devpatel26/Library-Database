@@ -59,9 +59,10 @@ function NavSection({ title, links }) {
             key={to}
             to={to}
             className={({ isActive }) =>
-              `relative block rounded-xl px-4 py-3 text-sm font-medium transition ${isActive
-                ? "bg-sky-500/20 text-white"
-                : "text-slate-300 hover:bg-slate-800 hover:text-white"
+              `relative block rounded-xl px-4 py-3 text-sm font-medium transition ${
+                isActive
+                  ? "bg-sky-500/20 text-white"
+                  : "text-slate-300 hover:bg-slate-800 hover:text-white"
               }`
             }
           >
@@ -95,31 +96,31 @@ function App() {
   const staffLinks =
     userType === "staff" && (roleCode === 1 || roleCode === 2)
       ? [
-        { to: "/itementry", label: "Item Entry" },
-        { to: "/staffloans", label: "Loans" },
-        { to: "/holds", label: "Holds" },
-        { to: "/stafffines", label: "Fines" },
-        { to: "/lost", label: "Lost Items" },
-      ]
+          { to: "/itementry", label: "Item Entry" },
+          { to: "/staffloans", label: "Loans" },
+          { to: "/holds", label: "Holds" },
+          { to: "/stafffines", label: "Fines" },
+          { to: "/lost", label: "Lost Items" },
+        ]
       : [];
 
   const adminLinks =
     userType === "staff" && roleCode === 2
       ? [
-        { to: "/changerole", label: "All Users" },
-        { to: "/report", label: "Reports" },
-        { to: "/staffregistration", label: "Staff Signup" },
-        { to: "/createsignupcode", label: "New Signup Code" },
-      ]
+          { to: "/changerole", label: "All Users" },
+          { to: "/report", label: "Reports" },
+          { to: "/staffregistration", label: "Staff Signup" },
+          { to: "/createsignupcode", label: "New Signup Code" },
+        ]
       : [];
 
-  const miscLinks = [{ to: "/test", label: "Test Page" }];
+  // const miscLinks = [{ to: "/test", label: "Test Page" }];
 
   return (
     <MessageProvider>
       <BrowserRouter>
         <div className="min-h-screen bg-slate-950 text-slate-100">
-          <header className="sticky top-0 border-b border-white/10 bg-slate-950 px-6 py-4 flex justify-between items-center">
+          <header className=" top-0 border-b border-white/10 bg-slate-950 px-6 py-2 flex justify-between items-center">
             <div className="flex items-center gap-3">
               <img
                 src="/Datahaven.jpg"
@@ -128,11 +129,8 @@ function App() {
               />
               <div>
                 <h1 className="text-xl font-bold tracking-widest">
-                  DATAHAVEN
+                  Datahaven Library
                 </h1>
-                <p className="text-xs text-slate-400">
-                  Library Database System
-                </p>
               </div>
             </div>
 
@@ -146,7 +144,8 @@ function App() {
             ) : (
               <div className="flex items-center gap-4">
                 <span className="text-slate-300">
-                  Hello <span className="font-semibold text-white">
+                  Hello{" "}
+                  <span className="font-semibold text-white">
                     {user.first_name}
                   </span>
                 </span>
@@ -165,7 +164,7 @@ function App() {
               <NavSection title="General" links={generalLinks} />
               <NavSection title="Staff" links={staffLinks} />
               <NavSection title="Admin" links={adminLinks} />
-              <NavSection title="Misc" links={miscLinks} />
+              {/* <NavSection title="Misc" links={miscLinks} /> */}
             </aside>
 
             <main className="flex-1 p-6">
@@ -254,14 +253,33 @@ function App() {
                 />
                 <Route path="/report/testing" element={<TestingReport />} />
 
-                <Route path="/test" element={<TestPage />} />
+                {/* <Route path="/test" element={<TestPage />} /> */}
                 <Route path="/forgotpassword" element={<ForgotPassword />} />
               </Routes>
             </main>
           </div>
 
           <footer className="border-t border-white/10 text-center py-4 text-sm text-slate-400">
-            Version {version} — Datahaven Library Database
+            <div className="grid grid-cols-3">
+              <div>
+                <h3 className="text-lg font-semibold">Resources</h3>
+                <p className="mt-2">Item Requests</p>
+                <p className="mt-2">Donate</p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">FAQs</h3>
+                <p className="mt-2">Library Policies</p>
+                <p className="mt-2">Library Collection</p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">About Us</h3>
+                <p className="mt-2">About Datahaven Library</p>
+                <p className="mt-2">Library Hours</p>
+              </div>
+            </div>
+            <div className="mt-2 text-sky-400">
+              Version {version} — Datahaven Library Database
+            </div>
           </footer>
         </div>
       </BrowserRouter>
