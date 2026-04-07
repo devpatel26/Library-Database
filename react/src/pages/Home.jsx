@@ -34,7 +34,7 @@ export default function Home() {
         </div>
         <div className="row-span-2">
           <h2 className="font-semibold text-sky-300">Recent Periodicals</h2>
-          <div className="flex gap-8 justify-evenly mt-6">
+          <div className="flex gap-8 justify-center mt-6">
             {dummyPeriodicals.map((item, index) => (
               <CarouselItem key={index} itemData={item} />
             ))}
@@ -44,7 +44,7 @@ export default function Home() {
           <h2 className="font-semibold text-sky-300">
             Recent Audiovisual Media
           </h2>
-          <div className="flex gap-8 justify-evenly mt-6">
+          <div className="flex gap-8 justify-center mt-6">
             {dummyAVM.map((item, index) => (
               <CarouselItem key={index} itemData={item} />
             ))}
@@ -52,7 +52,7 @@ export default function Home() {
         </div>
         <div className="row-span-1">
           <h2 className="font-semibold text-sky-300">Recent Equipment</h2>
-          <div className="flex gap-8 justify-evenly mt-6">
+          <div className="flex gap-8 justify-center mt-6">
             {dummyEquipment.map((item, index) => (
               <CarouselItem key={index} itemData={item} />
             ))}
