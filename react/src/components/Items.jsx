@@ -258,14 +258,20 @@ export function CarouselItem({ itemData }) {
   return (
     <div className="w-70">
       {itemData.category != "equipment" ? (
-        <div className="grid grid-rows-5 rounded-xl bg-white/2 px-3 py-1.5 outline-2 outline-white/10">
+        <div className="grid grid-rows-5 rounded-xl bg-white/2 px-3 py-1.5 outline-2 outline-white/10 ">
           <div className="row-span-4 m-2 mt-2">
             <CarouselItemHolder data={itemData} />
           </div>
           <div className="row-span-1 grid grid-cols-3 grid items-center m-2 text-center">
-            <span>{itemData.available >= 1 ? "Available" : "Unavailable"}</span>
+            <span>
+              {itemData.available >= 1 ? "Available" : "Not Available"}
+            </span>
             <span>Shelf: {itemData.shelfNumber}</span>
-            <PrimaryButton title="Place Hold" />
+            {itemData.available >= 1 ? (
+              <PrimaryButton title="Place Hold" />
+            ) : (
+              <SecondaryButton title="Not Available" disabled={true} />
+            )}
           </div>
         </div>
       ) : (
@@ -274,8 +280,14 @@ export function CarouselItem({ itemData }) {
             {itemData.title}
           </div>
           <div className="row-span-2 grid grid-cols-2 grid items-center m-2 text-center">
-            <span>{itemData.available >= 1 ? "Available" : "Unavailable"}</span>
-            <PrimaryButton title="Place Hold" />
+            <span>
+              {itemData.available >= 1 ? "Available" : "Not Available"}
+            </span>
+            {itemData.available >= 1 ? (
+              <PrimaryButton title="Place Hold" />
+            ) : (
+              <SecondaryButton title="Not Available" disabled={true} />
+            )}
           </div>
         </div>
       )}
