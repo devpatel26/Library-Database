@@ -23,8 +23,8 @@ export default function Home() {
         Recent Items
       </h1>
 
-      <div className="grid grid-rows-7 mt-4 w-full gap-8">
-        <div className="row-span-2">
+      <div className="grid grid-rows-10 mt-4 w-full gap-6">
+        <div className="row-span-3">
           <h2 className="font-semibold text-sky-300">Recent Books</h2>
           <div className="flex gap-8 justify-center mt-6">
             {dummyBooks.map((item, index) => (
@@ -32,7 +32,7 @@ export default function Home() {
             ))}
           </div>
         </div>
-        <div className="row-span-2">
+        <div className="row-span-3">
           <h2 className="font-semibold text-sky-300">Recent Periodicals</h2>
           <div className="flex gap-8 justify-center mt-6">
             {dummyPeriodicals.map((item, index) => (
@@ -40,7 +40,7 @@ export default function Home() {
             ))}
           </div>
         </div>
-        <div className="row-span-2">
+        <div className="row-span-3">
           <h2 className="font-semibold text-sky-300">
             Recent Audiovisual Media
           </h2>
