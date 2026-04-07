@@ -20,7 +20,7 @@ function BuildDisplayDate(value, includeTime = false) {
 
 export default function Item({ itemData }) {
   const user = ReadStoredUser();
-  const { showSuccess, showError, showWarning, /*showInfo */ } = useMessage();
+  const { showSuccess, showError, showWarning /*showInfo */ } = useMessage();
 
   const [activeStaffAction, setActiveStaffAction] = useState("");
   const [patronIdInput, setPatronIdInput] = useState("");
@@ -214,7 +214,9 @@ export default function Item({ itemData }) {
                         type="number"
                         min="1"
                         value={patronIdInput}
-                        onChange={(event) => setPatronIdInput(event.target.value)}
+                        onChange={(event) =>
+                          setPatronIdInput(event.target.value)
+                        }
                         placeholder="Patron ID"
                         className="w-full rounded-md border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-sky-400"
                       />
@@ -248,6 +250,85 @@ export default function Item({ itemData }) {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+export function CarouselItem({ itemData }) {
+  return (
+    <div className="w-70">
+      {itemData.category != "equipment" ? (
+        <div className="grid grid-rows-5 rounded-xl bg-white/2 px-3 py-1.5 outline-2 outline-white/10">
+          <div className="row-span-4 m-2 mt-2">
+            <CarouselItemHolder data={itemData} />
+          </div>
+          <div className="row-span-1 grid grid-cols-3 grid items-center m-2 text-center">
+            <span>{itemData.available >= 1 ? "Available" : "Unavailable"}</span>
+            <span>Shelf: {itemData.shelfNumber}</span>
+            <PrimaryButton title="Place Hold" />
+          </div>
+        </div>
+      ) : (
+        <div className=" grid grid-rows-3 rounded-xl bg-white/2 px-3 py-1.5 outline-2 outline-white/10 text-center">
+          <div className="mt-2 row-span-1 text-xl font-bold">
+            {itemData.title}
+          </div>
+          <div className="row-span-2 grid grid-cols-2 grid items-center m-2 text-center">
+            <span>{itemData.available >= 1 ? "Available" : "Unavailable"}</span>
+            <PrimaryButton title="Place Hold" />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function CarouselItemHolder({ data }) {
+  const creator =
+    data.creator ??
+    (data.author ? `${data.author.lastName}, ${data.author.firstName}` : null);
+
+  const formattedDate = BuildDisplayDate(data.publicationDate);
+  const pubLine = [data.publisher, formattedDate].filter(Boolean).join(", ");
+  const metaLine = [data.type, data.language, data.genre]
+    .filter(Boolean)
+    .join(", ");
+
+  if (data.category === "equipment") {
+    return (
+      <div>
+        <div className="text-xl font-bold">{data.title}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center">
+      <img src="../assets/react.svg" className="h-48 w-36" />
+      <div className="text-xl mt-2 font-bold">{data.title}</div>
+
+      {/* {creator ? (
+        <div className="text-lg font-semibold text-sky-300">{creator}</div>
+      ) : null}
+
+      {pubLine ? <div>{pubLine}</div> : null} */}
+
+      {metaLine ? (
+        <div>
+          {metaLine}
+          {data.category === "audiovisualmedia" && data.runtime
+            ? `, ${data.runtime} mins`
+            : ""}
+        </div>
+      ) : null}
+
+      {data.summary ? (
+        data.summary.length > 120 ? (
+          <div>{data.summary.slice(0, 120)}...</div>
+        ) : (
+          <div>{data.summary}</div>
+        )
+      ) : null}
     </div>
   );
 }
@@ -354,7 +435,7 @@ export function ItemLoan({ itemData }) {
 
 export function ItemHold({ itemData, onCancel }) {
   return (
-    <div>
+    <div className="w-full">
       <div className="grid grid-cols-4 rounded-xl bg-white/2 px-3 py-1.5 outline-2 outline-white/10">
         <div className="col-span-3 m-2">
           <ItemHolder data={itemData} />
@@ -391,7 +472,9 @@ export function ItemHolder({ data }) {
 
   const formattedDate = BuildDisplayDate(data.publicationDate);
   const pubLine = [data.publisher, formattedDate].filter(Boolean).join(", ");
-  const metaLine = [data.type, data.language, data.genre].filter(Boolean).join(", ");
+  const metaLine = [data.type, data.language, data.genre]
+    .filter(Boolean)
+    .join(", ");
 
   if (data.category === "equipment") {
     return (
