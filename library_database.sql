@@ -582,5 +582,14 @@ ADD COLUMN is_removed TINYINT(1) NOT NULL DEFAULT 0,
 ADD COLUMN removed_reason VARCHAR(50) NULL,
 ADD COLUMN removed_date DATETIME NULL;
 
+ALTER TABLE books
+ADD COLUMN cover_image_url VARCHAR(2048) NULL AFTER title;
+
+ALTER TABLE periodicals
+ADD COLUMN cover_image_url VARCHAR(2048) NULL AFTER title;
+
+ALTER TABLE audiovisual_media
+ADD COLUMN cover_image_url VARCHAR(2048) NULL AFTER title;
+
 INSERT INTO loan_statuses (loan_status_name) VALUES ('Found');
 INSERT INTO loan_statuses (loan_status_name) VALUES ('Deleted');

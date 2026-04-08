@@ -691,6 +691,7 @@ function BuildSearchQuery({ q, category, availableOnly, sort, limit }) {
                     b.publisher,
                     b.shelf_number AS shelfNumber,
                     b.publication_date AS publicationDate,
+                    b.cover_image_url AS coverImageUrl,
                     NULL AS runtime,
                     i.available,
                     i.on_hold AS onHold,
@@ -725,6 +726,7 @@ function BuildSearchQuery({ q, category, availableOnly, sort, limit }) {
                     p.publisher,
                     p.shelf_number AS shelfNumber,
                     p.publication_date AS publicationDate,
+                    p.cover_image_url AS coverImageUrl,
                     NULL AS runtime,
                     i.available,
                     i.on_hold AS onHold,
@@ -757,6 +759,7 @@ function BuildSearchQuery({ q, category, availableOnly, sort, limit }) {
                     am.publisher,
                     am.shelf_number AS shelfNumber,
                     am.publication_date AS publicationDate,
+                    am.cover_image_url AS coverImageUrl,
                     am.runtime,
                     i.available,
                     i.on_hold AS onHold,
@@ -793,6 +796,7 @@ function BuildSearchQuery({ q, category, availableOnly, sort, limit }) {
                     NULL AS publisher,
                     NULL AS shelfNumber,
                     NULL AS publicationDate,
+                    NULL AS coverImageUrl,
                     NULL AS runtime,
                     i.available,
                     i.on_hold AS onHold,
@@ -958,6 +962,7 @@ async function GetManagedItemDetail(itemId) {
                 b.publisher,
                 b.publication_date AS publicationDate,
                 b.summary,
+                b.cover_image_url AS coverImageUrl,
                 a.first_name AS authorFirstName,
                 a.last_name AS authorLastName
             FROM books b
@@ -986,7 +991,8 @@ async function GetManagedItemDetail(itemId) {
                 p.periodical_type_code AS formatCode,
                 p.publisher,
                 p.publication_date AS publicationDate,
-                p.summary
+                p.summary,
+                p.cover_image_url AS coverImageUrl
             FROM periodicals p
             WHERE p.item_id = ?
             `,
@@ -1008,6 +1014,7 @@ async function GetManagedItemDetail(itemId) {
                 am.publisher,
                 am.publication_date AS publicationDate,
                 am.summary,
+                am.cover_image_url AS coverImageUrl,
                 am.runtime,
                 c.first_name AS contributorFirstName,
                 c.last_name AS contributorLastName,
@@ -1108,6 +1115,12 @@ function GetPatronItemSelectColumns() {
             am.publication_date,
             NULL
         ) AS publicationDate,
+        COALESCE(
+            b.cover_image_url,
+            per.cover_image_url,
+            am.cover_image_url,
+            NULL
+        ) AS coverImageUrl,
         am.runtime AS runtime
     `;
 }
@@ -1484,6 +1497,7 @@ app.get(["/loans", "/api/loans"], async (req, res) => {
                     b.publisher AS publisher,
                     b.shelf_number AS shelfNumber,
                     b.publication_date AS publicationDate,
+                    b.cover_image_url AS coverImageUrl,
                     NULL AS runtime,
                     h.hold_origin_date AS holdStart,
                     h.hold_expiration_date AS holdEnd,
@@ -1511,6 +1525,7 @@ app.get(["/loans", "/api/loans"], async (req, res) => {
                     p.publisher AS publisher,
                     p.shelf_number AS shelfNumber,
                     p.publication_date AS publicationDate,
+                    p.cover_image_url AS coverImageUrl,
                     NULL AS runtime,
                     h.hold_origin_date AS holdStart,
                     h.hold_expiration_date AS holdEnd,
@@ -1542,6 +1557,7 @@ app.get(["/loans", "/api/loans"], async (req, res) => {
                     am.publisher AS publisher,
                     am.shelf_number AS shelfNumber,
                     am.publication_date AS publicationDate,
+                    am.cover_image_url AS coverImageUrl,
                     am.runtime AS runtime,
                     h.hold_origin_date AS holdStart,
                     h.hold_expiration_date AS holdEnd,
@@ -1570,6 +1586,7 @@ app.get(["/loans", "/api/loans"], async (req, res) => {
                     NULL AS publisher,
                     NULL AS shelfNumber,
                     NULL AS publicationDate,
+                    NULL AS coverImageUrl,
                     NULL AS runtime,
                     h.hold_origin_date AS holdStart,
                     h.hold_expiration_date AS holdEnd,
@@ -2284,8 +2301,14 @@ app.put(["/items/manage/:itemId", "/api/items/manage/:itemId"], async (req, res)
       const publisher = NormalizeRequiredText(req.body?.publisher, 50);
       const publicationDate = NormalizeDateInput(req.body?.publicationDate);
       const summary = NormalizeRequiredText(req.body?.summary, 1000);
+      const coverImageUrl = NormalizeOptionalText(req.body?.coverImageUrl, 2048);
       const authorFirstName = NormalizeRequiredText(req.body?.authorFirstName, 30);
       const authorLastName = NormalizeRequiredText(req.body?.authorLastName, 30);
+
+      if (SafeText(req.body?.coverImageUrl).trim() !== "" && !coverImageUrl) {
+        await connection.rollback();
+        return res.status(400).json({ error: "Cover image URL is too long." });
+      }
 
       if (
         !title ||
@@ -2313,7 +2336,8 @@ app.put(["/items/manage/:itemId", "/api/items/manage/:itemId"], async (req, res)
             book_type_code = ?,
             publisher = ?,
             publication_date = ?,
-            summary = ?
+            summary = ?,
+            cover_image_url = ?
         WHERE item_id = ?
         `,
         [
@@ -2325,6 +2349,7 @@ app.put(["/items/manage/:itemId", "/api/items/manage/:itemId"], async (req, res)
           publisher,
           publicationDate,
           summary,
+          coverImageUrl,
           itemId,
         ]
       );
@@ -2368,6 +2393,12 @@ app.put(["/items/manage/:itemId", "/api/items/manage/:itemId"], async (req, res)
       const publisher = NormalizeRequiredText(req.body?.publisher, 50);
       const publicationDate = NormalizeDateInput(req.body?.publicationDate);
       const summary = NormalizeRequiredText(req.body?.summary, 1000);
+      const coverImageUrl = NormalizeOptionalText(req.body?.coverImageUrl, 2048);
+
+      if (SafeText(req.body?.coverImageUrl).trim() !== "" && !coverImageUrl) {
+        await connection.rollback();
+        return res.status(400).json({ error: "Cover image URL is too long." });
+      }
 
       if (
         !title ||
@@ -2393,7 +2424,8 @@ app.put(["/items/manage/:itemId", "/api/items/manage/:itemId"], async (req, res)
             periodical_type_code = ?,
             publisher = ?,
             publication_date = ?,
-            summary = ?
+            summary = ?,
+            cover_image_url = ?
         WHERE item_id = ?
         `,
         [
@@ -2405,6 +2437,7 @@ app.put(["/items/manage/:itemId", "/api/items/manage/:itemId"], async (req, res)
           publisher,
           publicationDate,
           summary,
+          coverImageUrl,
           itemId,
         ]
       );
@@ -2417,7 +2450,13 @@ app.put(["/items/manage/:itemId", "/api/items/manage/:itemId"], async (req, res)
       const publisher = NormalizeRequiredText(req.body?.publisher, 50);
       const publicationDate = NormalizeDateInput(req.body?.publicationDate);
       const summary = NormalizeRequiredText(req.body?.summary, 1000);
+      const coverImageUrl = NormalizeOptionalText(req.body?.coverImageUrl, 2048);
       const runtime = ParsePositiveInteger(req.body?.runtime);
+
+      if (SafeText(req.body?.coverImageUrl).trim() !== "" && !coverImageUrl) {
+        await connection.rollback();
+        return res.status(400).json({ error: "Cover image URL is too long." });
+      }
 
       if (
         !title ||
@@ -2447,6 +2486,7 @@ app.put(["/items/manage/:itemId", "/api/items/manage/:itemId"], async (req, res)
             publisher = ?,
             publication_date = ?,
             summary = ?,
+            cover_image_url = ?,
             runtime = ?
         WHERE item_id = ?
         `,
@@ -2459,6 +2499,7 @@ app.put(["/items/manage/:itemId", "/api/items/manage/:itemId"], async (req, res)
           publisher,
           publicationDate,
           summary,
+          coverImageUrl,
           runtime,
           itemId,
         ]
@@ -2724,6 +2765,7 @@ app.post(["/itementry/book", "/api/itementry/book"], async (req, res) => {
       publisher,
       publicationdate,
       summary,
+      coverImageUrl,
     } = req.body;
     if (
       !title ||
@@ -2745,10 +2787,15 @@ app.post(["/itementry/book", "/api/itementry/book"], async (req, res) => {
     const trimmmedauthorlastname = authorlastname.trim();
     const trimmmedpublisher = publisher.trim();
     const trimmmedsummary = summary.trim();
+    const trimmedCoverImageUrl = NormalizeOptionalText(coverImageUrl, 2048);
     const TITLEPATTERN = /[\s\S]{1,45}/;
     const PUBLISHERPATTERN = /[\s\S]{1,50}/;
     const AUTHORPATTERN = /[\s\S]{1,30}/;
     const SUMMARYPATTERN = /[\s\S]{1,1000}/;
+
+    if (SafeText(coverImageUrl).trim() !== "" && !trimmedCoverImageUrl) {
+      return res.status(400).json({ error: "Cover image URL is too long." });
+    }
 
     // double-checking given data is proper format
     if (
@@ -2783,10 +2830,11 @@ app.post(["/itementry/book", "/api/itementry/book"], async (req, res) => {
           book_type_code,
           publisher,
           publication_date,
-          summary
+          summary,
+          cover_image_url
         )
       VALUES
-        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       [
         itemId,
@@ -2798,6 +2846,7 @@ app.post(["/itementry/book", "/api/itementry/book"], async (req, res) => {
         trimmmedpublisher,
         publicationdate,
         trimmmedsummary,
+        trimmedCoverImageUrl,
       ],
     );
     await pool.query(
@@ -2834,6 +2883,7 @@ app.post(
         publisher,
         publicationdate,
         summary,
+        coverImageUrl,
       } = req.body;
       if (
         (title,
@@ -2852,9 +2902,14 @@ app.post(
       const trimmmedtitle = title.trim();
       const trimmmedpublisher = publisher.trim();
       const trimmmedsummary = summary.trim();
+      const trimmedCoverImageUrl = NormalizeOptionalText(coverImageUrl, 2048);
       const TITLEPATTERN = /[\s\S]{1,45}/;
       const PUBLISHERPATTERN = /[\s\S]{1,50}/;
       const SUMMARYPATTERN = /[\s\S]{1,1000}/;
+
+      if (SafeText(coverImageUrl).trim() !== "" && !trimmedCoverImageUrl) {
+        return res.status(400).json({ error: "Cover image URL is too long." });
+      }
 
       // double-checking given data is proper format
       if (
@@ -2888,10 +2943,11 @@ app.post(
           audiovisual_media_type_code,
           publisher,
           publication_date,
-          summary
+          summary,
+          cover_image_url
         )
       VALUES
-        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
         [
           itemId,
@@ -2904,6 +2960,7 @@ app.post(
           trimmmedpublisher,
           publicationdate,
           trimmmedsummary,
+          trimmedCoverImageUrl,
         ],
       );
       res
@@ -2937,6 +2994,7 @@ app.post(["/itementry/periodical", "/api/itementry/periodical"], async (req, res
       publisher,
       publicationdate,
       summary,
+      coverImageUrl,
     } = req.body;
     if (
       !title ||
@@ -2954,9 +3012,14 @@ app.post(["/itementry/periodical", "/api/itementry/periodical"], async (req, res
     const trimmmedtitle = title.trim();
     const trimmmedpublisher = publisher.trim();
     const trimmmedsummary = summary.trim();
+    const trimmedCoverImageUrl = NormalizeOptionalText(coverImageUrl, 2048);
     const TITLEPATTERN = /[\s\S]{1,45}/;
     const PUBLISHERPATTERN = /[\s\S]{1,50}/;
     const SUMMARYPATTERN = /[\s\S]{1,1000}/;
+
+    if (SafeText(coverImageUrl).trim() !== "" && !trimmedCoverImageUrl) {
+      return res.status(400).json({ error: "Cover image URL is too long." });
+    }
 
     // double-checking given data is proper format
     if (
@@ -2989,10 +3052,11 @@ app.post(["/itementry/periodical", "/api/itementry/periodical"], async (req, res
           periodical_type_code,
           publisher,
           publication_date,
-          summary
+          summary,
+          cover_image_url
         )
       VALUES
-        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       [
         itemId,
@@ -3004,6 +3068,7 @@ app.post(["/itementry/periodical", "/api/itementry/periodical"], async (req, res
         trimmmedpublisher,
         publicationdate,
         trimmmedsummary,
+        trimmedCoverImageUrl,
       ],
     );
     res.status(201).json({ message: "Periodical insertion successful." });
