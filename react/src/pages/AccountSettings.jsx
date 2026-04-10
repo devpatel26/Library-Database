@@ -6,12 +6,17 @@ import {
   ReadStoredUser,
   UpdateStoredUser,
 } from "../api";
+// import { FormatBirthdateField } from "../components/TimeFormats";
 
 const inputClassName =
   "mt-2 block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6";
 
 export default function AccountSettings() {
   const [email, setEmail] = useState("");
+  const [firstname, setFirstname] = useState("");
+  const [lastname, setLastname] = useState("");
+  const [phonenumber, setPhoneNumber] = useState("");
+  const [address, setAddress] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [contactMessage, setContactMessage] = useState("");
@@ -27,6 +32,7 @@ export default function AccountSettings() {
   const userKey = user
     ? `${user.user_type ?? ""}:${user.patron_id ?? ""}:${user.staff_id ?? ""}`
     : "";
+  const isStaff = user?.user_type === "staff";
 
   useEffect(() => {
     let isMounted = true;
@@ -52,6 +58,10 @@ export default function AccountSettings() {
 
         if (isMounted) {
           setEmail(data.email ?? "");
+          setFirstname(data.first_name ?? "");
+          setLastname(data.last_name ?? "");
+          setAddress(data.address ?? "");
+          setPhoneNumber(data.phone_number ?? "");
         }
       } catch (err) {
         if (isMounted) {
@@ -78,16 +88,36 @@ export default function AccountSettings() {
       setContactSaving(true);
       setContactMessage("");
       setError("");
+      const contactData = {
+        firstname: firstname,
+        lastname: lastname,
+        email: email,
+        address: address,
+        phone_number: phonenumber,
+      };
       const data = await FetchJson("/api/account/contact", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify(contactData),
       });
 
       setEmail(data.email ?? email);
       UpdateStoredUser({ email: data.email ?? email });
+
+      setFirstname(data.firstname ?? firstname);
+      UpdateStoredUser({ firstname: data.firstname ?? firstname });
+
+      setLastname(data.lastname ?? lastname);
+      UpdateStoredUser({ lastname: data.lastname ?? lastname });
+
+      setAddress(data.address ?? address);
+      UpdateStoredUser({ address: data.address ?? address });
+
+      setPhoneNumber(data.phone_number ?? phonenumber);
+      UpdateStoredUser({ phonenumber: data.phone_number ?? phonenumber });
+
       setContactMessage(
         data.message ?? "Contact information updated successfully.",
       );
@@ -162,6 +192,70 @@ export default function AccountSettings() {
               className={inputClassName}
             />
 
+            <div className="sm:col-span-3">
+              <label htmlFor="firstname">First Name</label>
+              <div className="mt-2">
+                <input
+                  required
+                  id="firstname"
+                  name="firstname"
+                  value={firstname}
+                  type="text"
+                  onChange={(event) => setFirstname(event.target.value)}
+                  className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                />
+              </div>
+            </div>
+            <div className="sm:col-span-3">
+              <label htmlFor="lastname">Last Name</label>
+              <div className="mt-2">
+                <input
+                  required
+                  id="lastname"
+                  name="lastname"
+                  value={lastname}
+                  type="text"
+                  onChange={(event) => setLastname(event.target.value)}
+                  className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                />
+              </div>
+            </div>
+            {isStaff ? (
+              <div>
+                <div className="sm:col-span-2">
+                  <label htmlFor="address">Address</label>
+                  <div className="mt-2">
+                    <input
+                      required
+                      id="address"
+                      name="address"
+                      type="text"
+                      value={address}
+                      onChange={(event) => setAddress(event.target.value)}
+                      className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                    />
+                  </div>
+                </div>
+
+                <div className="sm:col-span-1">
+                  <div>
+                    <label htmlFor="phonenumber">Phone Number</label>
+                    <div className="mt-2">
+                      <input
+                        required
+                        id="phonenumber"
+                        name="phonenumber"
+                        type="tel"
+                        value={phonenumber}
+                        onChange={(event) => setPhoneNumber(event.target.value)}
+                        className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
             {contactMessage ? (
               <p className="mt-3 text-sm text-emerald-300">{contactMessage}</p>
             ) : null}
@@ -169,7 +263,7 @@ export default function AccountSettings() {
             <div className="mt-4">
               <PrimaryButton
                 type="submit"
-                title={contactSaving ? "Saving..." : "Save Email"}
+                title={contactSaving ? "Saving..." : "Save Info"}
                 disabledValue={contactSaving}
               />
             </div>

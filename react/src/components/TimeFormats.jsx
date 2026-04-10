@@ -56,15 +56,17 @@ export function FormatDate(date, short = false) {
   return formattedDate;
 }
 
-export function FormatBirthdate(date) {
+export function FormatBirthdateField(date) {
   let formattedDate = "";
   try {
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
-    formattedDate = month + "/" + day + "/" + year;
+    let day = date.getDate();
+    day = day <= 9 ? `0${day}` : day;
+    let month = date.getMonth() + 1;
+    month = month <= 9 ? `0${month}` : month;
+    let year = date.getFullYear();
+    formattedDate = year + "-" + month + "-" + day;
   } catch (err) {
-    formattedDate = "N/A";
+    formattedDate = "0000-00-00";
   }
   return formattedDate;
 }

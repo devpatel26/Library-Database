@@ -146,12 +146,12 @@ export default function Account() {
 
             {!loading && !error && account && (
               <div className="space-y-2">
-                <p>
+                {/* <p>
                   <span className="font-semibold text-white">
                     Account Type:
                   </span>{" "}
                   {account.user_type === "staff" ? "Staff" : "Patron"}
-                </p>
+                </p> */}
                 <p>
                   <span className="font-semibold text-white">Name:</span>{" "}
                   {account.first_name} {account.last_name}
@@ -166,14 +166,14 @@ export default function Account() {
                   </span>{" "}
                   {account.staff_id ?? account.patron_id}
                 </p>
-                <p>
+                {/* <p>
                   <span className="font-semibold text-white">Role Code:</span>{" "}
                   {account.role}
-                </p>
-                <p>
+                </p> */}
+                {/* <p>
                   <span className="font-semibold text-white">Status:</span>{" "}
                   {account.is_active ? "Active" : "Inactive"}
-                </p>
+                </p> */}
                 <p>
                   <span className="font-semibold text-white">
                     Date of Birth:
@@ -182,7 +182,9 @@ export default function Account() {
                 </p>
                 {account.phone_number && (
                   <p>
-                    <span className="font-semibold text-white">Phone:</span>{" "}
+                    <span className="font-semibold text-white">
+                      Phone Number:
+                    </span>{" "}
                     {account.phone_number}
                   </p>
                 )}

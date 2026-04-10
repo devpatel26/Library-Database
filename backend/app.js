@@ -1243,11 +1243,15 @@ app.put(["/account/contact", "/api/account/contact"], async (req, res) => {
     if (!user) {
       return;
     }
-
-    const email = String(req.body?.email ?? "").trim();
-
-    if (!email) {
-      return res.status(400).json({ error: "Email is required." });
+      const {
+      firstname,
+      lastname,
+      email,
+      address,
+      phone_number,
+      } = req.body;
+    if (!email || !firstname || !lastname ) {
+      return res.status(400).json({ error: "Required fields missing." });
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -1286,15 +1290,38 @@ app.put(["/account/contact", "/api/account/contact"], async (req, res) => {
 
     const tableName = user.userType === "patron" ? "patrons" : "staff";
     const idColumn = user.userType === "patron" ? "patron_id" : "staff_id";
-
+    if (tableName == "staff") {
+      if (!address || !phone_number ) {
+        return res.status(400).json({ error: "Required fields missing." });
+      }
+    }
     await pool.query(
       `
             UPDATE ${tableName}
-            SET email = ?
+            SET email = ?,
+            first_name = ?,
+            last_name = ?,
+            email = ?
             WHERE ${idColumn} = ?
             `,
-      [email, accountId]
+      [email,firstname,lastname,email, accountId]
     );
+    if (!/^\d{10}$/.test(phone_number)) {
+      return res.status(400).json({
+        error: "Phone number must contain exactly 10 digits.",
+      });
+    }
+    if (tableName == "staff") {
+      await pool.query(
+      `
+            UPDATE ${tableName}
+            SET phone_number = ?,
+            address = ?
+            WHERE ${idColumn} = ?
+            `,
+      [phone_number, address, accountId]
+    );
+    }
 
     return res.json({
       message: "Contact information updated successfully.",
