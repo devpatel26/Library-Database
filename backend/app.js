@@ -3581,7 +3581,6 @@ app.post(["/staff/register", "/api/staff/register"], async (req, res) => {
   }
 });
 
-
 // Place hold endpoint
 app.post(["/holds", "/api/holds"], async (req, res) => {
   try {
@@ -3637,7 +3636,11 @@ app.post(["/holds", "/api/holds"], async (req, res) => {
     }
 
     const [items] = await pool.query(
-      "SELECT * FROM items WHERE item_id = ?",
+      `
+      SELECT item_id, available, on_hold, unavailable, is_removed
+      FROM items
+      WHERE item_id = ?
+      `,
       [itemId]
     );
 
@@ -3647,8 +3650,66 @@ app.post(["/holds", "/api/holds"], async (req, res) => {
 
     const item = items[0];
 
-    if (item.available < 1) {
-      return res.status(400).json({ error: "No available copies for hold." });
+    if (Number(item.is_removed) === 1) {
+      return res.status(400).json({ error: "This item is no longer available for holds." });
+    }
+
+    const [existingActiveHolds] = await pool.query(
+      `
+      SELECT hold_id AS holdId
+      FROM holds
+      WHERE item_id = ?
+        AND patron_id = ?
+        AND hold_status_code IN (1, 2)
+      LIMIT 1
+      `,
+      [itemId, patronId]
+    );
+
+    if (existingActiveHolds.length > 0) {
+      return res.status(400).json({ error: "This patron already has an active hold for this item." });
+    }
+
+    const [existingActiveLoans] = await pool.query(
+      `
+      SELECT loan_id AS loanId
+      FROM loans
+      WHERE item_id = ?
+        AND patron_id = ?
+        AND loan_status_code = 1
+      LIMIT 1
+      `,
+      [itemId, patronId]
+    );
+
+    if (existingActiveLoans.length > 0) {
+      return res.status(400).json({ error: "This patron already has this item checked out." });
+    }
+
+    if (item.available > 0) {
+      await pool.query(
+        `
+        INSERT INTO holds
+          (item_id, patron_id, hold_origin_date, hold_expiration_date, hold_status_code)
+        VALUES
+          (?, ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 2 DAY), ?)
+        `,
+        [itemId, patronId, 2]
+      );
+
+      await pool.query(
+        `
+        UPDATE items
+        SET available = available - 1,
+            on_hold = on_hold + 1
+        WHERE item_id = ?
+        `,
+        [itemId]
+      );
+
+      return res.status(201).json({
+        message: "Hold placed successfully and is ready for pickup.",
+      });
     }
 
     await pool.query(
@@ -3656,22 +3717,14 @@ app.post(["/holds", "/api/holds"], async (req, res) => {
       INSERT INTO holds
         (item_id, patron_id, hold_origin_date, hold_expiration_date, hold_status_code)
       VALUES
-        (?, ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 2 DAY), ?)
+        (?, ?, CURDATE(), CURDATE(), ?)
       `,
       [itemId, patronId, 1]
     );
 
-    await pool.query(
-      `
-      UPDATE items
-      SET available = available - 1,
-          on_hold = on_hold + 1
-      WHERE item_id = ?
-      `,
-      [itemId]
-    );
-
-    return res.status(201).json({ message: "Hold placed successfully." });
+    return res.status(201).json({
+      message: "Hold placed successfully and added to the waiting queue.",
+    });
   } catch (error) {
     console.error("Place hold error:", error);
     return res.status(500).json({
@@ -3686,37 +3739,77 @@ app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);
 });
 
-// Function to clear expired holds and update item availability
-async function ClearExpiredHolds() {
-  const [expiredHolds] = await pool.query(
+async function PromoteNextWaitingHold(itemId) {
+  const [nextWaitingHolds] = await pool.query(
     `
-        SELECT hold_id AS holdId, item_id AS itemId
-        FROM holds
-        WHERE hold_expiration_date < CURDATE()
-        `
+    SELECT hold_id AS holdId
+    FROM holds
+    WHERE item_id = ?
+      AND hold_status_code = 1
+    ORDER BY hold_origin_date ASC, hold_id ASC
+    LIMIT 1
+    `,
+    [itemId]
   );
 
-  for (const hold of expiredHolds) {
-    await pool.query(
-      `
-            UPDATE items
-            SET available = available + 1,
-                on_hold = CASE WHEN on_hold > 0 THEN on_hold - 1 ELSE 0 END
-            WHERE item_id = ?
-            `,
-      [hold.itemId]
-    );
+  if (nextWaitingHolds.length === 0) {
+    return false;
+  }
 
+  const nextHold = nextWaitingHolds[0];
+
+  await pool.query(
+    `
+    UPDATE holds
+    SET hold_status_code = 2,
+        hold_expiration_date = DATE_ADD(CURDATE(), INTERVAL 2 DAY)
+    WHERE hold_id = ?
+    `,
+    [nextHold.holdId]
+  );
+
+  return true;
+}
+
+// Function to clear expired holds and update item availability
+async function ClearExpiredHolds() {
+  const [expiredReadyHolds] = await pool.query(
+    `
+    SELECT hold_id AS holdId, item_id AS itemId
+    FROM holds
+    WHERE hold_status_code = 2
+      AND hold_expiration_date < CURDATE()
+    ORDER BY hold_id ASC
+    `
+  );
+
+  for (const hold of expiredReadyHolds) {
     await pool.query(
       `
-            DELETE FROM holds
-            WHERE hold_id = ?
-            `,
+      UPDATE holds
+      SET hold_status_code = 4
+      WHERE hold_id = ?
+      `,
       [hold.holdId]
     );
+
+    const promoted = await PromoteNextWaitingHold(hold.itemId);
+
+    if (!promoted) {
+      await pool.query(
+        `
+        UPDATE items
+        SET available = available + 1,
+            on_hold = CASE WHEN on_hold > 0 THEN on_hold - 1 ELSE 0 END
+        WHERE item_id = ?
+        `,
+        [hold.itemId]
+      );
+    }
   }
 }
 
+// Get current holds for staff view
 // Get current holds for staff view
 app.get(["/holds/current", "/api/holds/current"], async (req, res) => {
   try {
@@ -3736,6 +3829,8 @@ app.get(["/holds/current", "/api/holds/current"], async (req, res) => {
         h.patron_id AS patronId,
         h.hold_origin_date AS holdStart,
         h.hold_expiration_date AS holdEnd,
+        h.hold_status_code AS holdStatusCode,
+        hs.hold_status_name AS holdStatus,
         p.first_name,
         p.last_name,
         COALESCE(
@@ -3759,11 +3854,17 @@ app.get(["/holds/current", "/api/holds/current"], async (req, res) => {
         ) AS creator
       FROM holds h
       JOIN patrons p ON p.patron_id = h.patron_id
+      LEFT JOIN hold_statuses hs ON hs.hold_status_code = h.hold_status_code
       LEFT JOIN books b ON b.item_id = h.item_id
       LEFT JOIN periodicals per ON per.item_id = h.item_id
       LEFT JOIN audiovisual_media am ON am.item_id = h.item_id
       LEFT JOIN equipment e ON e.item_id = h.item_id
-      ORDER BY h.hold_expiration_date ASC, h.hold_id ASC
+      WHERE h.hold_status_code IN (1, 2)
+      ORDER BY
+        CASE WHEN h.hold_status_code = 2 THEN 0 ELSE 1 END,
+        h.hold_expiration_date ASC,
+        h.hold_origin_date ASC,
+        h.hold_id ASC
       `
     );
 
@@ -3781,6 +3882,7 @@ app.get(["/holds/current", "/api/holds/current"], async (req, res) => {
   }
 });
 
+// Cancel hold endpoint
 // Cancel hold endpoint
 app.delete(["/holds/:holdId", "/api/holds/:holdId"], async (req, res) => {
   try {
@@ -3800,7 +3902,7 @@ app.delete(["/holds/:holdId", "/api/holds/:holdId"], async (req, res) => {
 
     const [holds] = await pool.query(
       `
-      SELECT hold_id AS holdId, item_id AS itemId, patron_id AS patronId
+      SELECT hold_id AS holdId, item_id AS itemId, patron_id AS patronId, hold_status_code AS holdStatusCode
       FROM holds
       WHERE hold_id = ?
       `,
@@ -3825,21 +3927,28 @@ app.delete(["/holds/:holdId", "/api/holds/:holdId"], async (req, res) => {
 
     await pool.query(
       `
-      DELETE FROM holds
+      UPDATE holds
+      SET hold_status_code = 5
       WHERE hold_id = ?
       `,
       [holdId]
     );
 
-    await pool.query(
-      `
-      UPDATE items
-      SET available = available + 1,
-          on_hold = CASE WHEN on_hold > 0 THEN on_hold - 1 ELSE 0 END
-      WHERE item_id = ?
-      `,
-      [hold.itemId]
-    );
+    if (hold.holdStatusCode === 2) {
+      const promoted = await PromoteNextWaitingHold(hold.itemId);
+
+      if (!promoted) {
+        await pool.query(
+          `
+          UPDATE items
+          SET available = available + 1,
+              on_hold = CASE WHEN on_hold > 0 THEN on_hold - 1 ELSE 0 END
+          WHERE item_id = ?
+          `,
+          [hold.itemId]
+        );
+      }
+    }
 
     return res.json({ message: "Hold cancelled successfully." });
   } catch (error) {
@@ -3850,6 +3959,7 @@ app.delete(["/holds/:holdId", "/api/holds/:holdId"], async (req, res) => {
   }
 });
 
+// Checkout hold endpoint
 // Checkout hold endpoint
 app.post(["/holds/:holdId/checkout", "/api/holds/:holdId/checkout"], async (req, res) => {
   try {
@@ -3873,6 +3983,7 @@ app.post(["/holds/:holdId/checkout", "/api/holds/:holdId/checkout"], async (req,
         h.hold_id AS holdId,
         h.item_id AS itemId,
         h.patron_id AS patronId,
+        h.hold_status_code AS holdStatusCode,
         p.patron_role_code AS patronRoleCode,
         pr.loan_period AS loanPeriod
       FROM holds h
@@ -3889,6 +4000,10 @@ app.post(["/holds/:holdId/checkout", "/api/holds/:holdId/checkout"], async (req,
 
     const hold = holds[0];
 
+    if (hold.holdStatusCode !== 2) {
+      return res.status(400).json({ error: "Only ready holds can be checked out." });
+    }
+
     await pool.query(
       `
       INSERT INTO loans
@@ -3901,7 +4016,8 @@ app.post(["/holds/:holdId/checkout", "/api/holds/:holdId/checkout"], async (req,
 
     await pool.query(
       `
-      DELETE FROM holds
+      UPDATE holds
+      SET hold_status_code = 3
       WHERE hold_id = ?
       `,
       [holdId]

@@ -12,6 +12,38 @@ function SafeText(value) {
   return value == null ? "" : String(value);
 }
 
+
+
+function GetHoldStatusText(hold) {
+  if (hold?.holdStatus) {
+    return String(hold.holdStatus);
+  }
+
+  if (Number(hold?.holdStatusCode) === 2) {
+    return "ready";
+  }
+
+  if (Number(hold?.holdStatusCode) === 1) {
+    return "waiting";
+  }
+
+  return "unknown";
+}
+
+function GetHoldStatusBadgeClassName(hold) {
+  const holdStatusCode = Number(hold?.holdStatusCode);
+
+  if (holdStatusCode === 2) {
+    return "bg-emerald-500/15 text-emerald-300 ring-1 ring-inset ring-emerald-400/30";
+  }
+
+  if (holdStatusCode === 1) {
+    return "bg-amber-500/15 text-amber-300 ring-1 ring-inset ring-amber-400/30";
+  }
+
+  return "bg-slate-500/15 text-slate-300 ring-1 ring-inset ring-white/10";
+}
+
 export default function Holds() {
   const { showSuccess, showError, showWarning } = useMessage();
   const user = ReadStoredUser();
@@ -78,19 +110,24 @@ export default function Holds() {
     }
   }
 
-  async function CheckoutHold(holdId) {
-    try {
-      await FetchJson(`/api/holds/${holdId}/checkout`, {
-        method: "POST",
-      });
-
-      showSuccess("Hold checked out successfully!");
-      await ReloadHolds();
-    } catch (error) {
-      console.error(error);
-      showError(error.message || "Failed to check out hold.");
-    }
+async function CheckoutHold(holdId, holdStatusCode) {
+  if (Number(holdStatusCode) !== 2) {
+    showWarning("Only holds that are ready for pickup can be checked out.");
+    return;
   }
+
+  try {
+    await FetchJson(`/api/holds/${holdId}/checkout`, {
+      method: "POST",
+    });
+
+    showSuccess("Hold checked out successfully!");
+    await ReloadHolds();
+  } catch (error) {
+    console.error(error);
+    showError(error.message || "Failed to check out hold.");
+  }
+}
 
   const filteredHolds = useMemo(() => {
     const normalizedSearch = searchText.trim().toLowerCase();
@@ -107,6 +144,7 @@ export default function Holds() {
         itemId: SafeText(hold.itemId),
         title: SafeText(hold.title),
         creator: SafeText(hold.creator),
+        holdStatus: SafeText(hold.holdStatus),
       };
 
       if (searchBy === "all") {
@@ -164,6 +202,7 @@ export default function Holds() {
             <option value="itemId">Item ID</option>
             <option value="title">Item Title</option>
             <option value="creator">Creator</option>
+            <option value="holdStatus">Status</option>
           </select>
         </div>
 
@@ -187,59 +226,83 @@ export default function Holds() {
         ) : filteredHolds.length === 0 ? (
           <div className="text-slate-300">No matching current holds found.</div>
         ) : (
-          filteredHolds.map((hold) => (
-            <div
-              key={hold.holdId}
-              className="grid grid-cols-1 gap-4 rounded-xl bg-white/5 p-4 outline outline-1 outline-white/10 lg:grid-cols-4"
-            >
-              <div className="lg:col-span-3">
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                  <div className="text-xl font-bold text-white">
-                    {hold.title}
+          filteredHolds.map((hold) => {
+            const holdStatusText = GetHoldStatusText(hold);
+            const isReadyHold = Number(hold.holdStatusCode) === 2;
+            const isWaitingHold = Number(hold.holdStatusCode) === 1;
+
+            return (
+              <div
+                key={hold.holdId}
+                className="grid grid-cols-1 gap-4 rounded-xl bg-white/5 p-4 outline outline-1 outline-white/10 lg:grid-cols-4"
+              >
+                <div className="lg:col-span-3">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                    <div className="text-xl font-bold text-white">
+                      {hold.title}
+                    </div>
+
+                    <div className="text-sm text-slate-400">
+                      Hold ID: {hold.holdId}
+                    </div>
+
+                    <div className="text-sm text-slate-400">
+                      Item ID: {hold.itemId}
+                    </div>
+
+                    <span
+                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${GetHoldStatusBadgeClassName(hold)}`}
+                    >
+                      {holdStatusText}
+                    </span>
                   </div>
-                  <div className="text-sm text-slate-400">
-                    Hold ID: {hold.holdId}
+
+                  {hold.creator ? (
+                    <div className="mt-1 text-sky-300">{hold.creator}</div>
+                  ) : null}
+
+                  <div className="mt-2 text-slate-300">
+                    Held by: {hold.patronName} (Patron ID: {hold.patronId})
                   </div>
-                  <div className="text-sm text-slate-400">
-                    Item ID: {hold.itemId}
+
+                  <div className="mt-1 text-slate-400">
+                    Hold date:{" "}
+                    {hold.holdStart
+                      ? FormatDate(new Date(hold.holdStart), true)
+                      : "-"}
+                  </div>
+
+                  <div className="text-slate-400">
+                    {isReadyHold
+                      ? `Pickup expires: ${
+                          hold.holdEnd
+                            ? FormatDate(new Date(hold.holdEnd), true)
+                            : "-"
+                        }`
+                      : isWaitingHold
+                        ? "Waiting in queue for the next available copy."
+                        : `Expires: ${
+                            hold.holdEnd
+                              ? FormatDate(new Date(hold.holdEnd), true)
+                              : "-"
+                          }`}
                   </div>
                 </div>
 
-                {hold.creator ? (
-                  <div className="mt-1 text-sky-300">{hold.creator}</div>
-                ) : null}
-
-                <div className="mt-2 text-slate-300">
-                  Held by: {hold.patronName} (Patron ID: {hold.patronId})
-                </div>
-
-                <div className="mt-1 text-slate-400">
-                  Hold date:{" "}
-                  {hold.holdStart
-                    ? FormatDate(new Date(hold.holdStart), true)
-                    : "-"}
-                </div>
-
-                <div className="text-slate-400">
-                  Expires:{" "}
-                  {hold.holdEnd
-                    ? FormatDate(new Date(hold.holdEnd), true)
-                    : "-"}
+                <div className="flex flex-col items-start justify-center gap-3 lg:items-end">
+                  <SecondaryButton
+                    title="Cancel Hold"
+                    onClick={() => CancelHold(hold.holdId)}
+                  />
+                  <PrimaryButton
+                    title={isReadyHold ? "Check Out" : "Waiting"}
+                    onClick={() => CheckoutHold(hold.holdId, hold.holdStatusCode)}
+                    disabledValue={!isReadyHold}
+                  />
                 </div>
               </div>
-
-              <div className="flex flex-col items-start justify-center gap-3 lg:items-end">
-                <SecondaryButton
-                  title="Cancel Hold"
-                  onClick={() => CancelHold(hold.holdId)}
-                />
-                <PrimaryButton
-                  title="Check Out"
-                  onClick={() => CheckoutHold(hold.holdId)}
-                />
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </section>

@@ -153,8 +153,7 @@ export default function Item({ itemData }) {
   }
 
   const isStaff = user?.user_type === "staff";
-  const canPlaceHold = Number(itemData.available) >= 1;
-  //const canCheckout = Number(itemData.available) >= 1;
+  const canPlaceHold = Number(itemData.is_removed ?? 0) !== 1;
 
   return (
     <div className="w-full">
@@ -274,7 +273,7 @@ export function CarouselItem({ itemData }) {
               {itemData.available >= 1 ? "Available" : "Not Available"}
             </span>
             <span>Shelf: {itemData.shelfNumber}</span>
-            {itemData.available >= 1 ? (
+            {Number(itemData.is_removed ?? 0) !== 1 ? (
               <PrimaryButton title="Place Hold" />
             ) : (
               <SecondaryButton title="Not Available" disabled={true} />
@@ -290,7 +289,7 @@ export function CarouselItem({ itemData }) {
             <span>
               {itemData.available >= 1 ? "Available" : "Not Available"}
             </span>
-            {itemData.available >= 1 ? (
+            {Number(itemData.is_removed ?? 0) !== 1 ? (
               <PrimaryButton title="Place Hold" />
             ) : (
               <SecondaryButton title="Not Available" disabled={true} />
