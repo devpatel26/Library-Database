@@ -23,9 +23,9 @@ export default function Home() {
         Recent Items
       </h1>
 
-      <div className="grid grid-rows-10 mt-4 w-full gap-6">
+      <div className="grid grid-rows-10 mt-4 w-full gap-2">
         <div className="row-span-3">
-          <h2 className="font-semibold text-sky-300">Recent Books</h2>
+          <h2 className="text-lg font-semibold text-sky-300">Recent Books</h2>
           <div className="flex gap-8 justify-center mt-6">
             {dummyBooks.map((item, index) => (
               <CarouselItem key={index} itemData={item} />
@@ -33,7 +33,9 @@ export default function Home() {
           </div>
         </div>
         <div className="row-span-3">
-          <h2 className="font-semibold text-sky-300">Recent Periodicals</h2>
+          <h2 className="text-lg font-semibold text-sky-300">
+            Recent Periodicals
+          </h2>
           <div className="flex gap-8 justify-center mt-6">
             {dummyPeriodicals.map((item, index) => (
               <CarouselItem key={index} itemData={item} />
@@ -41,7 +43,7 @@ export default function Home() {
           </div>
         </div>
         <div className="row-span-3">
-          <h2 className="font-semibold text-sky-300">
+          <h2 className="text-lg font-semibold text-sky-300">
             Recent Audiovisual Media
           </h2>
           <div className="flex gap-8 justify-center mt-6">
@@ -51,7 +53,9 @@ export default function Home() {
           </div>
         </div>
         <div className="row-span-1">
-          <h2 className="font-semibold text-sky-300">Recent Equipment</h2>
+          <h2 className="text-lg font-semibold text-sky-300">
+            Recent Equipment
+          </h2>
           <div className="flex gap-8 justify-center mt-6">
             {dummyEquipment.map((item, index) => (
               <CarouselItem key={index} itemData={item} />

@@ -159,9 +159,16 @@ export default function Item({ itemData }) {
   return (
     <div className="w-full">
       <div className="grid grid-cols-4 rounded-xl bg-white/2 px-3 py-1.5 outline-2 outline-white/10">
-        <div className="col-span-3 m-2">
-          <ItemHolder data={itemData} />
-        </div>
+        {itemData.category != "equipment" ? (
+          <div className="col-span-3 m-2 flex gap-4">
+            <img src="../public/Datahaven.jpg" className="h-48 w-36" />
+            <ItemHolder data={itemData} />
+          </div>
+        ) : (
+          <div className="col-span-3 m-2">
+            <ItemHolder data={itemData} />
+          </div>
+        )}
 
         <div className="col-span-1 grid grid-rows-2 items-center m-2">
           <div className="grid grid-cols-2 grid-rows-2 text-center">
@@ -315,15 +322,15 @@ export function CarouselItemHolder({ data }) {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center">
-      <img src="../assets/react.svg" className="h-48 w-36" />
+    <div className="flex flex-col items-center justify-center text-center">
+      <img src="../public/Datahaven.jpg" className="h-48 w-36" />
       <div className="text-xl mt-2 font-bold">{data.title}</div>
 
-      {/* {creator ? (
+      {creator ? (
         <div className="text-lg font-semibold text-sky-300">{creator}</div>
       ) : null}
 
-      {pubLine ? <div>{pubLine}</div> : null} */}
+      {/* {pubLine ? <div>{pubLine}</div> : null} */}
 
       {metaLine ? (
         <div>
@@ -357,9 +364,16 @@ export function ItemStaff({
   return (
     <div>
       <div className="grid grid-cols-4 rounded-xl bg-white/2 px-3 py-1.5 outline-2 outline-white/10">
-        <div className="col-span-2 m-2">
-          <ItemHolder data={itemData} />
-        </div>
+        {itemData.category != "equipment" ? (
+          <div className="col-span-3 m-2 flex gap-4">
+            <img src="../public/Datahaven.jpg" className="h-48 w-36" />
+            <ItemHolder data={itemData} />
+          </div>
+        ) : (
+          <div className="col-span-3 m-2">
+            <ItemHolder data={itemData} />
+          </div>
+        )}
 
         <div className="col-span-1 grid grid-cols-2 items-center m-2">
           {itemData.status === "Available" ? (
@@ -426,9 +440,16 @@ export function ItemLoan({ itemData }) {
   return (
     <div className="w-full">
       <div className="grid grid-cols-4 rounded-xl bg-white/2 px-3 py-1.5 outline-2 outline-white/10">
-        <div className="col-span-3 m-2">
-          <ItemHolder data={itemData} />
-        </div>
+        {itemData.category != "equipment" ? (
+          <div className="col-span-3 m-2 flex gap-4">
+            <img src="../public/Datahaven.jpg" className="h-48 w-36" />
+            <ItemHolder data={itemData} />
+          </div>
+        ) : (
+          <div className="col-span-3 m-2">
+            <ItemHolder data={itemData} />
+          </div>
+        )}
 
         {itemData.overdue ? (
           <div className="col-span-1 grid grid-rows-2 items-center text-center">
@@ -449,9 +470,16 @@ export function ItemHold({ itemData, onCancel }) {
   return (
     <div className="w-full">
       <div className="grid grid-cols-4 rounded-xl bg-white/2 px-3 py-1.5 outline-2 outline-white/10">
-        <div className="col-span-3 m-2">
-          <ItemHolder data={itemData} />
-        </div>
+        {itemData.category != "equipment" ? (
+          <div className="col-span-3 m-2 flex gap-4">
+            <img src="../public/Datahaven.jpg" className="h-48 w-36" />
+            <ItemHolder data={itemData} />
+          </div>
+        ) : (
+          <div className="col-span-3 m-2">
+            <ItemHolder data={itemData} />
+          </div>
+        )}
 
         {itemData.ready ? (
           <div className="col-span-1 grid grid-rows-2 items-center text-center">

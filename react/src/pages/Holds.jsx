@@ -110,7 +110,10 @@ export default function Holds() {
       };
 
       if (searchBy === "all") {
-        return Object.values(fields).join(" ").toLowerCase().includes(normalizedSearch);
+        return Object.values(fields)
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedSearch);
       }
 
       const value = SafeText(fields[searchBy]).toLowerCase();
@@ -140,7 +143,8 @@ export default function Holds() {
       </h1>
 
       <p className="mt-4 text-base leading-7 text-slate-300">
-        View all active holds, search by selected fields, cancel them, or convert them into loans.
+        View all active holds, search by selected fields, cancel them, or
+        convert them into loans.
       </p>
 
       <div className="mt-6 grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2">
@@ -153,27 +157,13 @@ export default function Holds() {
             onChange={(event) => setSearchBy(event.target.value)}
             className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
           >
-            <option value="all">
-              All
-            </option>
-            <option value="holdId">
-              Hold ID
-            </option>
-            <option value="patronName">
-              Patron Name
-            </option>
-            <option value="patronId">
-              Patron ID
-            </option>
-            <option value="itemId">
-              Item ID
-            </option>
-            <option value="title">
-              Item Title
-            </option>
-            <option value="creator">
-              Creator
-            </option>
+            <option value="all">All</option>
+            <option value="holdId">Hold ID</option>
+            <option value="patronName">Patron Name</option>
+            <option value="patronId">Patron ID</option>
+            <option value="itemId">Item ID</option>
+            <option value="title">Item Title</option>
+            <option value="creator">Creator</option>
           </select>
         </div>
 
@@ -193,13 +183,9 @@ export default function Holds() {
 
       <div className="mt-6 space-y-4">
         {isLoading ? (
-          <div className="text-slate-300">
-            Loading holds...
-          </div>
+          <div className="text-slate-300">Loading holds...</div>
         ) : filteredHolds.length === 0 ? (
-          <div className="text-slate-300">
-            No matching current holds found.
-          </div>
+          <div className="text-slate-300">No matching current holds found.</div>
         ) : (
           filteredHolds.map((hold) => (
             <div
@@ -220,9 +206,7 @@ export default function Holds() {
                 </div>
 
                 {hold.creator ? (
-                  <div className="mt-1 text-sky-300">
-                    {hold.creator}
-                  </div>
+                  <div className="mt-1 text-sky-300">{hold.creator}</div>
                 ) : null}
 
                 <div className="mt-2 text-slate-300">
@@ -230,11 +214,17 @@ export default function Holds() {
                 </div>
 
                 <div className="mt-1 text-slate-400">
-                  Hold date: {hold.holdStart ? FormatDate(new Date(hold.holdStart), true) : "-"}
+                  Hold date:{" "}
+                  {hold.holdStart
+                    ? FormatDate(new Date(hold.holdStart), true)
+                    : "-"}
                 </div>
 
                 <div className="text-slate-400">
-                  Expires: {hold.holdEnd ? FormatDate(new Date(hold.holdEnd), true) : "-"}
+                  Expires:{" "}
+                  {hold.holdEnd
+                    ? FormatDate(new Date(hold.holdEnd), true)
+                    : "-"}
                 </div>
               </div>
 
