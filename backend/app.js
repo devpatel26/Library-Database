@@ -3810,7 +3810,6 @@ async function ClearExpiredHolds() {
 }
 
 // Get current holds for staff view
-// Get current holds for staff view
 app.get(["/holds/current", "/api/holds/current"], async (req, res) => {
   try {
     const user = await RequireStaffUser(req, res);
@@ -3867,11 +3866,14 @@ app.get(["/holds/current", "/api/holds/current"], async (req, res) => {
         h.hold_id ASC
       `
     );
+    console.log("CURRENT HOLDS RAW ROWS =", rows);
 
     const formattedRows = rows.map((row) => ({
       ...row,
       patronName: `${row.first_name} ${row.last_name}`,
     }));
+
+    console.log("CURRENT HOLDS FORMATTED ROWS =", formattedRows);
 
     return res.json(formattedRows);
   } catch (error) {
@@ -3959,7 +3961,7 @@ app.delete(["/holds/:holdId", "/api/holds/:holdId"], async (req, res) => {
   }
 });
 
-// Checkout hold endpoint
+
 // Checkout hold endpoint
 app.post(["/holds/:holdId/checkout", "/api/holds/:holdId/checkout"], async (req, res) => {
   try {
@@ -4288,15 +4290,51 @@ app.post(["/loans/:loanId/return", "/api/loans/:loanId/return"], async (req, res
       [loanId]
     );
 
-    await pool.query(
+    const [waitingHolds] = await pool.query(
       `
-      UPDATE items
-      SET unavailable = CASE WHEN unavailable > 0 THEN unavailable - 1 ELSE 0 END,
-          available = available + 1
+      SELECT hold_id AS holdId
+      FROM holds
       WHERE item_id = ?
+        AND hold_status_code = 1
+      ORDER BY hold_origin_date ASC, hold_id ASC
+      LIMIT 1
       `,
       [loan.itemId]
     );
+
+    if (waitingHolds.length > 0) {
+      const nextHold = waitingHolds[0];
+
+      await pool.query(
+        `
+        UPDATE holds
+        SET hold_status_code = 2,
+            hold_expiration_date = DATE_ADD(CURDATE(), INTERVAL 2 DAY)
+        WHERE hold_id = ?
+        `,
+        [nextHold.holdId]
+      );
+
+      await pool.query(
+        `
+        UPDATE items
+        SET unavailable = CASE WHEN unavailable > 0 THEN unavailable - 1 ELSE 0 END,
+            on_hold = on_hold + 1
+        WHERE item_id = ?
+        `,
+        [loan.itemId]
+      );
+    } else {
+      await pool.query(
+        `
+        UPDATE items
+        SET unavailable = CASE WHEN unavailable > 0 THEN unavailable - 1 ELSE 0 END,
+            available = available + 1
+        WHERE item_id = ?
+        `,
+        [loan.itemId]
+      );
+    }
 
     return res.json({
       message: "Loan returned successfully.",
