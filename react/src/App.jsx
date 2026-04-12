@@ -36,6 +36,9 @@ import Lost from "./pages/Lost";
 import { ReadStoredUser } from "./api";
 import { MessageProvider } from "./context/MessageContext.jsx";
 
+// Import the new NotificationBell component
+import NotificationBell from "./components/NotificationBell.jsx";
+
 function AccountRouter({ patronPage, staffPage }) {
   const user = JSON.parse(localStorage.getItem("user"));
 
@@ -143,6 +146,10 @@ function App() {
               </NavLink>
             ) : (
               <div className="flex items-center gap-4">
+                
+                {/* Notification Bell Component */}
+                <NotificationBell />
+
                 <span className="text-slate-300">
                   Hello{" "}
                   <span className="font-semibold text-white">
