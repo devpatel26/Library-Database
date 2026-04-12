@@ -170,15 +170,20 @@ export default function Item({ itemData }) {
         )}
 
         <div className="col-span-1 grid grid-rows-2 items-center m-2">
-          <div className="grid grid-cols-2 grid-rows-2 text-center">
+          <div className="grid grid-cols-3 grid-rows-2 text-center">
             <span>
               Available: <br />
               {itemData.available}
             </span>
 
             <span>
-              On Hold: <br />
-              {itemData.onHold}
+              Reserved: <br />
+              {itemData.reservedCount ?? 0}
+            </span>
+
+            <span>
+              Queue: <br />
+              {itemData.queueCount ?? 0}
             </span>
 
             <span>
