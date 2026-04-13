@@ -1636,35 +1636,64 @@ app.get(["/loans", "/api/loans"], async (req, res) => {
 
 app.get(["/account/activity", "/api/account/activity"], async (req, res) => {
   try {
-    // 1. Run maintenance tasks (optional but good to keep)
     await ClearExpiredHolds();
-    
-    // 2. Ensure the user is a patron
     const user = await RequirePatronUser(req, res);
     if (!user) return;
 
-    // 3. Ensure fines are up to date
     await SyncCurrentFines();
 
-    // 4. NEW QUERY: Pull everything (including trigger notifications) from the View
-    const [rows] = await pool.query(
-      `SELECT 
-        activityId,
-        activityType,
-        headline,
-        detail,
-        activityDate,
-        status,
-        title,
-        creator
-       FROM account_activity_view
-       WHERE patron_id = ?
-       ORDER BY activityDate DESC`,
-      [user.patronId]
+    // 1. Fetch Original Activity (Holds, Loans, Fines)
+    const [holdRows] = await pool.query(`
+      SELECT CONCAT('hold-', h.hold_id) AS activityId, h.hold_origin_date AS activityDate, 'hold' AS activityType,
+      ${GetPatronItemSelectColumns()}, h.hold_expiration_date AS holdEnd, COALESCE(LOWER(hs.hold_status_name), 'active') AS holdStatus
+      FROM holds h LEFT JOIN hold_statuses hs ON hs.hold_status_code = h.hold_status_code
+      ${GetPatronItemJoinClauses("h.item_id")} WHERE h.patron_id = ?`, [user.patronId]);
+
+    const [loanRows] = await pool.query(`
+      SELECT CONCAT('loan-', l.loan_id) AS activityId, l.loan_origin_date AS activityDate, 'loan' AS activityType,
+      ${GetPatronItemSelectColumns()}, l.loan_due_date AS loanEnd, 
+      CASE WHEN ls.loan_status_name IS NULL THEN 'active' ELSE LOWER(ls.loan_status_name) END AS loanStatus,
+      l.loan_status_code = 1 AND l.loan_due_date < CURDATE() AS overdue
+      FROM loans l LEFT JOIN loan_statuses ls ON ls.loan_status_code = l.loan_status_code
+      ${GetPatronItemJoinClauses("l.item_id")} WHERE l.patron_id = ?`, [user.patronId]);
+
+    // 2. Fetch the "New" Notification data from the view
+    const [notificationRows] = await pool.query(
+      `SELECT activityId, activityType, headline, detail, activityDate, status, title, creator
+       FROM account_activity_view WHERE patron_id = ?`, [user.patronId]
     );
 
-    // 5. Send the merged data directly to the frontend
-    res.json(rows);
+    // 3. Map the old data formats (Logic preserved from your original code)
+    const originalActivity = [
+      ...holdRows.map((row) => ({
+        activityId: row.activityId,
+        activityType: row.activityType,
+        activityDate: row.activityDate,
+        headline: "Placed hold",
+        title: row.title,
+        creator: row.creator,
+        detail: row.holdStatus === "ready" ? `Ready for pickup until ${row.holdEnd}` : `Hold expires ${row.holdEnd}`,
+        status: row.holdStatus === "ready" ? "Ready" : "Active",
+      })),
+      ...loanRows.map((row) => ({
+        activityId: row.activityId,
+        activityType: row.activityType,
+        activityDate: row.activityDate,
+        headline: "Checked out item",
+        title: row.title,
+        creator: row.creator,
+        detail: `Due ${row.loanEnd}`,
+        status: row.overdue ? "Overdue" : row.loanStatus === "returned" ? "Returned" : "Active",
+      }))
+    ];
+
+    // 4. Combine Everything (Old + New)
+    const finalActivity = [...originalActivity, ...notificationRows]
+      .filter((row) => row.activityDate)
+      .sort((a, b) => new Date(b.activityDate) - new Date(a.activityDate));
+
+    return res.json(finalActivity);
+
   } catch (error) {
     SendServerError(res, error, "Internal Server Error");
   }
