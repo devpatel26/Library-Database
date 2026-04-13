@@ -26,12 +26,16 @@ function GetStatusClass(status) {
     return "bg-sky-400/10 text-sky-300";
   }
 
-  if (status === "Overdue") {
+  if (status === "Overdue" || status === "Fine") {
     return "bg-rose-400/10 text-rose-300";
   }
 
-  if (status === "Ready") {
+  if (status === "Ready for pickup" || status === "Hold" || status === "Ready") {
     return "bg-amber-400/10 text-amber-300";
+  }
+
+  if (status === "New") {
+    return "bg-sky-400/10 text-sky-300";
   }
 
   return "bg-white/10 text-slate-200";

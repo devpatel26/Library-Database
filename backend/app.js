@@ -1636,159 +1636,35 @@ app.get(["/loans", "/api/loans"], async (req, res) => {
 
 app.get(["/account/activity", "/api/account/activity"], async (req, res) => {
   try {
+    // 1. Run maintenance tasks (optional but good to keep)
     await ClearExpiredHolds();
+    
+    // 2. Ensure the user is a patron
     const user = await RequirePatronUser(req, res);
+    if (!user) return;
 
-    if (!user) {
-      return;
-    }
-
+    // 3. Ensure fines are up to date
     await SyncCurrentFines();
 
-    const [holdRows] = await pool.query(
-      `
-            SELECT
-                CONCAT('hold-', h.hold_id) AS activityId,
-                h.hold_origin_date AS activityDate,
-                'hold' AS activityType,
-                ${GetPatronItemSelectColumns()},
-                h.hold_expiration_date AS holdEnd,
-                COALESCE(LOWER(hs.hold_status_name), 'active') AS holdStatus
-            FROM holds h
-            LEFT JOIN hold_statuses hs ON hs.hold_status_code = h.hold_status_code
-            ${GetPatronItemJoinClauses("h.item_id")}
-            WHERE h.patron_id = ?
-            `,
+    // 4. NEW QUERY: Pull everything (including trigger notifications) from the View
+    const [rows] = await pool.query(
+      `SELECT 
+        activityId,
+        activityType,
+        headline,
+        detail,
+        activityDate,
+        status,
+        title,
+        creator
+       FROM account_activity_view
+       WHERE patron_id = ?
+       ORDER BY activityDate DESC`,
       [user.patronId]
     );
 
-    const [loanRows] = await pool.query(
-      `
-            SELECT
-                CONCAT('loan-', l.loan_id) AS activityId,
-                l.loan_origin_date AS activityDate,
-                'loan' AS activityType,
-                ${GetPatronItemSelectColumns()},
-                l.loan_due_date AS loanEnd,
-                CASE
-                    WHEN ls.loan_status_name IS NULL THEN 'active'
-                    ELSE LOWER(ls.loan_status_name)
-                END AS loanStatus,
-                l.loan_status_code = 1 AND l.loan_due_date < CURDATE() AS overdue
-            FROM loans l
-            LEFT JOIN loan_statuses ls ON ls.loan_status_code = l.loan_status_code
-            ${GetPatronItemJoinClauses("l.item_id")}
-            WHERE l.patron_id = ?
-            `,
-      [user.patronId]
-    );
-
-    const [fineRows] = await pool.query(
-      `
-            SELECT
-                f.fine_id AS fineId,
-                f.loan_id AS loanId,
-                ${GetPatronItemSelectColumns()},
-                f.fine_amount AS fineAmount,
-                f.paid_amount AS paidAmount,
-                ROUND(COALESCE(f.fine_amount, 0) - COALESCE(f.paid_amount, 0), 2) AS remainingAmount,
-                f.fine_date AS fineDate,
-                f.paid_date AS paidDate,
-                f.waived_date AS waivedDate
-            FROM fines f
-            LEFT JOIN loans l ON l.loan_id = f.loan_id
-            ${GetPatronItemJoinClauses("l.item_id")}
-            WHERE f.patron_id = ?
-            `,
-      [user.patronId]
-    );
-
-    const activity = [
-      ...holdRows.map((row) => ({
-        activityId: row.activityId,
-        activityType: row.activityType,
-        activityDate: row.activityDate,
-        headline: "Placed hold",
-        title: row.title,
-        creator: row.creator,
-        detail:
-          row.holdStatus === "ready"
-            ? `Ready for pickup until ${row.holdEnd}`
-            : `Hold expires ${row.holdEnd}`,
-        status: row.holdStatus === "ready" ? "Ready" : "Active",
-      })),
-      ...loanRows.map((row) => ({
-        activityId: row.activityId,
-        activityType: row.activityType,
-        activityDate: row.activityDate,
-        headline: "Checked out item",
-        title: row.title,
-        creator: row.creator,
-        detail: `Due ${row.loanEnd}`,
-        status: row.overdue
-          ? "Overdue"
-          : row.loanStatus === "returned"
-            ? "Returned"
-            : "Active",
-      })),
-      ...fineRows.flatMap((row) => {
-        const events = [];
-
-        if (row.fineDate) {
-          events.push({
-            activityId: `fine-${row.fineId}-assessed`,
-            activityType: "fine",
-            activityDate: row.fineDate,
-            headline: "Fine assessed",
-            title: row.title,
-            creator: row.creator,
-            detail: `Balance $${Number(row.fineAmount ?? 0).toFixed(2)}`,
-            status: "Open",
-          });
-        }
-
-        if (row.paidDate) {
-          events.push({
-            activityId: `fine-${row.fineId}-paid`,
-            activityType: "fine",
-            activityDate: row.paidDate,
-            headline: "Fine payment recorded",
-            title: row.title,
-            creator: row.creator,
-            detail: `Paid $${Number(row.paidAmount ?? 0).toFixed(2)}`,
-            status: "Paid",
-          });
-        }
-
-        if (row.waivedDate) {
-          events.push({
-            activityId: `fine-${row.fineId}-waived`,
-            activityType: "fine",
-            activityDate: row.waivedDate,
-            headline: "Fine waived",
-            title: row.title,
-            creator: row.creator,
-            detail: `Waived remaining $${Number(row.remainingAmount ?? 0).toFixed(2)}`,
-            status: "Waived",
-          });
-        }
-
-        return events;
-      }),
-    ]
-      .filter((row) => row.activityDate)
-      .sort((left, right) => {
-        const leftDate = Date.parse(left.activityDate);
-        const rightDate = Date.parse(right.activityDate);
-
-        if (Number.isFinite(rightDate) && Number.isFinite(leftDate) && rightDate !== leftDate) {
-          return rightDate - leftDate;
-        }
-
-        return String(right.activityId).localeCompare(String(left.activityId));
-      });
-
-    return res.json(activity);
+    // 5. Send the merged data directly to the frontend
+    res.json(rows);
   } catch (error) {
     SendServerError(res, error, "Internal Server Error");
   }
