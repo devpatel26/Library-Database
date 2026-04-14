@@ -274,7 +274,13 @@ export function CarouselItem({ itemData }) {
             <CarouselItemHolder data={itemData} />
           </div>
           <div className="row-span-1 grid grid-cols-3 grid items-center m-2 text-center">
-            <span>
+            <span
+              className={
+                itemData.available >= 1
+                  ? "text-green-400 font-semibold"
+                  : "text-red-400 font-semibold"  
+              }
+             > 
               {itemData.available >= 1 ? "Available" : "Not Available"}
             </span>
             <span>Shelf: {itemData.shelfNumber}</span>
@@ -458,7 +464,7 @@ export function ItemLoan({ itemData }) {
         {itemData.overdue ? (
           <div className="col-span-1 grid grid-rows-2 items-center text-center">
             <div>Due: {formattedDate}</div>
-            <div>Item overdue</div>
+            <div className="font-semibold text-red-400">Overdue</div>
           </div>
         ) : (
           <div className="col-span-1 grid grid-rows-2 items-center text-center">
