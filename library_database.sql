@@ -565,7 +565,7 @@ VALUES ('Lost');
 
 CREATE TABLE activity_logs (
   activity_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  actor_type ENUM('patron','staff') NOT NULL,
+  actor_type ENUM('patron','staff','system') NOT NULL,
   actor_id INT UNSIGNED NOT NULL,
   action_type VARCHAR(50) NOT NULL,
   item_id INT UNSIGNED NULL,
@@ -593,3 +593,264 @@ ADD COLUMN cover_image_url VARCHAR(2048) NULL AFTER title;
 
 INSERT INTO loan_statuses (loan_status_name) VALUES ('Found');
 INSERT INTO loan_statuses (loan_status_name) VALUES ('Deleted');
+
+-- =====================================================
+-- NOTIFICATIONS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `Library_Database`.`notifications` (
+  `notification_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `patron_id` INT UNSIGNED NOT NULL,
+  `notification_type` VARCHAR(50) NOT NULL,
+  `message` VARCHAR(500) NOT NULL,
+  `is_read` TINYINT(1) NOT NULL DEFAULT 0,
+  `link_data` JSON NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`notification_id`),
+  INDEX `patron_id_idx` (`patron_id` ASC) VISIBLE,
+  INDEX `is_read_idx` (`is_read` ASC) VISIBLE,
+  CONSTRAINT `notifications_patron_id`
+    FOREIGN KEY (`patron_id`)
+    REFERENCES `Library_Database`.`patrons` (`patron_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+)
+ENGINE = InnoDB;
+
+-- =====================================================
+-- TRIGGERS FOR NOTIFICATIONS
+-- =====================================================
+
+-- Trigger 1: Notify patron when their hold is ready for pickup
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS notify_hold_ready$$
+
+CREATE TRIGGER notify_hold_ready
+AFTER UPDATE ON holds
+FOR EACH ROW
+BEGIN
+  IF OLD.hold_status_code != 2 AND NEW.hold_status_code = 2 THEN
+    INSERT INTO notifications (patron_id, notification_type, message, link_data)
+    VALUES (NEW.patron_id, 'HOLD_READY', 
+            CONCAT('Your hold is ready for pickup!'),
+            JSON_OBJECT('hold_id', NEW.hold_id, 'item_id', NEW.item_id));
+    
+    -- Log the activity
+    INSERT INTO activity_logs (actor_type, actor_id, action_type, hold_id, description, created_at)
+    VALUES ('staff', IFNULL(@current_staff_id, 0), 'HOLD_READY_NOTIFICATION', NEW.hold_id, 
+            CONCAT('Notification sent to patron ', NEW.patron_id), NOW());
+  END IF;
+END$$
+
+-- Trigger 2: Notify patron when item is returned (for pending holds)
+DROP TRIGGER IF EXISTS notify_on_return$$
+
+CREATE TRIGGER notify_on_return
+AFTER UPDATE ON loans
+FOR EACH ROW
+BEGIN
+  DECLARE next_patron_id INT UNSIGNED;
+  
+  IF OLD.loan_status_code != 2 AND NEW.loan_status_code = 2 THEN
+    -- Update item availability
+    UPDATE items 
+    SET available = available + 1
+    WHERE item_id = NEW.item_id;
+    
+    -- Find next person with active hold
+    SELECT patron_id INTO next_patron_id
+    FROM holds
+    WHERE item_id = NEW.item_id AND hold_status_code = 1
+    ORDER BY hold_origin_date ASC LIMIT 1;
+    
+    -- Notify them
+    IF next_patron_id IS NOT NULL THEN
+      INSERT INTO notifications (patron_id, notification_type, message, link_data)
+      VALUES (next_patron_id, 'ITEM_AVAILABLE', 
+              CONCAT('An item you have on hold is now available for pickup!'),
+              JSON_OBJECT('item_id', NEW.item_id));
+      
+      -- Update hold status to ready
+      UPDATE holds
+      SET hold_status_code = 2
+      WHERE item_id = NEW.item_id AND hold_status_code = 1
+      ORDER BY hold_origin_date ASC LIMIT 1;
+    END IF;
+    
+    -- Log the activity
+    INSERT INTO activity_logs (actor_type, actor_id, action_type, loan_id, item_id, description, created_at)
+    VALUES ('patron', NEW.patron_id, 'ITEM_RETURNED', NEW.loan_id, NEW.item_id, 
+            CONCAT('Item returned. Next hold notified: ', IFNULL(next_patron_id, 'none')), NOW());
+  END IF;
+END$$
+
+-- Trigger 3: Notify patron when a fine is created
+DROP TRIGGER IF EXISTS notify_fine_created$$
+
+CREATE TRIGGER notify_fine_created
+AFTER INSERT ON fines
+FOR EACH ROW
+BEGIN
+  INSERT INTO notifications (patron_id, notification_type, message, link_data)
+  VALUES (NEW.patron_id, 'FINE_CREATED', 
+          CONCAT('A fine of $', NEW.fine_amount, ' has been applied to your account.'),
+          JSON_OBJECT('fine_id', NEW.fine_id, 'amount', NEW.fine_amount));
+  
+  -- Log the activity
+  INSERT INTO activity_logs (actor_type, actor_id, action_type, fine_id, target_patron_id, description, created_at)
+  VALUES ('system', 0, 'FINE_NOTIFICATION', NEW.fine_id, NEW.patron_id, 
+          CONCAT('Fine notification created: $', NEW.fine_amount), NOW());
+END$$
+
+-- Trigger 4: Notify patron when a fine is paid
+DROP TRIGGER IF EXISTS notify_fine_paid$$
+
+CREATE TRIGGER notify_fine_paid
+AFTER UPDATE ON fines
+FOR EACH ROW
+BEGIN
+  IF OLD.paid_date IS NULL AND NEW.paid_date IS NOT NULL THEN
+    INSERT INTO notifications (patron_id, notification_type, message, link_data)
+    VALUES (NEW.patron_id, 'FINE_PAID', 
+            CONCAT('Your fine of $', NEW.fine_amount, ' has been recorded as paid. Thank you!'),
+            JSON_OBJECT('fine_id', NEW.fine_id));
+    
+    -- Log the activity
+    INSERT INTO activity_logs (actor_type, actor_id, action_type, fine_id, target_patron_id, description, created_at)
+    VALUES ('staff', IFNULL(@current_staff_id, 0), 'FINE_PAID_NOTIFICATION', NEW.fine_id, NEW.patron_id, 
+            CONCAT('Fine payment notification sent for $', NEW.paid_amount), NOW());
+  END IF;
+END$$
+
+-- Trigger 5: Notify patron when loan is approaching due date (requires stored procedure call)
+DROP TRIGGER IF EXISTS notify_overdue$$
+
+CREATE TRIGGER notify_overdue
+AFTER UPDATE ON loans
+FOR EACH ROW
+BEGIN
+  IF NEW.loan_status_code = 1 AND NEW.loan_due_date = CURDATE() THEN
+    INSERT INTO notifications (patron_id, notification_type, message, link_data)
+    VALUES (NEW.patron_id, 'LOAN_DUE_SOON', 
+            'Your library item is due today! Please return it to avoid fines.',
+            JSON_OBJECT('loan_id', NEW.loan_id, 'item_id', NEW.item_id));
+    
+    -- Log the activity
+    INSERT INTO activity_logs (actor_type, actor_id, action_type, loan_id, target_patron_id, description, created_at)
+    VALUES ('system', 0, 'OVERDUE_NOTIFICATION', NEW.loan_id, NEW.patron_id, 
+            'Due date reminder notification created', NOW());
+  END IF;
+END$$
+
+-- Trigger 6: Notify patron when item is placed on hold
+DROP TRIGGER IF EXISTS notify_hold_created$$
+
+CREATE TRIGGER notify_hold_created
+AFTER INSERT ON holds
+FOR EACH ROW
+BEGIN
+  INSERT INTO notifications (patron_id, notification_type, message, link_data)
+  VALUES (NEW.patron_id, 'HOLD_CREATED', 
+          'Your hold request has been confirmed. We will notify you when the item is available.',
+          JSON_OBJECT('hold_id', NEW.hold_id, 'item_id', NEW.item_id));
+  
+  -- Log the activity
+  INSERT INTO activity_logs (actor_type, actor_id, action_type, hold_id, target_patron_id, description, created_at)
+  VALUES ('patron', NEW.patron_id, 'HOLD_PLACED', NEW.hold_id, NEW.patron_id, 
+          'Hold placed and notification created', NOW());
+END$$
+
+-- Trigger 7: Charge overdue fine when item is returned late
+DROP TRIGGER IF EXISTS charge_overdue_fine$$
+
+CREATE TRIGGER charge_overdue_fine
+AFTER UPDATE ON loans
+FOR EACH ROW
+BEGIN
+  DECLARE days_late INT;
+  DECLARE daily_fine_amount FLOAT;
+  DECLARE total_fine_amount FLOAT;
+  DECLARE patron_role INT;
+  
+  -- Only process if return_date is being set and it's after due date
+  IF NEW.return_date IS NOT NULL AND OLD.return_date IS NULL AND NEW.return_date > NEW.loan_due_date THEN
+    -- Calculate days late
+    SET days_late = DATEDIFF(NEW.return_date, NEW.loan_due_date);
+    
+    -- Get patron's daily fine amount from their role
+    SELECT pr.fine INTO daily_fine_amount
+    FROM patron_roles pr
+    WHERE pr.patron_role_code = NEW.patron_role_code
+    LIMIT 1;
+    
+    -- Calculate total fine
+    SET total_fine_amount = days_late * IFNULL(daily_fine_amount, 0);
+    
+    -- Only create fine if there is an amount due
+    IF total_fine_amount > 0 THEN
+      -- Create fine record
+      INSERT INTO fines (patron_id, fine_amount, fine_date, loan_id, paid_amount)
+      VALUES (NEW.patron_id, total_fine_amount, CURDATE(), NEW.loan_id, 0);
+      
+      -- Log the activity
+      INSERT INTO activity_logs (actor_type, actor_id, action_type, loan_id, item_id, description, created_at)
+      VALUES ('system', 0, 'OVERDUE_FINE_CHARGED', NEW.loan_id, NEW.item_id, 
+              CONCAT('Overdue fine: ', days_late, ' days late @ $', daily_fine_amount, '/day = $', total_fine_amount), NOW());
+    END IF;
+  END IF;
+END$$
+
+-- Trigger 8: Enhanced fine notification with late fee details
+DROP TRIGGER IF EXISTS notify_fine_created_enhanced$$
+
+CREATE TRIGGER notify_fine_created_enhanced
+AFTER INSERT ON fines
+FOR EACH ROW
+BEGIN
+  DECLARE days_late INT;
+  DECLARE daily_fine_amount FLOAT;
+  DECLARE notification_msg VARCHAR(500);
+  DECLARE notification_type VARCHAR(50);
+  
+  -- Check if this is an overdue fine (has loan_id)
+  IF NEW.loan_id IS NOT NULL THEN
+    -- Get loan details for calculation
+    SELECT 
+      DATEDIFF(l.return_date, l.loan_due_date),
+      pr.fine
+    INTO days_late, daily_fine_amount
+    FROM loans l
+    JOIN patron_roles pr ON pr.patron_role_code = l.patron_role_code
+    WHERE l.loan_id = NEW.loan_id
+    LIMIT 1;
+    
+    -- Create detailed overdue notification
+    SET notification_type = 'OVERDUE_FINE';
+    SET notification_msg = CONCAT(
+      'Late return fee: You were charged $', ROUND(daily_fine_amount, 2), 
+      ' per day for ', IFNULL(days_late, 0), ' day(s) late. ',
+      'Total amount due: $', ROUND(NEW.fine_amount, 2)
+    );
+  ELSE
+    -- Regular fine (not overdue-related)
+    SET notification_type = 'FINE_CREATED';
+    SET notification_msg = CONCAT(
+      'A fine of $', ROUND(NEW.fine_amount, 2), ' has been applied to your account.'
+    );
+  END IF;
+  
+  -- Create notification
+  INSERT INTO notifications (patron_id, notification_type, message, link_data)
+  VALUES (NEW.patron_id, notification_type, notification_msg,
+          JSON_OBJECT('fine_id', NEW.fine_id, 'amount', NEW.fine_amount, 'loan_id', NEW.loan_id));
+  
+  -- Log the activity
+  INSERT INTO activity_logs (actor_type, actor_id, action_type, fine_id, target_patron_id, description, created_at)
+  VALUES ('system', 0, 'FINE_NOTIFICATION', NEW.fine_id, NEW.patron_id, 
+          notification_msg, NOW());
+END$$
+
+-- Remove the old simple fine notification trigger since we have the enhanced one
+DROP TRIGGER IF EXISTS notify_fine_created$$
+
+DELIMITER ;

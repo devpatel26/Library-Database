@@ -3849,6 +3849,175 @@ app.post(["/holds", "/api/holds"], async (req, res) => {
 
 void LogDatabaseConnectionStatus();
 
+// =====================================================
+// NOTIFICATION ENDPOINTS
+// =====================================================
+
+// GET: Fetch notifications for current patron
+app.get(["/notifications", "/api/notifications"], async (req, res) => {
+  try {
+    const sessionId = GetSessionId(req);
+    const session = await LoadSession(sessionId);
+
+    if (!session || !session.patron_id) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    const limit = Math.min(Number(req.params.limit) || 20, 100);
+    const [notifications] = await pool.query(
+      `SELECT notification_id, notification_type, message, is_read, link_data, created_at
+       FROM notifications
+       WHERE patron_id = ?
+       ORDER BY created_at DESC
+       LIMIT ?`,
+      [session.patron_id, limit]
+    );
+
+    res.json(notifications);
+  } catch (error) {
+    console.error("Load notifications error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to load notifications."),
+    });
+  }
+});
+
+// GET: Fetch unread notification count
+app.get(["/notifications/count", "/api/notifications/count"], async (req, res) => {
+  try {
+    const sessionId = GetSessionId(req);
+    const session = await LoadSession(sessionId);
+
+    if (!session || !session.patron_id) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    const [[{ unread_count }]] = await pool.query(
+      `SELECT COUNT(*) as unread_count FROM notifications
+       WHERE patron_id = ? AND is_read = 0`,
+      [session.patron_id]
+    );
+
+    res.json({ unread_count });
+  } catch (error) {
+    console.error("Get unread count error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to get notification count."),
+    });
+  }
+});
+
+// PUT: Mark notification as read
+app.put(["/notifications/:notificationId", "/api/notifications/:notificationId"], async (req, res) => {
+  try {
+    const notificationId = ParsePositiveInteger(req.params.notificationId);
+    if (!notificationId) {
+      return res.status(400).json({ error: "Invalid notification ID" });
+    }
+
+    const sessionId = GetSessionId(req);
+    const session = await LoadSession(sessionId);
+
+    if (!session || !session.patron_id) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    await pool.query(
+      `UPDATE notifications 
+       SET is_read = 1 
+       WHERE notification_id = ? AND patron_id = ?`,
+      [notificationId, session.patron_id]
+    );
+
+    res.json({ message: "Notification marked as read" });
+  } catch (error) {
+    console.error("Mark notification read error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to mark notification as read."),
+    });
+  }
+});
+
+// PUT: Mark all notifications as read
+app.put(["/notifications/read-all", "/api/notifications/read-all"], async (req, res) => {
+  try {
+    const sessionId = GetSessionId(req);
+    const session = await LoadSession(sessionId);
+
+    if (!session || !session.patron_id) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    await pool.query(
+      `UPDATE notifications 
+       SET is_read = 1 
+       WHERE patron_id = ? AND is_read = 0`,
+      [session.patron_id]
+    );
+
+    res.json({ message: "All notifications marked as read" });
+  } catch (error) {
+    console.error("Mark all notifications read error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to mark all notifications as read."),
+    });
+  }
+});
+
+// DELETE: Clear a notification
+app.delete(["/notifications/:notificationId", "/api/notifications/:notificationId"], async (req, res) => {
+  try {
+    const notificationId = ParsePositiveInteger(req.params.notificationId);
+    if (!notificationId) {
+      return res.status(400).json({ error: "Invalid notification ID" });
+    }
+
+    const sessionId = GetSessionId(req);
+    const session = await LoadSession(sessionId);
+
+    if (!session || !session.patron_id) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    await pool.query(
+      `DELETE FROM notifications 
+       WHERE notification_id = ? AND patron_id = ?`,
+      [notificationId, session.patron_id]
+    );
+
+    res.json({ message: "Notification deleted" });
+  } catch (error) {
+    console.error("Delete notification error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to delete notification."),
+    });
+  }
+});
+
+// DELETE: Clear all notifications
+app.delete(["/notifications", "/api/notifications"], async (req, res) => {
+  try {
+    const sessionId = GetSessionId(req);
+    const session = await LoadSession(sessionId);
+
+    if (!session || !session.patron_id) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    await pool.query(
+      `DELETE FROM notifications WHERE patron_id = ?`,
+      [session.patron_id]
+    );
+
+    res.json({ message: "All notifications cleared" });
+  } catch (error) {
+    console.error("Clear all notifications error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to clear notifications."),
+    });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);
 });
