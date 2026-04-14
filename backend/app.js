@@ -1866,8 +1866,13 @@ app.get(["/account/activity", "/api/account/activity"], async (req, res) => {
       FROM loans l LEFT JOIN loan_statuses ls ON ls.loan_status_code = l.loan_status_code
       ${GetPatronItemJoinClauses("l.item_id")} WHERE l.patron_id = ?`, [user.patronId]);
 
-    // 2. Notification data is now handled via the notifications table (not from view)
-    const notificationRows = [];
+    // 2. Fetch notifications from the notifications table
+    const [notificationRows] = await pool.query(`
+      SELECT notification_id, notification_type, message, is_read, created_at
+      FROM notifications
+      WHERE patron_id = ?
+      ORDER BY created_at DESC
+    `, [user.patronId]);
 
     // 3. Map the old data formats (Logic preserved from your original code)
     const originalActivity = [
@@ -1890,6 +1895,18 @@ app.get(["/account/activity", "/api/account/activity"], async (req, res) => {
         creator: row.creator,
         detail: `Due ${row.loanEnd}`,
         status: row.overdue ? "Overdue" : row.loanStatus === "returned" ? "Returned" : "Active",
+      })),
+      ...notificationRows.map((row) => ({
+        activityId: `notif_${row.notification_id}`,
+        activityType: "notification",
+        activityDate: row.created_at,
+        headline: row.notification_type,
+        title: row.message,
+        creator: null,
+        detail: row.message,
+        status: row.notification_type === "OVERDUE_FINE" ? "Overdue" : 
+                row.notification_type === "HOLD_READY" ? "Ready" : 
+                row.notification_type,
       }))
     ];
 
