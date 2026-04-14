@@ -27,7 +27,7 @@ const NotificationBell = () => {
     setReadIds(storedReadIds);
   }, []);
 
-  // 2. Fetch the activity data
+  // 2. Fetch the activity data AND new notifications from triggers
   useEffect(() => {
     let isMounted = true;
 
@@ -36,8 +36,27 @@ const NotificationBell = () => {
         setIsLoading(true);
         const data = await FetchJson("/api/account/activity"); 
         
+        // Also fetch new notifications from triggers
+        const newNotifications = await FetchJson("/api/notifications?limit=50");
+        
         if (isMounted && Array.isArray(data)) {
-          setNotifications(data.slice(0, 10)); // Top 10 recent items
+          // Combine both sources: account activity + new trigger notifications
+          const combinedData = [
+            ...data.slice(0, 10), // Keep original account activity
+            ...(Array.isArray(newNotifications) ? newNotifications.map(notif => ({
+              activityId: `notif_${notif.notification_id}`,
+              headline: notif.notification_type,
+              title: notif.message,
+              detail: notif.message,
+              status: notif.notification_type === 'OVERDUE_FINE' ? 'Overdue' : 
+                      notif.notification_type === 'HOLD_READY' ? 'Ready' : 
+                      notif.notification_type,
+              activityDate: notif.created_at,
+              isNewNotification: true
+            })) : [])
+          ];
+          
+          setNotifications(combinedData.slice(0, 15)); // Show top 15 combined
         }
       } catch (error) {
         console.error("Error fetching notifications:", error);
