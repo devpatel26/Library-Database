@@ -890,13 +890,13 @@ function BuildSearchQuery({ q, category, availableOnly, sort, limit }) {
       SELECT COUNT(*)
       FROM holds h
       WHERE h.item_id = i.item_id
-        AND h.hold_status = 'ready'
+        AND h.hold_status_code = 2
     ) AS reservedCount,
     (
       SELECT COUNT(*)
       FROM holds h
       WHERE h.item_id = i.item_id
-        AND h.hold_status = 'waiting'
+        AND h.hold_status_code = 1
     ) AS queueCount,
     i.unavailable
   `;
@@ -1866,11 +1866,8 @@ app.get(["/account/activity", "/api/account/activity"], async (req, res) => {
       FROM loans l LEFT JOIN loan_statuses ls ON ls.loan_status_code = l.loan_status_code
       ${GetPatronItemJoinClauses("l.item_id")} WHERE l.patron_id = ?`, [user.patronId]);
 
-    // 2. Fetch the "New" Notification data from the view
-    const [notificationRows] = await pool.query(
-      `SELECT activityId, activityType, headline, detail, activityDate, status, title, creator
-       FROM account_activity_view WHERE patron_id = ?`, [user.patronId]
-    );
+    // 2. Notification data is now handled via the notifications table (not from view)
+    const notificationRows = [];
 
     // 3. Map the old data formats (Logic preserved from your original code)
     const originalActivity = [
