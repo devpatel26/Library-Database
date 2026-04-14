@@ -37,7 +37,14 @@ const NotificationBell = () => {
         const data = await FetchJson("/api/account/activity"); 
         
         // Also fetch new notifications from triggers
-        const newNotifications = await FetchJson("/api/notifications?limit=50");
+        let newNotifications = [];
+        try {
+          newNotifications = await FetchJson("/api/notifications?limit=50");
+          console.log("✅ Fetched notifications from /api/notifications:", newNotifications);
+        } catch (notifError) {
+          console.warn("⚠️ Failed to fetch notifications:", notifError);
+          newNotifications = [];
+        }
         
         if (isMounted && Array.isArray(data)) {
           // Combine both sources: account activity + new trigger notifications
@@ -56,10 +63,11 @@ const NotificationBell = () => {
             })) : [])
           ];
           
+          console.log("📦 Combined notifications:", combinedData);
           setNotifications(combinedData.slice(0, 15)); // Show top 15 combined
         }
       } catch (error) {
-        console.error("Error fetching notifications:", error);
+        console.error("❌ Error fetching notifications:", error);
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -67,7 +75,17 @@ const NotificationBell = () => {
 
     fetchActivities();
     
-    return () => { isMounted = false; };
+    // Poll every 10 seconds for new notifications
+    const interval = setInterval(() => {
+      if (isMounted) {
+        fetchActivities();
+      }
+    }, 10000);
+    
+    return () => { 
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   // 3. Close dropdown when clicking outside of it
