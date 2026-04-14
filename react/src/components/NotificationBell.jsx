@@ -34,15 +34,18 @@ const NotificationBell = () => {
     const fetchActivities = async () => {
       try {
         setIsLoading(true);
+        console.log("🔄 Fetching account activity...");
         const data = await FetchJson("/api/account/activity"); 
+        console.log("✅ Account activity fetched:", data);
         
         // Also fetch new notifications from triggers
         let newNotifications = [];
         try {
+          console.log("🔔 Attempting to fetch notifications from /api/notifications?limit=50");
           newNotifications = await FetchJson("/api/notifications?limit=50");
           console.log("✅ Fetched notifications from /api/notifications:", newNotifications);
         } catch (notifError) {
-          console.warn("⚠️ Failed to fetch notifications:", notifError);
+          console.error("❌ Failed to fetch notifications - Error details:", notifError);
           newNotifications = [];
         }
         
@@ -63,11 +66,12 @@ const NotificationBell = () => {
             })) : [])
           ];
           
-          console.log("📦 Combined notifications:", combinedData);
+          console.log("📦 Combined notifications count:", combinedData.length);
+          console.log("📦 Combined data:", combinedData);
           setNotifications(combinedData.slice(0, 15)); // Show top 15 combined
         }
       } catch (error) {
-        console.error("❌ Error fetching notifications:", error);
+        console.error("❌ Error in fetchActivities:", error);
       } finally {
         if (isMounted) setIsLoading(false);
       }
