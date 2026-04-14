@@ -3853,21 +3853,17 @@ void LogDatabaseConnectionStatus();
 // GET: Fetch notifications for current patron
 app.get(["/notifications", "/api/notifications"], async (req, res) => {
   try {
-    const sessionId = GetSessionId(req);
-    const session = await LoadSession(sessionId);
+    const user = await RequirePatronUser(req, res);
+    if (!user) return;
 
-    if (!session || !session.patron_id) {
-      return res.status(401).json({ error: "Not authenticated" });
-    }
-
-    const limit = Math.min(Number(req.params.limit) || 20, 100);
+    const limit = Math.min(Number(req.query.limit) || 20, 100);
     const [notifications] = await pool.query(
       `SELECT notification_id, notification_type, message, is_read, link_data, created_at
        FROM notifications
        WHERE patron_id = ?
        ORDER BY created_at DESC
        LIMIT ?`,
-      [session.patron_id, limit]
+      [user.patronId, limit]
     );
 
     res.json(notifications);
@@ -3882,17 +3878,13 @@ app.get(["/notifications", "/api/notifications"], async (req, res) => {
 // GET: Fetch unread notification count
 app.get(["/notifications/count", "/api/notifications/count"], async (req, res) => {
   try {
-    const sessionId = GetSessionId(req);
-    const session = await LoadSession(sessionId);
-
-    if (!session || !session.patron_id) {
-      return res.status(401).json({ error: "Not authenticated" });
-    }
+    const user = await RequirePatronUser(req, res);
+    if (!user) return;
 
     const [[{ unread_count }]] = await pool.query(
       `SELECT COUNT(*) as unread_count FROM notifications
        WHERE patron_id = ? AND is_read = 0`,
-      [session.patron_id]
+      [user.patronId]
     );
 
     res.json({ unread_count });
@@ -3907,23 +3899,19 @@ app.get(["/notifications/count", "/api/notifications/count"], async (req, res) =
 // PUT: Mark notification as read
 app.put(["/notifications/:notificationId", "/api/notifications/:notificationId"], async (req, res) => {
   try {
+    const user = await RequirePatronUser(req, res);
+    if (!user) return;
+
     const notificationId = ParsePositiveInteger(req.params.notificationId);
     if (!notificationId) {
       return res.status(400).json({ error: "Invalid notification ID" });
-    }
-
-    const sessionId = GetSessionId(req);
-    const session = await LoadSession(sessionId);
-
-    if (!session || !session.patron_id) {
-      return res.status(401).json({ error: "Not authenticated" });
     }
 
     await pool.query(
       `UPDATE notifications 
        SET is_read = 1 
        WHERE notification_id = ? AND patron_id = ?`,
-      [notificationId, session.patron_id]
+      [notificationId, user.patronId]
     );
 
     res.json({ message: "Notification marked as read" });
@@ -3938,18 +3926,14 @@ app.put(["/notifications/:notificationId", "/api/notifications/:notificationId"]
 // PUT: Mark all notifications as read
 app.put(["/notifications/read-all", "/api/notifications/read-all"], async (req, res) => {
   try {
-    const sessionId = GetSessionId(req);
-    const session = await LoadSession(sessionId);
-
-    if (!session || !session.patron_id) {
-      return res.status(401).json({ error: "Not authenticated" });
-    }
+    const user = await RequirePatronUser(req, res);
+    if (!user) return;
 
     await pool.query(
       `UPDATE notifications 
        SET is_read = 1 
        WHERE patron_id = ? AND is_read = 0`,
-      [session.patron_id]
+      [user.patronId]
     );
 
     res.json({ message: "All notifications marked as read" });
@@ -3964,22 +3948,18 @@ app.put(["/notifications/read-all", "/api/notifications/read-all"], async (req, 
 // DELETE: Clear a notification
 app.delete(["/notifications/:notificationId", "/api/notifications/:notificationId"], async (req, res) => {
   try {
+    const user = await RequirePatronUser(req, res);
+    if (!user) return;
+
     const notificationId = ParsePositiveInteger(req.params.notificationId);
     if (!notificationId) {
       return res.status(400).json({ error: "Invalid notification ID" });
     }
 
-    const sessionId = GetSessionId(req);
-    const session = await LoadSession(sessionId);
-
-    if (!session || !session.patron_id) {
-      return res.status(401).json({ error: "Not authenticated" });
-    }
-
     await pool.query(
       `DELETE FROM notifications 
        WHERE notification_id = ? AND patron_id = ?`,
-      [notificationId, session.patron_id]
+      [notificationId, user.patronId]
     );
 
     res.json({ message: "Notification deleted" });
@@ -3994,16 +3974,12 @@ app.delete(["/notifications/:notificationId", "/api/notifications/:notificationI
 // DELETE: Clear all notifications
 app.delete(["/notifications", "/api/notifications"], async (req, res) => {
   try {
-    const sessionId = GetSessionId(req);
-    const session = await LoadSession(sessionId);
-
-    if (!session || !session.patron_id) {
-      return res.status(401).json({ error: "Not authenticated" });
-    }
+    const user = await RequirePatronUser(req, res);
+    if (!user) return;
 
     await pool.query(
       `DELETE FROM notifications WHERE patron_id = ?`,
-      [session.patron_id]
+      [user.patronId]
     );
 
     res.json({ message: "All notifications cleared" });
