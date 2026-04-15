@@ -420,7 +420,7 @@ ENGINE = InnoDB;
 -- Table `Library_Database`.`hold_statuses`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `Library_Database`.`hold_statuses` (
-  `hold_status_code` INT NOT NULL
+  `hold_status_code` INT NOT NULL,
   `hold_status_name` VARCHAR(15) NOT NULL,
   PRIMARY KEY (`hold_status_code`),
   UNIQUE INDEX `hold_status_name_UNIQUE` (`hold_status_name` ASC) VISIBLE,
