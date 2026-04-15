@@ -38,7 +38,7 @@ export default function Report() {
             User Overview
           </h2>
           <p className="mt-3 text-sm leading-6 text-slate-300">
-            View all users in the system, including patrons and staffs.
+            View all users in the system by their user role, date of birth, and account status.
           </p >
           <div className="mt-6 flex justify-center">
             <PrimaryButton
