@@ -1067,6 +1067,19 @@ function NormalizeManagedItemCategory(value) {
   return "all";
 }
 
+function NormalizeManagedUserType(value) {
+  const normalizedValue = SafeText(value).trim().toLowerCase();
+
+  if (
+    normalizedValue === "patron" ||
+    normalizedValue === "staff"
+  ) {
+    return normalizedValue;
+  }
+
+  return "all";
+}
+
 function ParseBooleanFlag(value) {
   if (value === true || value === false) {
     return value ? 1 : 0;
