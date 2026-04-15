@@ -3,8 +3,9 @@ import { useMessage } from "../hooks/useMessage";
 // import languages, { bookformats, genres } from "../data/dummy/formdropdowns";
 
 import { ObjectDropdown, DisabledDropdown } from "../components/Dropdown";
-import { FetchJson, GetErrorMessage } from "../api";
+import { FetchJson, GetErrorMessage, UploadImageFile } from "../api";
 import { useEffect, useState } from "react";
+import FileUploadField from "../components/FileUploadField";
 
 export default function Periodicals() {
   const [languages, setLanguages] = useState([]);
@@ -13,6 +14,9 @@ export default function Periodicals() {
   const { showSuccess, showError, showWarning } = useMessage();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
+  const [selectedImageName, setSelectedImageName] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   useEffect(() => {
     async function LoadDropdowns() {
       try {
@@ -44,6 +48,7 @@ export default function Periodicals() {
             e.preventDefault();
 
             const formData = new FormData(e.target);
+            let coverImageUrl = "";
 
             const title = formData.get("title");
             const publisher = formData.get("publisher");
@@ -62,19 +67,27 @@ export default function Periodicals() {
               return;
             }
 
-            const periodicalData = {
-              title: formData.get("title"),
-              available: formData.get("available"),
-              shelfnumber: formData.get("shelfnumber"),
-              genre: formData.get("genre"),
-              language: formData.get("language"),
-              format: formData.get("format"),
-              publisher: formData.get("publisher"),
-              publicationdate: formData.get("publicationdate"),
-              summary: formData.get("summary"),
-            };
-
             try {
+              setSubmitting(true);
+
+              if (selectedImageFile) {
+                const uploadResult = await UploadImageFile(selectedImageFile);
+                coverImageUrl = String(uploadResult?.url ?? "").trim() || coverImageUrl;
+              }
+
+              const periodicalData = {
+                title: formData.get("title"),
+                available: formData.get("available"),
+                shelfnumber: formData.get("shelfnumber"),
+                genre: formData.get("genre"),
+                language: formData.get("language"),
+                format: formData.get("format"),
+                publisher: formData.get("publisher"),
+                publicationdate: formData.get("publicationdate"),
+                summary: formData.get("summary"),
+                coverImageUrl,
+              };
+
               await FetchJson("/api/itementry/periodical", {
                 method: "POST",
                 headers: {
@@ -85,9 +98,13 @@ export default function Periodicals() {
 
               showSuccess("Periodical entry successful!");
               e.target.reset();
+              setSelectedImageFile(null);
+              setSelectedImageName("");
             } catch (error) {
               console.error(error);
               showError(error.message || "Periodical entry failed.");
+            } finally {
+              setSubmitting(false);
             }
           }}
         >
@@ -186,6 +203,19 @@ export default function Periodicals() {
                 </div>
               </div>
               <div>
+                <FileUploadField
+                  id="coverImageFile"
+                  label="Upload Cover Image (Optional)"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  selectedFileName={selectedImageName}
+                  onChange={(event) => {
+                    const nextFile = event.target.files?.[0] ?? null;
+                    setSelectedImageFile(nextFile);
+                    setSelectedImageName(nextFile?.name ?? "");
+                  }}
+                />
+              </div>
+              <div>
                 <div className="sm:col-span-3">
                   <label htmlFor="summary">
                     Summary
@@ -201,7 +231,12 @@ export default function Periodicals() {
                 </div>
               </div>
               <div className="mt-4 flex justify-center items-center w-full">
-                <SubmitButton title={"Submit"} value={"OK"} halfwidth={true} />
+                <SubmitButton
+                  title={submitting ? "Saving..." : "Submit"}
+                  value={"OK"}
+                  halfwidth={true}
+                  disabledValue={submitting}
+                />
               </div>
             </div>
           </div>

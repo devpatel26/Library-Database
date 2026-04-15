@@ -2,6 +2,7 @@ import mysql from "mysql2";
 import dotenv from "dotenv";
 import http from "node:http";
 import crypto from "node:crypto";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { URL, fileURLToPath } from "node:url";
 
@@ -231,6 +232,14 @@ function CreateApp() {
 }
 
 const backendDirectory = path.dirname(fileURLToPath(import.meta.url));
+const uploadsDirectory = path.resolve(backendDirectory, "uploads");
+const maxUploadedImageBytes = 5 * 1024 * 1024;
+const allowedImageMimeTypes = {
+  "image/jpeg": ".jpg",
+  "image/png": ".png",
+  "image/webp": ".webp",
+  "image/gif": ".gif",
+};
 
 dotenv.config({ path: path.resolve(backendDirectory, ".env") });
 
@@ -492,6 +501,88 @@ function GetApplicationOrigin(req) {
   }
 
   return defaultAppOrigin.replace(/\/+$/, "");
+}
+
+function GetBackendOrigin(req) {
+  const forwardedProto = String(req.get("x-forwarded-proto") ?? "")
+    .split(",")[0]
+    .trim()
+    .toLowerCase();
+  const forwardedHost = String(req.get("x-forwarded-host") ?? "")
+    .split(",")[0]
+    .trim();
+  const host = forwardedHost || String(req.get("host") ?? "").split(",")[0].trim();
+
+  if (!host) {
+    return "http://localhost:3000";
+  }
+
+  return `${forwardedProto === "https" ? "https" : "http"}://${host}`;
+}
+
+function ParseImageUploadDataUrl(value) {
+  const normalizedValue = String(value ?? "").trim();
+  const match = normalizedValue.match(
+    /^data:([a-z0-9.+-]+\/[a-z0-9.+-]+);base64,([a-z0-9+/=\s]+)$/i
+  );
+
+  if (!match) {
+    return null;
+  }
+
+  try {
+    return {
+      mimeType: match[1].toLowerCase(),
+      buffer: Buffer.from(match[2].replace(/\s+/g, ""), "base64"),
+    };
+  } catch {
+    return null;
+  }
+}
+
+function GetUploadedImageExtension(mimeType) {
+  return allowedImageMimeTypes[String(mimeType ?? "").toLowerCase()] ?? null;
+}
+
+function NormalizeUploadFilename(value) {
+  const normalizedValue = String(value ?? "").trim();
+
+  if (
+    !normalizedValue ||
+    !/^[a-z0-9._-]+$/i.test(normalizedValue) ||
+    normalizedValue.includes("..") ||
+    path.basename(normalizedValue) !== normalizedValue
+  ) {
+    return null;
+  }
+
+  return normalizedValue;
+}
+
+function GetUploadedImageContentType(filename) {
+  const extension = path.extname(String(filename ?? "")).toLowerCase();
+
+  if (extension === ".jpg" || extension === ".jpeg") {
+    return "image/jpeg";
+  }
+
+  if (extension === ".png") {
+    return "image/png";
+  }
+
+  if (extension === ".webp") {
+    return "image/webp";
+  }
+
+  if (extension === ".gif") {
+    return "image/gif";
+  }
+
+  return "application/octet-stream";
+}
+
+function BuildUploadedImageUrl(req, filename) {
+  return `${GetBackendOrigin(req)}/uploads/${encodeURIComponent(filename)}`;
 }
 
 function ReadSessionToken(req) {
@@ -2861,6 +2952,86 @@ app.get(["/languages", "/api/languages"], async (req, res) => {
     res.json(rows);
   } catch (error) {
     SendServerError(res, error, "Internal Server Error");
+  }
+});
+
+app.get("/uploads/:filename", async (req, res) => {
+  const filename = NormalizeUploadFilename(req.params.filename);
+
+  if (!filename) {
+    return res.status(400).json({ error: "Invalid upload filename." });
+  }
+
+  try {
+    const filePath = path.resolve(uploadsDirectory, filename);
+    const fileContents = await readFile(filePath);
+
+    res.setHeader("Content-Type", GetUploadedImageContentType(filename));
+    res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+    return res.send(fileContents);
+  } catch (error) {
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "ENOENT"
+    ) {
+      return res.status(404).json({ error: "Uploaded image not found." });
+    }
+
+    return SendServerError(res, error, "Failed to load uploaded image.");
+  }
+});
+
+app.post(["/uploads/images", "/api/uploads/images"], async (req, res) => {
+  try {
+    const user = await RequireStaffUser(req, res);
+
+    if (!user) {
+      return;
+    }
+
+    const parsedImage = ParseImageUploadDataUrl(req.body?.dataUrl);
+    const originalFilename = NormalizeOptionalText(req.body?.filename, 255);
+
+    if (!parsedImage) {
+      return res.status(400).json({ error: "Invalid image upload payload." });
+    }
+
+    const extension = GetUploadedImageExtension(parsedImage.mimeType);
+
+    if (!extension) {
+      return res.status(400).json({
+        error: "Only JPG, PNG, WEBP, and GIF images are supported.",
+      });
+    }
+
+    if (!parsedImage.buffer.length || parsedImage.buffer.length > maxUploadedImageBytes) {
+      return res.status(400).json({
+        error: "Image upload must be between 1 byte and 5 MB.",
+      });
+    }
+
+    const baseName = path
+      .basename(originalFilename ?? "image", path.extname(originalFilename ?? ""))
+      .replace(/[^a-z0-9_-]+/gi, "-")
+      .replace(/^-+|-+$/g, "")
+      .toLowerCase() || "image";
+
+    const storedFilename =
+      `${Date.now()}-${baseName}-${crypto.randomUUID()}${extension}`;
+
+    await mkdir(uploadsDirectory, { recursive: true });
+    await writeFile(path.resolve(uploadsDirectory, storedFilename), parsedImage.buffer);
+
+    return res.status(201).json({
+      filename: storedFilename,
+      url: BuildUploadedImageUrl(req, storedFilename),
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: FormatServerError(error, "Image upload failed."),
+    });
   }
 });
 // get genres

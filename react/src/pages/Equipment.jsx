@@ -12,6 +12,9 @@ export default function Equipment() {
       <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
         Enter equipment information below.
       </p>
+      <p className="mt-2 max-w-2xl text-sm text-slate-400">
+        Image upload is not enabled for equipment yet.
+      </p>
       <div className="flex gap-4 flex-wrap justify-evenly mt-4">
         <form
           onSubmit={async (e) => {

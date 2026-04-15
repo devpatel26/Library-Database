@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
+import { BrowserRouter, Routes, Route, NavLink, Navigate } from "react-router-dom";
 
 import Account from "./pages/Account.jsx";
 import AccountActivity from "./pages/AccountActivity.jsx";
@@ -221,6 +221,7 @@ function App() {
                 <Route path="/lost" element={<Lost />} />
 
                 <Route path="/itementry" element={<ItemEntry />}>
+                  <Route index element={<Navigate to="books" replace />} />
                   <Route path="books" element={<Books />} />
                   <Route path="periodicals" element={<Periodicals />} />
                   <Route

@@ -1,9 +1,10 @@
 import { SubmitButton } from "../components/Buttons";
 // import Dropdown from "../components/Dropdown";
 import { ObjectDropdown, DisabledDropdown } from "../components/Dropdown";
-import { FetchJson, GetErrorMessage } from "../api";
+import { FetchJson, GetErrorMessage, UploadImageFile } from "../api";
 import { useMessage } from "../hooks/useMessage";
 import { useEffect, useState } from "react";
+import FileUploadField from "../components/FileUploadField";
 // import languages, { avmformats, genres } from "../data/dummy/formdropdowns";
 
 export default function AudiovisualMedia() {
@@ -12,6 +13,9 @@ export default function AudiovisualMedia() {
   const [format, setFormat] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
+  const [selectedImageName, setSelectedImageName] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const { showSuccess, showError, /*showWarning*/ } = useMessage();
   useEffect(() => {
     async function LoadDropdowns() {
@@ -46,21 +50,30 @@ export default function AudiovisualMedia() {
             e.preventDefault();
 
             const formData = new FormData(e.target);
-
-            const avmData = {
-              title: formData.get("title"),
-              available: formData.get("available"),
-              shelfnumber: formData.get("shelfnumber"),
-              runtime: formData.get("runtime"),
-              genre: formData.get("genre"),
-              language: formData.get("language"),
-              format: formData.get("format"),
-              publisher: formData.get("publisher"),
-              publicationdate: formData.get("publicationdate"),
-              summary: formData.get("summary"),
-            };
+            let coverImageUrl = "";
 
             try {
+              setSubmitting(true);
+
+              if (selectedImageFile) {
+                const uploadResult = await UploadImageFile(selectedImageFile);
+                coverImageUrl = String(uploadResult?.url ?? "").trim() || coverImageUrl;
+              }
+
+              const avmData = {
+                title: formData.get("title"),
+                available: formData.get("available"),
+                shelfnumber: formData.get("shelfnumber"),
+                runtime: formData.get("runtime"),
+                genre: formData.get("genre"),
+                language: formData.get("language"),
+                format: formData.get("format"),
+                publisher: formData.get("publisher"),
+                publicationdate: formData.get("publicationdate"),
+                summary: formData.get("summary"),
+                coverImageUrl,
+              };
+
               await FetchJson("/api/itementry/audiovisual_media", {
                 method: "POST",
                 headers: {
@@ -76,6 +89,8 @@ export default function AudiovisualMedia() {
             } catch (error) {
               console.error(error);
               showError(error.message || "AVM entry failed.");
+            } finally {
+              setSubmitting(false);
             }
           }}
         >
@@ -191,6 +206,19 @@ export default function AudiovisualMedia() {
                 </div>
               </div>
               <div>
+                <FileUploadField
+                  id="coverImageFile"
+                  label="Upload Cover Image (Optional)"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  selectedFileName={selectedImageName}
+                  onChange={(event) => {
+                    const nextFile = event.target.files?.[0] ?? null;
+                    setSelectedImageFile(nextFile);
+                    setSelectedImageName(nextFile?.name ?? "");
+                  }}
+                />
+              </div>
+              <div>
                 <div className="sm:col-span-3">
                   <label htmlFor="summary">
                     Summary
@@ -206,7 +234,12 @@ export default function AudiovisualMedia() {
                 </div>
               </div>
               <div className="mt-4 flex justify-center items-center w-full">
-                <SubmitButton title={"Submit"} value={"OK"} halfwidth={true} />
+                <SubmitButton
+                  title={submitting ? "Saving..." : "Submit"}
+                  value={"OK"}
+                  halfwidth={true}
+                  disabledValue={submitting}
+                />
               </div>
             </div>
           </div>

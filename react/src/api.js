@@ -29,7 +29,6 @@ function BuildRequestUrls(url) {
   ) {
     return [url];
   }
-  console.log("print this");
   return [url, `${localApiOrigin}${url.replace(/^\/api/, "")}`];
 }
 function ShouldRetryAgainstBackend(error) {
@@ -259,17 +258,13 @@ async function FetchJsonOnce(url, options) {
 
 export async function FetchJson(url, options) {
   const requestUrls = await BuildRequestUrls(url);
-  console.log("Attempting request to:", requestUrls);
-
-  const requestUrlFixed = `https://library-database-baclend-api.onrender.com${requestUrls[0]}`;
-  console.log("Attempting request to fixed URL:", requestUrlFixed);
   let lastError = null;
 
   for (let index = 0; index < requestUrls.length; index += 1) {
     const requestUrl = requestUrls[index];
 
     try {
-      return await FetchJsonOnce(requestUrlFixed, options);
+      return await FetchJsonOnce(requestUrl, options);
     } catch (caughtError) {
       const error = NormalizeRequestError(caughtError);
       lastError = error;
@@ -286,4 +281,44 @@ export async function FetchJson(url, options) {
   }
 
   throw lastError ?? new Error("Request failed.");
+}
+
+function ReadFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      if (typeof reader.result !== "string") {
+        reject(new Error("Failed to read the selected file."));
+        return;
+      }
+
+      resolve(reader.result);
+    };
+
+    reader.onerror = () => {
+      reject(new Error("Failed to read the selected file."));
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
+export async function UploadImageFile(file) {
+  if (!(file instanceof File) || file.size <= 0) {
+    throw new Error("Choose an image file to upload.");
+  }
+
+  const dataUrl = await ReadFileAsDataUrl(file);
+
+  return FetchJson("/api/uploads/images", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      filename: file.name,
+      dataUrl,
+    }),
+  });
 }

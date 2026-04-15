@@ -1,9 +1,8 @@
-import { Outlet, Link, useNavigate } from "react-router-dom";
+import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { ReadStoredUser } from "../api";
 
 const navLinks = [
-  { to: ".", label: "Item Entry" },
   { to: "books", label: "Books" },
   { to: "periodicals", label: "Periodicals" },
   { to: "audiovisualmedia", label: "Audiovisual Media" },
@@ -34,13 +33,19 @@ export default function ItemEntry() {
       <aside className="rounded-3xl border border-white/10 bg-slate-900/70 p-6 shadow-xl shadow-slate-950/30 lg:sticky lg:top-8 lg:w-72 lg:self-start">
         <nav className="space-y-2">
           {navLinks.map((link) => (
-            <Link
+            <NavLink
               key={link.to}
               to={link.to}
-              className="block rounded-md px-3 py-2 text-sm text-slate-200 transition hover:bg-slate-800 hover:text-white"
+              className={({ isActive }) =>
+                `block rounded-md px-3 py-2 text-sm transition ${
+                  isActive
+                    ? "bg-sky-400/10 text-white"
+                    : "text-slate-200 hover:bg-slate-800 hover:text-white"
+                }`
+              }
             >
               {link.label}
-            </Link>
+            </NavLink>
           ))}
         </nav>
       </aside>

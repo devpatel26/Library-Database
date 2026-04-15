@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { ItemHold, ItemHolder, ItemLoan } from "../components/Items";
+import { ItemHold, ItemHolder, ItemImage, ItemLoan } from "../components/Items";
 import { FetchJson, GetErrorMessage, ReadStoredUser } from "../api";
-import { FormatTime, FormatDate } from "../components/TimeFormats";
+import { FormatDate } from "../components/TimeFormats";
 
 async function FetchCirculationData() {
   const payload = await FetchJson("/api/loans");
@@ -19,16 +19,10 @@ function LoanHistoryCard({ itemData }) {
   return (
     <div className="rounded-xl bg-white/2 px-3 py-1.5 outline-2 -outline-offset-1 outline-white/6">
       <div className="grid grid-cols-4">
-        {itemData.category != "equipment" ? (
-          <div className="col-span-3 m-2 flex gap-4">
-            <img src="../public/Datahaven.jpg" className="h-48 w-36" />
-            <ItemHolder data={itemData} />
-          </div>
-        ) : (
-          <div className="col-span-3 m-2">
-            <ItemHolder data={itemData} />
-          </div>
-        )}
+        <div className="col-span-3 m-2 flex gap-4">
+          <ItemImage itemData={itemData} />
+          <ItemHolder data={itemData} />
+        </div>
         <div className="col-span-1 grid grid-rows-3 items-center text-center text-sm text-slate-300">
           <div>Borrowed: {formattedLoanStart}</div>
           <div>Due: {formattedLoanEnd}</div>

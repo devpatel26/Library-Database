@@ -1,8 +1,9 @@
 import { SubmitButton } from "../components/Buttons";
 import { ObjectDropdown, DisabledDropdown } from "../components/Dropdown";
-import { FetchJson, GetErrorMessage } from "../api";
+import { FetchJson, GetErrorMessage, UploadImageFile } from "../api";
 import { useEffect, useState } from "react";
 import InputComponent from "../components/InputComponent";
+import FileUploadField from "../components/FileUploadField";
 import { useMessage } from "../hooks/useMessage";
 
 export default function Books() {
@@ -12,6 +13,9 @@ export default function Books() {
   const [format, setFormat] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
+  const [selectedImageName, setSelectedImageName] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   useEffect(() => {
     async function LoadDropdowns() {
       try {
@@ -43,22 +47,31 @@ export default function Books() {
             e.preventDefault();
 
             const formData = new FormData(e.target);
-
-            const bookData = {
-              title: formData.get("title"),
-              available: formData.get("available"),
-              shelfnumber: formData.get("shelfnumber"),
-              genre: formData.get("genre"),
-              language: formData.get("language"),
-              format: formData.get("format"),
-              authorfirstname: formData.get("authorfirstname"),
-              authorlastname: formData.get("authorlastname"),
-              publisher: formData.get("publisher"),
-              publicationdate: formData.get("publicationdate"),
-              summary: formData.get("summary"),
-            };
+            let coverImageUrl = "";
 
             try {
+              setSubmitting(true);
+
+              if (selectedImageFile) {
+                const uploadResult = await UploadImageFile(selectedImageFile);
+                coverImageUrl = String(uploadResult?.url ?? "").trim() || coverImageUrl;
+              }
+
+              const bookData = {
+                title: formData.get("title"),
+                available: formData.get("available"),
+                shelfnumber: formData.get("shelfnumber"),
+                genre: formData.get("genre"),
+                language: formData.get("language"),
+                format: formData.get("format"),
+                authorfirstname: formData.get("authorfirstname"),
+                authorlastname: formData.get("authorlastname"),
+                publisher: formData.get("publisher"),
+                publicationdate: formData.get("publicationdate"),
+                summary: formData.get("summary"),
+                coverImageUrl,
+              };
+
               await FetchJson("/api/itementry/book", {
                 method: "POST",
                 headers: {
@@ -74,6 +87,8 @@ export default function Books() {
             } catch (error) {
               console.error(error);
               showError(error.message || "Book entry failed.");
+            } finally {
+              setSubmitting(false);
             }
           }}
         >
@@ -166,8 +181,26 @@ export default function Books() {
                   max={1000}
                 />
               </div>
+              <div>
+                <FileUploadField
+                  id="coverImageFile"
+                  label="Upload Cover Image (Optional)"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  selectedFileName={selectedImageName}
+                  onChange={(event) => {
+                    const nextFile = event.target.files?.[0] ?? null;
+                    setSelectedImageFile(nextFile);
+                    setSelectedImageName(nextFile?.name ?? "");
+                  }}
+                />
+              </div>
               <div className="mt-4 flex justify-center items-center w-full">
-                <SubmitButton title={"Submit"} value={"OK"} halfwidth={true} />
+                <SubmitButton
+                  title={submitting ? "Saving..." : "Submit"}
+                  value={"OK"}
+                  halfwidth={true}
+                  disabledValue={submitting}
+                />
               </div>
             </div>
           </div>
