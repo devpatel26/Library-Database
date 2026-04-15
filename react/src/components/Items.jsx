@@ -68,12 +68,13 @@ function NormalizeImageSource(value) {
 function BuildFallbackImageSource(itemData) {
   const theme = itemImageThemes[itemData?.category] ?? itemImageThemes.default;
   const label = EscapeSvgText(theme.label);
-  const title = EscapeSvgText(
-    String(itemData?.title ?? theme.label)
-      .trim()
-      .slice(0, 22)
-      .toUpperCase(),
-  );
+  const title =
+    EscapeSvgText(
+      String(itemData?.title ?? theme.label)
+        .trim()
+        .slice(0, 12)
+        .toUpperCase(),
+    ) + (itemData?.title.length > 12 ? "..." : "");
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 320" role="img" aria-label="${label}">
       <defs>
@@ -506,147 +507,318 @@ export function CarouselItem({ itemData }) {
   const canPlaceHold = Number(itemData.is_removed ?? 0) !== 1;
   return (
     <div className="w-70">
-      {itemData.category != "equipment" ? (
-        <div className="grid grid-rows-5 rounded-xl bg-white/2 px-3 py-1.5 outline-2 outline-white/10 transition transform hover:-translate-y-1 hover:shadow-lg hover:shadow-sky-500/10">
-          <div className="row-span-4 m-2 mt-2">
-            <CarouselItemHolder data={itemData} />
-          </div>
-          <div className="row-span-1 grid grid-cols-3 grid items-center m-2 text-center">
-            <span
-              className={
-                itemData.available >= 1
-                  ? "text-green-400 font-semibold"
-                  : "text-red-400 font-semibold"
-              }
-            >
-              {itemData.available >= 1 ? "Available" : "Not Available"}
-            </span>
-            <span>Shelf: {itemData.shelfNumber}</span>
-            {canPlaceHold ? (
-              isStaff ? (
-                <>
-                  <PrimaryButton
-                    title="Check Out"
-                    onClick={() => OpenStaffAction("checkout")}
-                  />
-
-                  {activeStaffAction ? (
-                    <div className="mt-2 flex w-full flex-col gap-2 rounded-lg border border-white/10 bg-slate-900/70 p-3">
-                      <div className="text-xs text-slate-300">
-                        {activeStaffAction === "hold"
-                          ? "Enter the patron ID for this hold."
-                          : "Enter the patron ID for this checkout."}
-                      </div>
-
-                      <input
-                        type="number"
-                        min="1"
-                        value={patronIdInput}
-                        onChange={(event) =>
-                          setPatronIdInput(event.target.value)
-                        }
-                        placeholder="Patron ID"
-                        className="w-full rounded-md border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-sky-400"
-                      />
-
-                      <div className="flex gap-2">
+      {isStaff ? (
+        <>
+          {itemData.category != "equipment" ? (
+            <div className="h-full grid grid-rows-4 rounded-xl bg-white/2 px-3 py-1.5 outline-2 outline-white/10 transition transform hover:-translate-y-1 hover:shadow-lg hover:shadow-sky-500/10">
+              <div className="row-span-4 m-2 mt-2">
+                <CarouselItemHolder data={itemData} />
+              </div>
+              <div className="row-span-1 grid grid-cols-1 grid items-center m-2 text-center">
+                <div className="grid grid-cols-2">
+                  <span
+                    className={
+                      itemData.available >= 1
+                        ? "text-green-400 font-semibold"
+                        : "text-red-400 font-semibold"
+                    }
+                  >
+                    {itemData.available >= 1 ? "Available" : "Not Available"}
+                  </span>
+                  <span>Shelf: {itemData.shelfNumber}</span>
+                </div>
+                {canPlaceHold ? (
+                  isStaff ? (
+                    <>
+                      <div className="grid grid-cols-2">
                         <PrimaryButton
-                          title={isSubmitting ? "Submitting..." : "Confirm"}
-                          onClick={ConfirmStaffAction}
-                          disabledValue={isSubmitting}
+                          title="Place Hold"
+                          onClick={() => OpenStaffAction("hold")}
                         />
 
-                        <SecondaryButton
-                          title="Cancel"
-                          onClick={ResetStaffAction}
-                          disabled={isSubmitting}
+                        <PrimaryButton
+                          title="Check Out"
+                          onClick={() => OpenStaffAction("checkout")}
                         />
                       </div>
-                    </div>
-                  ) : null}
-                </>
-              ) : (
-                <PrimaryButton
-                  title="Place Hold"
-                  onClick={HandlePatronHold}
-                  disabledValue={isSubmitting}
-                />
-              )
-            ) : (
-              <SecondaryButton title="Unavailable" disabled={true} />
-            )}
-          </div>
-        </div>
+
+                      {activeStaffAction ? (
+                        <div className="mt-2 flex w-full flex-col gap-2 rounded-lg border border-white/10 bg-slate-900/70 p-3">
+                          <div className="text-xs text-slate-300">
+                            {activeStaffAction === "hold"
+                              ? "Enter the patron ID for this hold."
+                              : "Enter the patron ID for this checkout."}
+                          </div>
+
+                          <input
+                            type="number"
+                            min="1"
+                            value={patronIdInput}
+                            onChange={(event) =>
+                              setPatronIdInput(event.target.value)
+                            }
+                            placeholder="Patron ID"
+                            className="w-full rounded-md border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-sky-400"
+                          />
+
+                          <div className="flex gap-2">
+                            <PrimaryButton
+                              title={isSubmitting ? "Submitting..." : "Confirm"}
+                              onClick={ConfirmStaffAction}
+                              disabledValue={isSubmitting}
+                            />
+
+                            <SecondaryButton
+                              title="Cancel"
+                              onClick={ResetStaffAction}
+                              disabled={isSubmitting}
+                            />
+                          </div>
+                        </div>
+                      ) : null}
+                    </>
+                  ) : (
+                    <PrimaryButton
+                      title="Place Hold"
+                      onClick={HandlePatronHold}
+                      disabledValue={isSubmitting}
+                    />
+                  )
+                ) : (
+                  <SecondaryButton title="Unavailable" disabled={true} />
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="h-full grid grid-rows-4 rounded-xl bg-white/2 px-3 py-1.5 outline-2 outline-white/10 transition transform hover:-translate-y-1 hover:shadow-lg hover:shadow-sky-500/10">
+              <div className="row-span-4 m-2 mt-2">
+                <CarouselItemHolder data={itemData} />
+              </div>
+              <div className="row-span-1 grid grid-cols-1 grid items-center m-2 text-center">
+                <div className="grid grid-cols-1">
+                  <span
+                    className={
+                      itemData.available >= 1
+                        ? "text-green-400 font-semibold"
+                        : "text-red-400 font-semibold"
+                    }
+                  >
+                    {itemData.available >= 1 ? "Available" : "Not Available"}
+                  </span>
+                </div>
+                {canPlaceHold ? (
+                  isStaff ? (
+                    <>
+                      <div className="grid grid-cols-2">
+                        <PrimaryButton
+                          title="Place Hold"
+                          onClick={() => OpenStaffAction("hold")}
+                        />
+
+                        <PrimaryButton
+                          title="Check Out"
+                          onClick={() => OpenStaffAction("checkout")}
+                        />
+                      </div>
+
+                      {activeStaffAction ? (
+                        <div className="mt-2 flex w-full flex-col gap-2 rounded-lg border border-white/10 bg-slate-900/70 p-3">
+                          <div className="text-xs text-slate-300">
+                            {activeStaffAction === "hold"
+                              ? "Enter the patron ID for this hold."
+                              : "Enter the patron ID for this checkout."}
+                          </div>
+
+                          <input
+                            type="number"
+                            min="1"
+                            value={patronIdInput}
+                            onChange={(event) =>
+                              setPatronIdInput(event.target.value)
+                            }
+                            placeholder="Patron ID"
+                            className="w-full rounded-md border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-sky-400"
+                          />
+
+                          <div className="flex gap-2">
+                            <PrimaryButton
+                              title={isSubmitting ? "Submitting..." : "Confirm"}
+                              onClick={ConfirmStaffAction}
+                              disabledValue={isSubmitting}
+                            />
+
+                            <SecondaryButton
+                              title="Cancel"
+                              onClick={ResetStaffAction}
+                              disabled={isSubmitting}
+                            />
+                          </div>
+                        </div>
+                      ) : null}
+                    </>
+                  ) : (
+                    <PrimaryButton
+                      title="Place Hold"
+                      onClick={HandlePatronHold}
+                      disabledValue={isSubmitting}
+                    />
+                  )
+                ) : (
+                  <SecondaryButton title="Unavailable" disabled={true} />
+                )}
+              </div>
+            </div>
+          )}
+        </>
       ) : (
-        <div className="grid grid-rows-4 rounded-xl bg-white/2 px-3 py-1.5 outline-2 outline-white/10 text-center transition transform hover:-translate-y-1 hover:shadow-lg hover:shadow-sky-500/10">
-          <div className="row-span-3 m-2 mt-2">
-            <CarouselItemHolder data={itemData} />
-          </div>
-          <div className="row-span-1 grid grid-cols-2 grid items-center m-2 text-center">
-            <span
-              className={
-                itemData.available >= 1
-                  ? "text-green-400 font-semibold"
-                  : "text-red-400 font-semibold"
-              }
-            >
-              {itemData.available >= 1 ? "Available" : "Not Available"}
-            </span>
-            {canPlaceHold ? (
-              isStaff ? (
-                <>
-                  <PrimaryButton
-                    title="Check Out"
-                    onClick={() => OpenStaffAction("checkout")}
-                  />
-
-                  {activeStaffAction ? (
-                    <div className="mt-2 flex w-full flex-col gap-2 rounded-lg border border-white/10 bg-slate-900/70 p-3">
-                      <div className="text-xs text-slate-300">
-                        {activeStaffAction === "hold"
-                          ? "Enter the patron ID for this hold."
-                          : "Enter the patron ID for this checkout."}
-                      </div>
-
-                      <input
-                        type="number"
-                        min="1"
-                        value={patronIdInput}
-                        onChange={(event) =>
-                          setPatronIdInput(event.target.value)
-                        }
-                        placeholder="Patron ID"
-                        className="w-full rounded-md border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-sky-400"
+        <>
+          {itemData.category != "equipment" ? (
+            <div className="h-full grid grid-rows-5 rounded-xl bg-white/2 px-3 py-1.5 outline-2 outline-white/10 transition transform hover:-translate-y-1 hover:shadow-lg hover:shadow-sky-500/10">
+              <div className="row-span-4 m-2 mt-2">
+                <CarouselItemHolder data={itemData} />
+              </div>
+              <div className="row-span-1 grid grid-cols-3 grid items-center m-2 text-center">
+                <span
+                  className={
+                    itemData.available >= 1
+                      ? "text-green-400 font-semibold"
+                      : "text-red-400 font-semibold"
+                  }
+                >
+                  {itemData.available >= 1 ? "Available" : "Not Available"}
+                </span>
+                <span>Shelf: {itemData.shelfNumber}</span>
+                {canPlaceHold ? (
+                  isStaff ? (
+                    <>
+                      <PrimaryButton
+                        title="Check Out"
+                        onClick={() => OpenStaffAction("checkout")}
                       />
 
-                      <div className="flex gap-2">
+                      {activeStaffAction ? (
+                        <div className="mt-2 flex w-full flex-col gap-2 rounded-lg border border-white/10 bg-slate-900/70 p-3">
+                          <div className="text-xs text-slate-300">
+                            {activeStaffAction === "hold"
+                              ? "Enter the patron ID for this hold."
+                              : "Enter the patron ID for this checkout."}
+                          </div>
+
+                          <input
+                            type="number"
+                            min="1"
+                            value={patronIdInput}
+                            onChange={(event) =>
+                              setPatronIdInput(event.target.value)
+                            }
+                            placeholder="Patron ID"
+                            className="w-full rounded-md border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-sky-400"
+                          />
+
+                          <div className="flex gap-2">
+                            <PrimaryButton
+                              title={isSubmitting ? "Submitting..." : "Confirm"}
+                              onClick={ConfirmStaffAction}
+                              disabledValue={isSubmitting}
+                            />
+
+                            <SecondaryButton
+                              title="Cancel"
+                              onClick={ResetStaffAction}
+                              disabled={isSubmitting}
+                            />
+                          </div>
+                        </div>
+                      ) : null}
+                    </>
+                  ) : (
+                    <PrimaryButton
+                      title="Place Hold"
+                      onClick={HandlePatronHold}
+                      disabledValue={isSubmitting}
+                    />
+                  )
+                ) : (
+                  <SecondaryButton title="Unavailable" disabled={true} />
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="h-full grid grid-rows-4 rounded-xl bg-white/2 px-3 py-1.5 outline-2 outline-white/10 text-center transition transform hover:-translate-y-1 hover:shadow-lg hover:shadow-sky-500/10">
+              <div className="row-span-4 m-2 mt-2">
+                <CarouselItemHolder data={itemData} />
+              </div>
+              <div className="grid grid-cols-2 justify-items-center items-center">
+                <span
+                  className={
+                    itemData.available >= 1
+                      ? "text-green-400 font-semibold"
+                      : "text-red-400 font-semibold"
+                  }
+                >
+                  {itemData.available >= 1 ? "Available" : "Not Available"}
+                </span>
+                <div className="row-span-1 grid grid-cols-1 grid items-center m-2 text-center">
+                  {canPlaceHold ? (
+                    isStaff ? (
+                      <>
                         <PrimaryButton
-                          title={isSubmitting ? "Submitting..." : "Confirm"}
-                          onClick={ConfirmStaffAction}
-                          disabledValue={isSubmitting}
+                          title="Check Out"
+                          onClick={() => OpenStaffAction("checkout")}
                         />
 
-                        <SecondaryButton
-                          title="Cancel"
-                          onClick={ResetStaffAction}
-                          disabled={isSubmitting}
-                        />
-                      </div>
-                    </div>
-                  ) : null}
-                </>
-              ) : (
-                <PrimaryButton
-                  title="Place Hold"
-                  onClick={HandlePatronHold}
-                  disabledValue={isSubmitting}
-                />
-              )
-            ) : (
-              <SecondaryButton title="Unavailable" disabled={true} />
-            )}
-          </div>
-        </div>
+                        {activeStaffAction ? (
+                          <div className="mt-2 flex w-full flex-col gap-2 rounded-lg border border-white/10 bg-slate-900/70 p-3">
+                            <div className="text-xs text-slate-300">
+                              {activeStaffAction === "hold"
+                                ? "Enter the patron ID for this hold."
+                                : "Enter the patron ID for this checkout."}
+                            </div>
+
+                            <input
+                              type="number"
+                              min="1"
+                              value={patronIdInput}
+                              onChange={(event) =>
+                                setPatronIdInput(event.target.value)
+                              }
+                              placeholder="Patron ID"
+                              className="w-full rounded-md border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-sky-400"
+                            />
+
+                            <div className="flex gap-2">
+                              <PrimaryButton
+                                title={
+                                  isSubmitting ? "Submitting..." : "Confirm"
+                                }
+                                onClick={ConfirmStaffAction}
+                                disabledValue={isSubmitting}
+                              />
+
+                              <SecondaryButton
+                                title="Cancel"
+                                onClick={ResetStaffAction}
+                                disabled={isSubmitting}
+                              />
+                            </div>
+                          </div>
+                        ) : null}
+                      </>
+                    ) : (
+                      <PrimaryButton
+                        title="Place Hold"
+                        onClick={HandlePatronHold}
+                        disabledValue={isSubmitting}
+                      />
+                    )
+                  ) : (
+                    <SecondaryButton title="Unavailable" disabled={true} />
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
