@@ -61,7 +61,17 @@ function FormatDateLabel(value) {
   return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString();
 }
 
+function GetCurrentMonthDateRange() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
 
+  return {
+    start: `${year}-${month}-01`,
+    end: `${year}-${month}-${day}`,
+  };
+}
 
 function SummaryCard({ title, value, subtitle = "" }) {
   return (
@@ -121,11 +131,13 @@ function BuildMarkLostUrl(loanId) {
 export default function OverdueReport() {
   const { showError, showWarning, showSuccess, showInfo } = useMessage();
 
+  const defaultDateRange = GetCurrentMonthDateRange();
+
   const [reportRows, setReportRows] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [startDate, setStartDate] = useState(defaultDateRange.start);
+  const [endDate, setEndDate] = useState(defaultDateRange.end);
 
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [minDaysOverdue, setMinDaysOverdue] = useState("");
@@ -186,7 +198,7 @@ export default function OverdueReport() {
         }
       } catch (error) {
         console.error(error);
-        showError(error.message || "Failed to load overdue report.");
+        showError(error.message || "Failed to load operations report.");
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -224,7 +236,7 @@ export default function OverdueReport() {
       setReportRows(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error(error);
-      showError(error.message || "Failed to reload overdue report.");
+      showError(error.message || "Failed to reload operations report.");
     } finally {
       setIsLoading(false);
     }
@@ -277,7 +289,6 @@ export default function OverdueReport() {
         return false;
       }
 
-
       if (Number.isFinite(minDays) && minDays >= 0) {
         if (SafeNumber(row.daysOverdue) < minDays) {
           return false;
@@ -292,6 +303,7 @@ export default function OverdueReport() {
           row.title,
           row.patronName,
           row.category,
+          row.creator,
         ]
           .map(SafeText)
           .join(" ")
@@ -375,47 +387,21 @@ export default function OverdueReport() {
       filteredRows.map((row) => SafeText(row.patronId))
     ).size;
 
-    const totalDaysOverdue = filteredRows.reduce(
-      (sum, row) => sum + SafeNumber(row.daysOverdue),
-      0
-    );
-
-    const averageDaysOverdue =
-      totalOverdueLoans > 0 ? totalDaysOverdue / totalOverdueLoans : 0;
-
-    const maximumDaysOverdue =
-      totalOverdueLoans > 0
-        ? Math.max(...filteredRows.map((row) => SafeNumber(row.daysOverdue)))
-        : 0;
-
     const estimatedOutstandingFine = filteredRows.reduce(
       (sum, row) => sum + SafeNumber(row.currentFine),
       0
     );
 
-
-    const mostOverdueItem = [...filteredRows].sort(
-      (a, b) => SafeNumber(b.daysOverdue) - SafeNumber(a.daysOverdue)
-    )[0];
-
     return {
       totalOverdueLoans,
       uniquePatrons,
-      averageDaysOverdue,
-      maximumDaysOverdue,
       estimatedOutstandingFine,
-      mostOverdueItemTitle: mostOverdueItem?.title ?? "-",
-      mostOverdueItemDays: mostOverdueItem?.daysOverdue ?? 0,
     };
   }, [filteredRows]);
 
   const dateRangeLabel = useMemo(() => {
-    if (!startDate && !endDate) {
-      return "Showing all currently overdue items regardless of due date.";
-    }
-
     if (startDate && endDate) {
-      return `Showing overdue items with due dates from ${FormatDateLabel(
+      return `Showing this operational view for overdue items with due dates from ${FormatDateLabel(
         startDate
       )} to ${FormatDateLabel(endDate)}.`;
     }
@@ -426,21 +412,27 @@ export default function OverdueReport() {
       )} onward.`;
     }
 
-    return `Showing overdue items with due dates up to ${FormatDateLabel(
-      endDate
-    )}.`;
+    if (endDate) {
+      return `Showing overdue items with due dates up to ${FormatDateLabel(
+        endDate
+      )}.`;
+    }
+
+    return "Showing current operational overdue items for all available due dates.";
   }, [startDate, endDate]);
 
   function ResetFilters() {
-    setStartDate("");
-    setEndDate("");
+    const currentMonth = GetCurrentMonthDateRange();
+
+    setStartDate(currentMonth.start);
+    setEndDate(currentMonth.end);
     setCategoryFilter("All");
     setMinDaysOverdue("");
     setSearchBy("All");
     setSearchText("");
     setSortBy("daysOverdue");
     setSortDirection("desc");
-    showInfo("Overdue report filters reset.");
+    showInfo("Operations report filters reset to this month.");
   }
 
   return (
@@ -450,21 +442,21 @@ export default function OverdueReport() {
       </p>
 
       <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">
-        Overdue Report
+        Operations Report
       </h1>
 
       <p className="mt-3 text-sm font-medium text-sky-300">
-        Note: This report only shows items that are currently overdue, not yet returned,
-        and filtered by due date when date filters are used.
+        Note: This report defaults to the current month and highlights operational
+        records that may require staff attention.
       </p>
 
       <p className="mt-4 max-w-3xl text-base leading-7 text-slate-300">
-        View all currently overdue items, their responsible patrons,
-        and estimated current fine amount with flexible search, filter, and sorting tools.
+        Review this month’s library operations, including overdue loans and
+        related circulation issues. Use filters to view other date ranges when needed.
       </p>
 
       {isLoading ? (
-        <div className="mt-8 text-slate-300">Loading overdue report...</div>
+        <div className="mt-8 text-slate-300">Loading operations report...</div>
       ) : (
         <>
           <div className="mt-8">
@@ -473,25 +465,18 @@ export default function OverdueReport() {
             </p>
           </div>
 
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <SummaryCard title="Total Overdue Loans" value={summary.totalOverdueLoans} />
-            <SummaryCard title="Total Overdue Patrons" value={summary.uniquePatrons} />
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <SummaryCard
-              title="Average Days Overdue"
-              value={summary.averageDaysOverdue.toFixed(1)}
+              title="Current Overdue Loans"
+              value={summary.totalOverdueLoans}
             />
             <SummaryCard
-              title="Maximum Days Overdue"
-              value={summary.maximumDaysOverdue}
+              title="Overdue Patrons"
+              value={summary.uniquePatrons}
             />
             <SummaryCard
               title="Estimated Outstanding Fine"
               value={FormatMoney(summary.estimatedOutstandingFine)}
-            />
-            <SummaryCard
-              title="Most Overdue Item"
-              value={summary.mostOverdueItemTitle}
-              subtitle={`${summary.mostOverdueItemDays} days overdue`}
             />
           </div>
 
@@ -534,21 +519,11 @@ export default function OverdueReport() {
                   onChange={(event) => setCategoryFilter(event.target.value)}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
                 >
-                  <option>
-                    All
-                  </option>
-                  <option>
-                    Book
-                  </option>
-                  <option>
-                    Periodical
-                  </option>
-                  <option>
-                    Audiovisual Media
-                  </option>
-                  <option>
-                    Equipment
-                  </option>
+                  <option>All</option>
+                  <option>Book</option>
+                  <option>Periodical</option>
+                  <option>Audiovisual Media</option>
+                  <option>Equipment</option>
                 </select>
               </div>
 
@@ -575,27 +550,13 @@ export default function OverdueReport() {
                   onChange={(event) => setSearchBy(event.target.value)}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
                 >
-                  <option>
-                    All
-                  </option>
-                  <option>
-                    Patron Name
-                  </option>
-                  <option>
-                    Patron ID
-                  </option>
-                  <option>
-                    Item Title
-                  </option>
-                  <option>
-                    Item ID
-                  </option>
-                  <option>
-                    Category
-                  </option>
-                  <option>
-                    Creator
-                  </option>
+                  <option>All</option>
+                  <option>Patron Name</option>
+                  <option>Patron ID</option>
+                  <option>Item Title</option>
+                  <option>Item ID</option>
+                  <option>Category</option>
+                  <option>Creator</option>
                 </select>
               </div>
 
@@ -621,42 +582,17 @@ export default function OverdueReport() {
                   onChange={(event) => setSortBy(event.target.value)}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
                 >
-                  <option value="daysOverdue">
-                    Days Overdue
-                  </option>
-                  <option value="loanDueDate">
-                    Due Date
-                  </option>
-                  <option value="loanStartDate">
-                    Borrow Date
-                  </option>
-                  <option value="currentFine">
-                    Estimated Fine
-                  </option>
-                  <option value="dailyFine">
-                    Daily Fine
-                  </option>
-                  <option value="patronName">
-                    Patron Name
-                  </option>
-                  <option value="patronId">
-                    Patron ID
-                  </option>
-                  <option value="title">
-                    Item Title
-                  </option>
-                  <option value="itemId">
-                    Item ID
-                  </option>
-                  <option value="category">
-                    Category
-                  </option>
-                  <option value="creator">
-                    Creator
-                  </option>
-                  <option value="loanId">
-                    Loan ID
-                  </option>
+                  <option value="daysOverdue">Days Overdue</option>
+                  <option value="loanDueDate">Due Date</option>
+                  <option value="loanStartDate">Borrow Date</option>
+                  <option value="currentFine">Estimated Fine</option>
+                  <option value="dailyFine">Daily Fine</option>
+                  <option value="patronName">Patron Name</option>
+                  <option value="patronId">Patron ID</option>
+                  <option value="title">Item Title</option>
+                  <option value="itemId">Item ID</option>
+                  <option value="category">Category</option>
+                  <option value="loanId">Loan ID</option>
                 </select>
               </div>
 
@@ -669,12 +605,8 @@ export default function OverdueReport() {
                   onChange={(event) => setSortDirection(event.target.value)}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
                 >
-                  <option value="desc">
-                    Descending
-                  </option>
-                  <option value="asc">
-                    Ascending
-                  </option>
+                  <option value="desc">Descending</option>
+                  <option value="asc">Ascending</option>
                 </select>
               </div>
             </div>
@@ -686,49 +618,27 @@ export default function OverdueReport() {
 
           <div className="mt-8 rounded-2xl border border-white/10 bg-slate-950/40 p-5">
             <h2 className="text-xl font-semibold text-white">
-              Overdue Detail Table
+              Current Overdue Loans
             </h2>
 
             <div className="mt-4 overflow-x-auto">
               {filteredRows.length === 0 ? (
-                <div className="text-slate-300">No overdue items found.</div>
+                <div className="text-slate-300">No overdue operational records found for the selected filters.</div>
               ) : (
                 <table className="min-w-full border-collapse overflow-hidden rounded-xl">
                   <thead>
                     <tr className="bg-slate-800 text-left text-sm text-slate-200">
-                      <th className="px-2 py-3">
-                        Loan ID
-                      </th>
-                      <th className="px-2 py-3">
-                        Item ID
-                      </th>
-                      <th className="px-2 py-3">
-                        Item Name
-                      </th>
-                      <th className="px-2 py-3">
-                        Category
-                      </th>
-                      <th className="px-2 py-3">
-                        Patron
-                      </th>
-                      <th className="px-2 py-3">
-                        Borrow Date
-                      </th>
-                      <th className="px-2 py-3">
-                        Due Date
-                      </th>
-                      <th className="px-2 py-3">
-                        Days Overdue
-                      </th>
-                      <th className="px-2 py-3">
-                        Daily Fine
-                      </th>
-                      <th className="px-2 py-3">
-                        Estimated Fine
-                      </th>
-                      <th className="px-2 py-3">
-                        Actions
-                      </th>
+                      <th className="px-2 py-3">Loan ID</th>
+                      <th className="px-2 py-3">Item ID</th>
+                      <th className="px-2 py-3">Item Name</th>
+                      <th className="px-2 py-3">Category</th>
+                      <th className="px-2 py-3">Patron</th>
+                      <th className="px-2 py-3">Borrow Date</th>
+                      <th className="px-2 py-3">Due Date</th>
+                      <th className="px-2 py-3">Days Overdue</th>
+                      <th className="px-2 py-3">Daily Fine</th>
+                      <th className="px-2 py-3">Estimated Fine</th>
+                      <th className="px-2 py-3">Actions</th>
                     </tr>
                   </thead>
 
@@ -771,7 +681,6 @@ export default function OverdueReport() {
                           <td className="px-4 py-3 font-semibold text-red-300">
                             {row.daysOverdue}
                           </td>
-
                           <td className="px-4 py-3">
                             {FormatMoney(row.dailyFine)}
                           </td>
