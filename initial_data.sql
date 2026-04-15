@@ -74,6 +74,7 @@ VALUES
 ('Mystery'),
 ('Drama'),
 ('Education'),
+('Children''s Books'),
 ('Biography');
 
 -- -----------------------------------------------------
@@ -132,20 +133,51 @@ VALUES
 (1,'John','Smith','1995-05-12','john@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
 (1,'Emma','Johnson','1998-03-21','emma@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
 (1,'Michael','Brown','1992-09-15','michael@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
-(1,'Sophia','Davis','2000-11-02','sophia@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1);
-
+(1,'Sophia','Davis','2000-11-02','sophia@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Daniel','Wilson','1996-07-08','daniel@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Olivia','Taylor','1999-12-01','olivia@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'James','Anderson','1991-04-18','james@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Isabella','Thomas','1994-02-10','isabella@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'William','Moore','1997-08-22','william@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Mia','Martin','2001-06-30','mia@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Liam','Harris','1993-05-10','liam.harris@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Noah','Clark','1997-11-21','noah.clark@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Ava','Lewis','2000-03-14','ava.lewis@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Ethan','Walker','1992-09-05','ethan.walker@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Mason','Hall','1995-01-18','mason.hall@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Charlotte','Young','1999-07-12','charlotte.young@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Amelia','King','1996-02-03','amelia.king@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Benjamin','Wright','1994-06-30','benjamin.wright@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Lucas','Scott','2001-10-19','lucas.scott@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Harper','Green','1998-12-01','harper.green@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Elijah','Baker','1993-04-14','elijah.baker@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Abigail','Adams','1997-08-25','abigail.adams@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Alexander','Nelson','1992-03-07','alexander.nelson@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Emily','Carter','1995-05-28','emily.carter@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Henry','Mitchell','1991-09-17','henry.mitchell@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Scarlett','Perez','1998-11-09','scarlett.perez@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Daniel','Roberts','1994-06-06','daniel.roberts@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Victoria','Turner','1999-01-13','victoria.turner@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Sebastian','Phillips','1996-10-27','sebastian.phillips@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
+(1,'Grace','Campbell','2000-04-04','grace.campbell@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1);
 -- -----------------------------------------------------
 -- Items Inventory
 -- -----------------------------------------------------
 INSERT INTO items (available, on_hold, unavailable)
 VALUES
-(3,0,0),
-(2,1,0),
-(1,0,1),
-(4,0,0),
-(2,0,0),
-(1,1,0),
-(5,0,0);
+(3,0,0),(2,1,0),(1,0,1),(4,0,0),(2,0,0),
+(1,1,0),(5,0,0),(5,0,0),(4,0,0),(3,0,0),
+(2,0,1),(6,0,0),(3,0,0),(4,0,0),(5,0,0),
+(2,0,0),(3,0,0),(5,0,0),(4,0,0),(3,0,0),
+(2,0,1),(6,0,0),(3,0,0),(4,0,0),(5,0,0),
+(2,0,0),(3,0,0),(5,0,0),(4,0,0),(3,0,0),
+(2,0,1),(6,0,0),(3,0,0),(4,0,0),(5,0,0),
+(2,0,0),(3,0,0),(5,0,0),(4,0,0),(3,0,0),
+(2,0,1),(6,0,0),(3,0,0),(4,0,0),(5,0,0),
+(2,0,0),(3,0,0),(5,0,0),(4,0,0),(3,0,0),
+(2,0,1),(6,0,0),(3,0,0),(4,0,0),(3,0,0),
+(7,0,0),(6,0,0),(3,0,0),(4,0,0),(3,0,0),
+(7,0,0),(6,0,0),(3,0,0),(4,0,0),(3,0,0);
 
 -- -----------------------------------------------------
 -- Books
@@ -153,98 +185,19 @@ VALUES
 INSERT INTO books
 (item_id, book_type_code, language_code, genre_code, summary, publisher, shelf_number, publication_date, title)
 VALUES
-(1,1,1,1,'Wizard boy discovers magic','Bloomsbury',12,'1997-06-26','Harry Potter and the Sorcerer''s Stone'),
-(2,2,1,2,'Dystopian society under surveillance','Secker & Warburg',20,'1949-06-08','1984'),
-(3,1,1,3,'Detective solves complex crime','Penguin',30,'2005-03-12','The Silent Case');
-
--- -----------------------------------------------------
--- Authors
--- -----------------------------------------------------
-INSERT INTO authors (item_id, first_name, last_name)
-VALUES
-(1,'J.K.','Rowling'),
-(2,'George','Orwell'),
-(3,'Daniel','Cole');
-
--- -----------------------------------------------------
--- Periodicals
--- -----------------------------------------------------
-INSERT INTO periodicals
-(item_id, periodical_type_code, language_code, genre_code, publisher, publication_date, shelf_number, title, summary)
-VALUES
-(4,1,1,5,'Time Inc.','2025-01-01',40,'Time Magazine','Weekly world news coverage');
-
--- -----------------------------------------------------
--- Audiovisual Media
--- -----------------------------------------------------
-INSERT INTO audiovisual_media
-(item_id, audiovisual_media_type_code, language_code, genre_code, runtime, publisher, publication_date, shelf_number, title, summary)
-VALUES
-(5,1,1,4,120,'Warner Bros','2018-04-20',50,'Inception','Dream within dream thriller');
-
--- -----------------------------------------------------
--- Contributors
--- -----------------------------------------------------
-INSERT INTO contributors
-(item_id, first_name, last_name, role)
-VALUES
-(5,'Christopher','Nolan','Director');
-
--- -----------------------------------------------------
--- Equipment
--- -----------------------------------------------------
-INSERT INTO equipment
-(item_id, equipment_name)
-VALUES
-(6,'Laptop'),
-(7,'Projector');
-
--- -----------------------------------------------------
--- Loans
--- -----------------------------------------------------
-INSERT INTO loans
-(item_id, patron_id, loan_origin_date, loan_due_date, patron_role_code, loan_status_code)
-VALUES
-(1,1,'2026-03-01','2026-03-15',1,1),
-(2,2,'2026-03-05','2026-03-19',1,1),
-(3,3,'2026-02-20','2026-03-01',1,3);
-
--- -----------------------------------------------------
--- Holds
--- -----------------------------------------------------
-INSERT INTO holds
-(item_id, patron_id, hold_origin_date, hold_expiration_date, hold_status_code)
-VALUES
-(1,4,'2026-03-20','2026-03-30',1);
-
--- -----------------------------------------------------
--- Fines
--- -----------------------------------------------------
-INSERT INTO fines
-(patron_id, fine_amount, fine_date)
-VALUES
-(3,5.00,'2026-03-10');
-
-
-
--- More extensive seed data for testing and demonstration purposes
-INSERT INTO items (available,on_hold,unavailable) VALUES
-(5,0,0),(4,0,0),(3,0,0),(2,0,1),(6,0,0),(3,0,0),(4,0,0),(5,0,0),(2,0,0),(3,0,0),
-(5,0,0),(4,0,0),(3,0,0),(2,0,1),(6,0,0),(3,0,0),(4,0,0),(5,0,0),(2,0,0),(3,0,0),
-(5,0,0),(4,0,0),(3,0,0),(2,0,1),(6,0,0),(3,0,0),(4,0,0),(5,0,0),(2,0,0),(3,0,0),
-(5,0,0),(4,0,0),(3,0,0),(2,0,1),(6,0,0),(3,0,0),(4,0,0),(5,0,0),(2,0,0),(3,0,0),
-(5,0,0),(4,0,0),(3,0,0),(2,0,1),(6,0,0),(3,0,0),(4,0,0);
-
-INSERT INTO books
-(item_id,book_type_code,language_code,genre_code,summary,publisher,shelf_number,publication_date,title) VALUES
-(8,1,1,1,'Epic magical adventure','Bloomsbury',21,'2000-01-01','Dragon Realm'),
-(9,2,1,2,'Space future story','Orbit',22,'2011-06-06','Galactic Wars'),
-(10,1,1,3,'Locked room mystery','Penguin',23,'2014-04-04','Closed Door'),
-(11,2,1,4,'Life struggles drama','RandomHouse',24,'2006-06-06','Life Lines'),
-(12,1,1,5,'Education theory and practice','Pearson',25,'2015-09-09','Learning Theory'),
-(13,2,1,6,'Biography of Nikola Tesla','Penguin',26,'2014-10-10','Tesla: A Life'),
-(14,1,1,1,'Wizard school story','Bloomsbury',27,'2002-02-02','Magic Academy'),
-(15,2,1,2,'Alien invasion sci-fi','Orbit',28,'2012-12-12','Alien Storm'),
+-- Main books
+(1,1,1,1,'In this stunning new edition of Harry Potter and the Sorcerer''s Stone, experience the story as never before.','Scholastic Inc.',12,'2020-10-20','Harry Potter and the Sorcerer''s Stone'),
+(2,2,1,2,'In 1984, London is a grim city in the totalitarian state of Oceania where Big Brother is always watching you and the Thought Police can practically read your mind.','Mariner Books Classics',20,'2017-04-04','1984'),
+(3,1,1,3,'A brilliant psychological portrait of an individual''s departure from social conventions in the search for spiritual fulfillment, Demian encompasses many of the themes associated with Hermann Hesse, its Noble Prize-winning author, particularly the duality of human nature and the quest for inner peace.','Dover Publications',30,'2000-12-18','Demian'),
+(8,1,1,1,'Ryland Grace is the sole survivor on a desperate, last-chance mission--and if he fails, humanity and the earth itself will perish.','Ballantine Books',21,'2022-10-04','Project Hail Mary'),
+(9,2,1,2,'The story begins with a traveling salesman, Gregor Samsa, waking to find himself transformed (metamorphosed) into a large, monstrous insect-like creature.','CreateSpace Independent Publishing Platform',22,'2014-11-30','The Metamorphosis'),
+(10,1,1,3,'Raskolnikov, a destitute and desperate former student, wanders through the slums of St Petersburg and commits a random murder without remorse or regret.','Penguin Classics',23,'2002-12-31','Crime and Punishment'),
+(11,2,1,4,'A gripping, heart-wrenching, and wholly remarkable tale of coming-of-age in a South poisoned by virulent prejudice, it views a world of great beauty and savage inequities through the eyes of a young girl, as her father--a crusading local lawyer--risks everything to defend a black man unjustly accused of a terrible crime.','Harper Perennial',24,'2002-03-05','To Kill a Mockingbird'),
+(12,1,1,5,'In the light of the moon a little egg lay on a leaf','Philomel Books',25,'1994-03-23','The Very Hungry Caterpillar'),
+(13,2,1,6,'Don Quixote has become so entranced reading tales of chivalry that he decides to turn knight errant himself.','Penguin Classics',26,'2003-02-25','Don Quixote (Penguin Classics)'),
+(14,2,1,2,'In a great green room, tucked away in bed, is a little bunny.','HarperCollins',28,'1991-10-20','Goodnight Moon'),
+-- Misc books
+(15,1,1,1,'Wizard school story','Bloomsbury',27,'2002-02-02','Magic Academy'),
 (16,1,1,3,'Cold case mystery','Penguin',29,'2011-11-11','Cold Files'),
 (17,2,1,4,'Family relationships drama','RandomHouse',30,'2010-04-04','Family Bonds'),
 (18,1,1,5,'Teaching techniques','Pearson',31,'2015-05-05','Teaching Methods'),
@@ -285,14 +238,23 @@ INSERT INTO books
 (53,2,1,4,'Interwoven family story','RandomHouse',66,'2013-03-03','Threads of Home'),
 (54,1,1,5,'Statistics for students','Pearson',67,'2020-10-10','Statistics Made Simple');
 
-INSERT INTO authors (item_id,first_name,last_name) VALUES
-(8,'Chris','Morgan'),
-(9,'John','Walker'),
-(10,'Eric','Adams'),
-(11,'Paul','Scott'),
-(12,'Henry','Lee'),
-(13,'Julia','Hall'),
-(14,'Oliver','Cook'),
+-- -----------------------------------------------------
+-- Authors
+-- -----------------------------------------------------
+INSERT INTO authors (item_id, first_name, last_name)
+VALUES
+-- Main authors
+(1,'J.K.','Rowling'),
+(2,'George','Orwell'),
+(3,'Hermann','Hesse'),
+(8,'Andy','Weir'),
+(9,'Franz','Kafka'),
+(10,'Fyodor','Dostoevsky'),
+(11,'Harper','Lee'),
+(12,'Eric','Carle'),
+(13,'Miguel','Cervantes'),
+(14,'Margaret','Brown'),
+-- Misc authors
 (15,'Liam','Rogers'),
 (16,'Aaron','Kelly'),
 (17,'Kyle','Powell'),
@@ -334,17 +296,62 @@ INSERT INTO authors (item_id,first_name,last_name) VALUES
 (53,'Bella','Bennett'),
 (54,'Skylar','Wood');
 
-INSERT INTO patrons
-(patron_role_code,first_name,last_name,date_of_birth,email,password_hash,is_active) VALUES
-(1,'Daniel','Wilson','1996-07-08','daniel@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
-(1,'Olivia','Taylor','1999-12-01','olivia@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
-(1,'James','Anderson','1991-04-18','james@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
-(1,'Isabella','Thomas','1994-02-10','isabella@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
-(1,'William','Moore','1997-08-22','william@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
-(1,'Mia','Martin','2001-06-30','mia@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1);
+-- -----------------------------------------------------
+-- Periodicals
+-- -----------------------------------------------------
+INSERT INTO periodicals
+(item_id, periodical_type_code, language_code, genre_code, publisher, publication_date, shelf_number, title, summary)
+VALUES
+(4,1,1,5,'Time Inc.','2025-01-01',40,'Time Magazine','Weekly world news coverage'),
+(56,1,1,5,'Fancy Publications','2015-01-01',40,'Cat Fancy','Cat news coverage'),
+(57,1,1,5,'Dow Jones & Co.','2016-04-01',40,'The Wall Street Journal Magazine','Wall Street news coverage'),
+(58,1,1,5,'National Geographic Society','1959-12-01',40,'National Geographic','Geographic news coverage');
 
+-- -----------------------------------------------------
+-- Audiovisual Media
+-- -----------------------------------------------------
+INSERT INTO audiovisual_media
+(item_id, audiovisual_media_type_code, language_code, genre_code, runtime, publisher, publication_date, shelf_number, title, summary)
+VALUES
+(5,1,1,4,120,'Warner Bros','2018-04-20',50,'Inception','Dream within dream thriller'),
+(55,1,1,4,125,'Universal','2000-07-11',50,'Jaws','A New England police chief, a shark hunter and a scientist have a showdown with a huge white shark.'),
+(59,1,1,4,125,'Reprise','1997-01-01',50,'Nimrod','Although punk-pop is Green Day''s forte, they sound the most alive on Nimrod when they are breaking away from their formula, whether it is shuffling, tongue-in-cheek humor, surging surf instrumental, horn-driven saga, or acoustic string-laced ballad.'),
+(60,1,1,4,125,'Paramount Home Entertainment','2007-01-01',50,'To Catch a Thief','A woman falls in love with a reformed jewel thief, but suspects he''s active again when a series of jewel heists occur.');
+
+-- -----------------------------------------------------
+-- Contributors
+-- -----------------------------------------------------
+INSERT INTO contributors
+(item_id, first_name, last_name, role)
+VALUES
+(5,'Christopher','Nolan','Director'),
+(55,'Steven','Spielberg','Director'),
+(59,'Billie','Joe','Vocalist'),
+(56,'Alfread','Hitchcock','Vocalist');
+
+-- -----------------------------------------------------
+-- Equipment
+-- -----------------------------------------------------
+INSERT INTO equipment
+(item_id, equipment_name)
+VALUES
+(6,'Laptop'),
+(7,'Projector'),
+(61,'Sewing Kit'),
+(62,'Guitar'),
+(63,'Headphones'),
+(64,'Sewing Machine'),
+(65,'Recorder');
+
+-- -----------------------------------------------------
+-- Loans
+-- -----------------------------------------------------
 INSERT INTO loans
-(item_id,patron_id,loan_origin_date,loan_due_date,patron_role_code,loan_status_code) VALUES
+(item_id, patron_id, loan_origin_date, loan_due_date, patron_role_code, loan_status_code)
+VALUES
+(1,1,'2026-03-01','2026-03-15',1,1),
+(2,2,'2026-03-05','2026-03-19',1,1),
+(3,3,'2026-02-20','2026-03-01',1,3),
 (8,5,'2026-03-01','2026-03-15',1,1),
 (9,6,'2026-03-02','2026-03-16',1,1),
 (10,7,'2026-02-10','2026-02-24',1,3),
@@ -361,59 +368,7 @@ INSERT INTO loans
 (21,8,'2026-03-22','2026-04-05',1,1),
 (22,9,'2026-03-23','2026-04-06',1,1),
 (23,10,'2026-03-24','2026-04-07',1,1),
-(24,1,'2026-02-14','2026-02-28',1,3);
-
-INSERT INTO holds
-(item_id,patron_id,hold_origin_date,hold_expiration_date,hold_status_code) VALUES
-(8,3,'2026-03-20','2026-03-30',1),
-(9,4,'2026-03-21','2026-03-31',1),
-(10,5,'2026-03-21','2026-03-31',1),
-(11,6,'2026-03-22','2026-04-01',1);
-
-INSERT INTO fines
-(patron_id,fine_amount,fine_date) VALUES
-(5,4.50,'2026-03-15'),
-(7,2.75,'2026-03-16'),
-(10,6.25,'2026-03-17'),
-(2,1.50,'2026-03-18');
-
--- -----------------------------------------------------
--- Additional Dummy Patrons for Testing
--- -----------------------------------------------------
-
-INSERT INTO patrons
-(patron_role_code, first_name, last_name, date_of_birth, email, password_hash, is_active)
-VALUES
-(1,'Liam','Harris','1993-05-10','liam.harris@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
-(1,'Noah','Clark','1997-11-21','noah.clark@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
-(1,'Ava','Lewis','2000-03-14','ava.lewis@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
-(1,'Ethan','Walker','1992-09-05','ethan.walker@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
-(1,'Mason','Hall','1995-01-18','mason.hall@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
-(1,'Charlotte','Young','1999-07-12','charlotte.young@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
-(1,'Amelia','King','1996-02-03','amelia.king@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
-(1,'Benjamin','Wright','1994-06-30','benjamin.wright@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
-(1,'Lucas','Scott','2001-10-19','lucas.scott@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
-(1,'Harper','Green','1998-12-01','harper.green@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
-
-(1,'Elijah','Baker','1993-04-14','elijah.baker@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
-(1,'Abigail','Adams','1997-08-25','abigail.adams@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
-(1,'Alexander','Nelson','1992-03-07','alexander.nelson@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
-(1,'Emily','Carter','1995-05-28','emily.carter@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
-(1,'Henry','Mitchell','1991-09-17','henry.mitchell@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
-(1,'Scarlett','Perez','1998-11-09','scarlett.perez@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
-(1,'Daniel','Roberts','1994-06-06','daniel.roberts@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
-(1,'Victoria','Turner','1999-01-13','victoria.turner@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
-(1,'Sebastian','Phillips','1996-10-27','sebastian.phillips@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1),
-(1,'Grace','Campbell','2000-04-04','grace.campbell@example.com','scrypt:8f4d7d75d9e4d0792f5eecc0bbd7ce63:d1cad374adddc3b48ced548749a91504e1989b7e4fd9e91ab77e5fb3c0bf8e3f92523ee0743beb12ac31aafd88c0e686e0d96c8f8f341f47b3d8a395ac2cc71d',1);
-
-
--- -----------------------------------------------------
--- Additional Loans for Newly Added Patrons
--- -----------------------------------------------------
-
-INSERT INTO loans
-(item_id, patron_id, loan_origin_date, loan_due_date, patron_role_code, loan_status_code)
-VALUES
+(24,1,'2026-02-14','2026-02-28',1,3),
 
 -- active loans (not overdue)
 (33,11,'2026-04-01','2026-04-15',1,1),
@@ -449,16 +404,25 @@ VALUES
 
 -- returned
 (51,29,'2026-02-01','2026-02-14',1,2),
-(52,30,'2026-02-02','2026-02-15',1,2);
+(52,30,'2026-02-02','2026-02-15',1,2),
+-- test
 
+(33,15,'2026-03-01','2026-03-10',1,1),
+(34,16,'2026-03-02','2026-03-12',1,1),
+(35,17,'2026-03-03','2026-03-13',1,1),
+(36,18,'2026-03-04','2026-03-14',1,1);
 
 -- -----------------------------------------------------
--- Additional Holds
+-- Holds
 -- -----------------------------------------------------
-
 INSERT INTO holds
 (item_id, patron_id, hold_origin_date, hold_expiration_date, hold_status_code)
 VALUES
+(1,4,'2026-03-20','2026-03-30',1),
+(8,3,'2026-03-20','2026-03-30',1),
+(9,4,'2026-03-21','2026-03-31',1),
+(10,5,'2026-03-21','2026-03-31',1),
+(11,6,'2026-03-22','2026-04-01',1),
 
 -- active holds
 (12,11,'2026-04-05','2026-04-08',1),
@@ -477,6 +441,35 @@ VALUES
 (19,18,'2026-04-01','2026-04-06',1),
 (20,19,'2026-04-02','2026-04-07',1),
 (21,20,'2026-04-02','2026-04-07',1);
+
+-- -----------------------------------------------------
+-- Fines
+-- -----------------------------------------------------
+INSERT INTO fines
+(patron_id, fine_amount, fine_date)
+VALUES
+(3,5.00,'2026-03-10'),
+(5,4.50,'2026-03-15'),
+(7,2.75,'2026-03-16'),
+(10,6.25,'2026-03-17'),
+(2,1.50,'2026-03-18');
+
+
+
+-- More extensive seed data for testing and demonstration purposes
+
+-- -----------------------------------------------------
+-- Additional Dummy Patrons for Testing
+-- -----------------------------------------------------
+
+-- -----------------------------------------------------
+-- Additional Loans for Newly Added Patrons
+-- -----------------------------------------------------
+
+-- -----------------------------------------------------
+-- Additional Holds
+-- -----------------------------------------------------
+
 
 -- -----------------------------------------------------
 -- Additional Fines
@@ -515,18 +508,6 @@ VALUES
 UPDATE fines
 SET waived_date = '2026-03-30'
 WHERE patron_id = 23;
--- ----------------------------------------------------
--- Extra Overdue Loans for Overdue Report
--- -----------------------------------------------------
-
-INSERT INTO loans
-(item_id, patron_id, loan_origin_date, loan_due_date, patron_role_code, loan_status_code)
-VALUES
-
-(33,15,'2026-03-01','2026-03-10',1,1),
-(34,16,'2026-03-02','2026-03-12',1,1),
-(35,17,'2026-03-03','2026-03-13',1,1),
-(36,18,'2026-03-04','2026-03-14',1,1);
 
 UPDATE holds
 SET hold_status_code = 2
