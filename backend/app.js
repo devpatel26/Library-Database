@@ -1607,6 +1607,11 @@ app.put(["/account/contact", "/api/account/contact"], async (req, res) => {
       if (!address || !phone_number) {
         return res.status(400).json({ error: "Required fields missing." });
       }
+    if (!/^\d{10}$/.test(phone_number)) {
+      return res.status(400).json({
+        error: "Phone number must contain exactly 10 digits.",
+      });
+    }
     }
     await pool.query(
       `
@@ -1619,11 +1624,6 @@ app.put(["/account/contact", "/api/account/contact"], async (req, res) => {
             `,
       [email, firstname, lastname, email, accountId]
     );
-    if (!/^\d{10}$/.test(phone_number)) {
-      return res.status(400).json({
-        error: "Phone number must contain exactly 10 digits.",
-      });
-    }
     if (tableName == "staff") {
       await pool.query(
         `
