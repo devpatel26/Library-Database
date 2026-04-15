@@ -4924,7 +4924,6 @@ async function SyncCurrentFines() {
 
 // Get current fines for staff view
 app.get(["/staff/fines/current", "/api/staff/fines/current"], async (req, res) => {
-
   try {
     const user = await RequireStaffUser(req, res);
     if (!user) {
@@ -4945,27 +4944,34 @@ app.get(["/staff/fines/current", "/api/staff/fines/current"], async (req, res) =
         f.fine_date AS fineDate,
         f.paid_date AS paidDate,
         f.waived_date AS waivedDate,
+
         l.item_id AS itemId,
         l.loan_origin_date AS loanStartDate,
         l.loan_due_date AS loanDueDate,
         l.loan_status_code AS loanStatusCode,
-        p.first_name AS firstName,
-        p.last_name AS lastName,
-        pr.fine AS dailyFine,
-        GREATEST(DATEDIFF(CURDATE(), l.loan_due_date), 0) AS daysOverdue,
+
+        COALESCE(p.first_name, 'Unknown') AS firstName,
+        COALESCE(p.last_name, 'Patron') AS lastName,
+
+        COALESCE(pr.fine, 0) AS dailyFine,
+        COALESCE(GREATEST(DATEDIFF(CURDATE(), l.loan_due_date), 0), 0) AS daysOverdue,
+
         CASE
           WHEN f.waived_date IS NOT NULL THEN 'Waived'
           WHEN ROUND(COALESCE(f.fine_amount, 0) - COALESCE(f.paid_amount, 0), 2) <= 0 THEN 'Paid'
           WHEN l.loan_status_code = 1 AND l.loan_due_date < CURDATE() THEN 'Overdue'
-          WHEN l.loan_status_code <> 1 AND ROUND(COALESCE(f.fine_amount, 0) - COALESCE(f.paid_amount, 0), 2) > 0 THEN 'Returned but unpaid'
-          ELSE 'Paid'
+          WHEN l.loan_status_code <> 1
+               AND ROUND(COALESCE(f.fine_amount, 0) - COALESCE(f.paid_amount, 0), 2) > 0 THEN 'Returned but unpaid'
+          ELSE 'Overdue'
         END AS fineStatus,
+
         COALESCE(
           b.title,
           per.title,
           am.title,
           e.equipment_name
         ) AS title,
+
         COALESCE(
           (
             SELECT GROUP_CONCAT(CONCAT(a.first_name, ' ', a.last_name) SEPARATOR ', ')
@@ -4979,20 +4985,23 @@ app.get(["/staff/fines/current", "/api/staff/fines/current"], async (req, res) =
           ),
           NULL
         ) AS creator
+
       FROM fines f
       JOIN loans l ON l.loan_id = f.loan_id
-      JOIN patrons p ON p.patron_id = f.patron_id
-      JOIN patron_roles pr ON pr.patron_role_code = l.patron_role_code
+      LEFT JOIN patrons p ON p.patron_id = f.patron_id
+      LEFT JOIN patron_roles pr ON pr.patron_role_code = l.patron_role_code
       LEFT JOIN books b ON b.item_id = l.item_id
       LEFT JOIN periodicals per ON per.item_id = l.item_id
       LEFT JOIN audiovisual_media am ON am.item_id = l.item_id
       LEFT JOIN equipment e ON e.item_id = l.item_id
+
       ORDER BY
         CASE
           WHEN f.waived_date IS NOT NULL THEN 4
           WHEN ROUND(COALESCE(f.fine_amount, 0) - COALESCE(f.paid_amount, 0), 2) <= 0 THEN 3
           WHEN l.loan_status_code = 1 AND l.loan_due_date < CURDATE() THEN 1
-          WHEN l.loan_status_code <> 1 AND ROUND(COALESCE(f.fine_amount, 0) - COALESCE(f.paid_amount, 0), 2) > 0 THEN 2
+          WHEN l.loan_status_code <> 1
+               AND ROUND(COALESCE(f.fine_amount, 0) - COALESCE(f.paid_amount, 0), 2) > 0 THEN 2
           ELSE 5
         END ASC,
         remainingAmount DESC,
@@ -5003,7 +5012,7 @@ app.get(["/staff/fines/current", "/api/staff/fines/current"], async (req, res) =
 
     const formattedRows = rows.map((row) => ({
       ...row,
-      patronName: `${row.firstName} ${row.lastName}`,
+      patronName: [row.firstName, row.lastName].filter(Boolean).join(" ") || "Unknown Patron",
     }));
 
     return res.json(formattedRows);

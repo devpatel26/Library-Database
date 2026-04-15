@@ -1,4 +1,3 @@
-
 import React, { useEffect, useMemo, useState } from "react";
 import { FetchJson, ReadStoredJson } from "../api";
 import { FormatDate } from "../components/TimeFormats";
@@ -18,26 +17,55 @@ function SafeText(value) {
   return value == null ? "" : String(value);
 }
 
-function NormalizeStatus(status) {
-  const text = SafeText(status).trim().toLowerCase();
+function NormalizeStatus(fineOrStatus) {
+  if (typeof fineOrStatus === "string") {
+    const text = SafeText(fineOrStatus).trim().toLowerCase();
 
-  if (text === "returned but unpaid") {
+    if (text.includes("returned") && text.includes("unpaid")) {
+      return "Returned but unpaid";
+    }
+
+    if (text.includes("waiv")) {
+      return "Waived";
+    }
+
+    if (text.includes("paid")) {
+      return "Paid";
+    }
+
+    return "Overdue";
+  }
+
+  const fine = fineOrStatus ?? {};
+  const text = SafeText(fine.fineStatus).trim().toLowerCase();
+  const paidAmount = SafeNumber(fine.paidAmount);
+  const remainingAmount = SafeNumber(fine.remainingAmount);
+  const fineAmount = SafeNumber(fine.fineAmount);
+
+  if (text.includes("waiv")) {
+    return "Waived";
+  }
+
+  if (text.includes("returned") && text.includes("unpaid")) {
     return "Returned but unpaid";
   }
 
-  if (text === "paid") {
+  if (text.includes("paid")) {
     return "Paid";
   }
 
-  if (text === "waived") {
-    return "Waived";
+  if (remainingAmount <= 0 && paidAmount > 0) {
+    return "Paid";
+  }
+
+  if (remainingAmount <= 0 && fineAmount > 0 && paidAmount >= fineAmount) {
+    return "Paid";
   }
 
   return "Overdue";
 }
 
 function ParseDateValue(value) {
-
   if (!value) {
     return null;
   }
@@ -91,7 +119,7 @@ function BuildSortValue(fine, sortBy) {
     case "remainingAmount":
       return SafeNumber(fine.remainingAmount);
     case "fineStatus":
-      return NormalizeStatus(fine.fineStatus).toLowerCase();
+      return NormalizeStatus(fine).toLowerCase();
     default:
       return SafeNumber(fine.fineId);
   }
@@ -207,9 +235,20 @@ export default function FineSummaryReport() {
     const minDays = minDaysOverdue === "" ? null : Number(minDaysOverdue);
 
     const result = fines.filter((fine) => {
-      const normalizedStatus = NormalizeStatus(fine.fineStatus);
+      const normalizedStatus = NormalizeStatus(fine);
+      const isUnpaid =
+        normalizedStatus === "Overdue" ||
+        normalizedStatus === "Returned but unpaid";
 
-      if (statusFilter !== "All" && normalizedStatus !== statusFilter) {
+      if (statusFilter === "Unpaid" && !isUnpaid) {
+        return false;
+      }
+
+      if (
+        statusFilter !== "All" &&
+        statusFilter !== "Unpaid" &&
+        normalizedStatus !== statusFilter
+      ) {
         return false;
       }
 
@@ -230,7 +269,7 @@ export default function FineSummaryReport() {
           fine.patronId,
           fine.title,
           fine.creator,
-          fine.fineStatus,
+          NormalizeStatus(fine),
         ]
           .map(SafeText)
           .join(" ")
@@ -240,7 +279,7 @@ export default function FineSummaryReport() {
         const byId = `${SafeText(fine.patronId)} ${SafeText(fine.fineId)}`.toLowerCase();
         const byBookName = SafeText(fine.title).toLowerCase();
         const byCreator = SafeText(fine.creator).toLowerCase();
-        const byStatus = NormalizeStatus(fine.fineStatus).toLowerCase();
+        const byStatus = NormalizeStatus(fine).toLowerCase();
 
         if (searchBy === "All" && !byAll.includes(normalizedSearch)) {
           return false;
@@ -266,7 +305,10 @@ export default function FineSummaryReport() {
           return false;
         }
 
-        if (searchBy === "Fine ID" && !SafeText(fine.fineId).toLowerCase().includes(normalizedSearch)) {
+        if (
+          searchBy === "Fine ID" &&
+          !SafeText(fine.fineId).toLowerCase().includes(normalizedSearch)
+        ) {
           return false;
         }
       }
@@ -304,40 +346,36 @@ export default function FineSummaryReport() {
 
   const summary = useMemo(() => {
     const totalFineRecords = filteredFines.length;
+
     const totalFineAmount = filteredFines.reduce(
       (sum, fine) => sum + SafeNumber(fine.fineAmount),
       0
     );
-    const totalPaidAmount = filteredFines.reduce(
-      (sum, fine) => sum + SafeNumber(fine.paidAmount),
-      0
-    );
-    const totalRemainingAmount = filteredFines.reduce(
-      (sum, fine) => sum + SafeNumber(fine.remainingAmount),
-      0
-    );
+
+    const totalUnpaidAmount = filteredFines.reduce((sum, fine) => {
+      const status = NormalizeStatus(fine);
+
+      if (status === "Overdue" || status === "Returned but unpaid") {
+        return sum + SafeNumber(fine.remainingAmount);
+      }
+
+      return sum;
+    }, 0);
+
     const averageFineAmount =
       totalFineRecords > 0 ? totalFineAmount / totalFineRecords : 0;
-    const averageDaysOverdue =
-      totalFineRecords > 0
-        ? filteredFines.reduce(
-          (sum, fine) => sum + SafeNumber(fine.daysOverdue),
-          0
-        ) / totalFineRecords
-        : 0;
 
     return {
       totalFineRecords,
       totalFineAmount,
-      totalPaidAmount,
-      totalRemainingAmount,
+      totalUnpaidAmount,
       averageFineAmount,
-      averageDaysOverdue,
     };
   }, [filteredFines]);
 
   const statusBreakdown = useMemo(() => {
     const initial = {
+      Unpaid: { count: 0, amount: 0 },
       Overdue: { count: 0, amount: 0 },
       "Returned but unpaid": { count: 0, amount: 0 },
       Paid: { count: 0, amount: 0 },
@@ -345,9 +383,17 @@ export default function FineSummaryReport() {
     };
 
     filteredFines.forEach((fine) => {
-      const status = NormalizeStatus(fine.fineStatus);
+      const status = NormalizeStatus(fine);
+      const fineAmount = SafeNumber(fine.fineAmount);
+      const remainingAmount = SafeNumber(fine.remainingAmount);
+
+      if (status === "Overdue" || status === "Returned but unpaid") {
+        initial.Unpaid.count += 1;
+        initial.Unpaid.amount += remainingAmount;
+      }
+
       initial[status].count += 1;
-      initial[status].amount += SafeNumber(fine.fineAmount);
+      initial[status].amount += fineAmount;
     });
 
     return initial;
@@ -396,7 +442,7 @@ export default function FineSummaryReport() {
       </p>
 
       <p className="mt-4 max-w-3xl text-base leading-7 text-slate-300">
-        Review fine totals, remaining balances, status breakdowns, and detailed
+        Review fine totals, unpaid balances, status breakdowns, and detailed
         fine records with flexible filters.
       </p>
 
@@ -412,7 +458,7 @@ export default function FineSummaryReport() {
             </p>
           </div>
 
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <SummaryCard
               title="Total Fine Records"
               value={summary.totalFineRecords}
@@ -422,20 +468,12 @@ export default function FineSummaryReport() {
               value={FormatMoney(summary.totalFineAmount)}
             />
             <SummaryCard
-              title="Total Paid Amount"
-              value={FormatMoney(summary.totalPaidAmount)}
-            />
-            <SummaryCard
-              title="Total Remaining Amount"
-              value={FormatMoney(summary.totalRemainingAmount)}
+              title="Total Unpaid"
+              value={FormatMoney(summary.totalUnpaidAmount)}
             />
             <SummaryCard
               title="Average Fine Amount"
               value={FormatMoney(summary.averageFineAmount)}
-            />
-            <SummaryCard
-              title="Average Days Overdue"
-              value={summary.averageDaysOverdue.toFixed(1)}
             />
           </div>
 
@@ -450,7 +488,14 @@ export default function FineSummaryReport() {
               {dateRangeLabel}
             </p>
 
-            <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+              <StatusCard
+                title="Unpaid"
+                count={statusBreakdown.Unpaid.count}
+                amount={statusBreakdown.Unpaid.amount}
+                colorClasses="border-orange-400/20 bg-orange-500/10 text-orange-200"
+              />
+
               <StatusCard
                 title="Overdue"
                 count={statusBreakdown.Overdue.count}
@@ -520,21 +565,12 @@ export default function FineSummaryReport() {
                   onChange={(event) => setStatusFilter(event.target.value)}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
                 >
-                  <option>
-                    All
-                  </option>
-                  <option>
-                    Overdue
-                  </option>
-                  <option>
-                    Returned but unpaid
-                  </option>
-                  <option>
-                    Paid
-                  </option>
-                  <option>
-                    Waived
-                  </option>
+                  <option>All</option>
+                  <option>Unpaid</option>
+                  <option>Overdue</option>
+                  <option>Returned but unpaid</option>
+                  <option>Paid</option>
+                  <option>Waived</option>
                 </select>
               </div>
 
@@ -561,27 +597,13 @@ export default function FineSummaryReport() {
                   onChange={(event) => setSearchBy(event.target.value)}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
                 >
-                  <option>
-                    All
-                  </option>
-                  <option>
-                    Name
-                  </option>
-                  <option>
-                    ID
-                  </option>
-                  <option>
-                    Book Name
-                  </option>
-                  <option>
-                    Creator
-                  </option>
-                  <option>
-                    Status
-                  </option>
-                  <option>
-                    Fine ID
-                  </option>
+                  <option>All</option>
+                  <option>Name</option>
+                  <option>ID</option>
+                  <option>Book Name</option>
+                  <option>Creator</option>
+                  <option>Status</option>
+                  <option>Fine ID</option>
                 </select>
               </div>
 
@@ -670,43 +692,23 @@ export default function FineSummaryReport() {
               <table className="min-w-full text-left text-sm">
                 <thead>
                   <tr className="border-b border-white/10 text-slate-300">
-                    <th className="px-3 py-2">
-                      Fine ID
-                    </th>
-                    <th className="px-3 py-2">
-                      Patron
-                    </th>
-                    <th className="px-3 py-2">
-                      Book Name
-                    </th>
-                    <th className="px-3 py-2">
-                      Creator
-                    </th>
-                    <th className="px-3 py-2">
-                      Due Date
-                    </th>
-                    <th className="px-3 py-2">
-                      Days Overdue
-                    </th>
-                    <th className="px-3 py-2">
-                      Total Fine
-                    </th>
-                    <th className="px-3 py-2">
-                      Paid
-                    </th>
-                    <th className="px-3 py-2">
-                      Remaining
-                    </th>
-                    <th className="px-3 py-2">
-                      Status
-                    </th>
+                    <th className="px-3 py-2">Fine ID</th>
+                    <th className="px-3 py-2">Patron</th>
+                    <th className="px-3 py-2">Book Name</th>
+                    <th className="px-3 py-2">Creator</th>
+                    <th className="px-3 py-2">Due Date</th>
+                    <th className="px-3 py-2">Days Overdue</th>
+                    <th className="px-3 py-2">Total Fine</th>
+                    <th className="px-3 py-2">Paid</th>
+                    <th className="px-3 py-2">Remaining</th>
+                    <th className="px-3 py-2">Status</th>
                   </tr>
                 </thead>
 
                 <tbody>
                   {filteredFines.length === 0 ? (
                     <tr>
-                      <td colSpan={11} className="px-3 py-5 text-slate-400">
+                      <td colSpan={10} className="px-3 py-5 text-slate-400">
                         No fine records match the current filters.
                       </td>
                     </tr>
@@ -722,8 +724,6 @@ export default function FineSummaryReport() {
                         <td className="px-3 py-3">{fine.title}</td>
 
                         <td className="px-3 py-3">{fine.creator || "-"}</td>
-
-
 
                         <td className="px-3 py-3">
                           {fine.loanDueDate
@@ -746,16 +746,17 @@ export default function FineSummaryReport() {
                         </td>
 
                         <td
-                          className={`px-3 py-3 font-semibold ${NormalizeStatus(fine.fineStatus) === "Overdue"
+                          className={`px-3 py-3 font-semibold ${
+                            NormalizeStatus(fine) === "Overdue"
                               ? "text-red-300"
-                              : NormalizeStatus(fine.fineStatus) === "Returned but unpaid"
+                              : NormalizeStatus(fine) === "Returned but unpaid"
                                 ? "text-yellow-300"
-                                : NormalizeStatus(fine.fineStatus) === "Paid"
+                                : NormalizeStatus(fine) === "Paid"
                                   ? "text-emerald-300"
                                   : "text-sky-300"
-                            }`}
+                          }`}
                         >
-                          {NormalizeStatus(fine.fineStatus)}
+                          {NormalizeStatus(fine)}
                         </td>
                       </tr>
                     ))
