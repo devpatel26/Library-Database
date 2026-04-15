@@ -631,8 +631,8 @@ FOR EACH ROW
 BEGIN
   IF OLD.hold_status_code != 2 AND NEW.hold_status_code = 2 THEN
     INSERT INTO notifications (patron_id, notification_type, message, link_data)
-    VALUES (NEW.patron_id, 'HOLD_READY', 
-            CONCAT('Your hold is ready for pickup!'),
+    VALUES (NEW.patron_id, 'HOLD READY', 
+            CONCAT('Good News! Your Book is ready for pickup!'),
             JSON_OBJECT('hold_id', NEW.hold_id, 'item_id', NEW.item_id));
     
     -- Log the activity
@@ -666,7 +666,7 @@ BEGIN
     -- Notify them
     IF next_patron_id IS NOT NULL THEN
       INSERT INTO notifications (patron_id, notification_type, message, link_data)
-      VALUES (next_patron_id, 'ITEM_AVAILABLE', 
+      VALUES (next_patron_id, 'ITEM AVAILABLE', 
               CONCAT('An item you have on hold is now available for pickup!'),
               JSON_OBJECT('item_id', NEW.item_id));
       
@@ -679,7 +679,7 @@ BEGIN
     
     -- Log the activity
     INSERT INTO activity_logs (actor_type, actor_id, action_type, loan_id, item_id, description, created_at)
-    VALUES ('patron', NEW.patron_id, 'ITEM_RETURNED', NEW.loan_id, NEW.item_id, 
+    VALUES ('patron', NEW.patron_id, 'ITEM RETURNED', NEW.loan_id, NEW.item_id, 
             CONCAT('Item returned. Next hold notified: ', IFNULL(next_patron_id, 'none')), NOW());
   END IF;
 END$$
@@ -692,7 +692,7 @@ AFTER INSERT ON fines
 FOR EACH ROW
 BEGIN
   INSERT INTO notifications (patron_id, notification_type, message, link_data)
-  VALUES (NEW.patron_id, 'FINE_CREATED', 
+  VALUES (NEW.patron_id, 'FINE CREATED', 
           CONCAT('A fine of $', NEW.fine_amount, ' has been applied to your account.'),
           JSON_OBJECT('fine_id', NEW.fine_id, 'amount', NEW.fine_amount));
   
@@ -711,7 +711,7 @@ FOR EACH ROW
 BEGIN
   IF OLD.paid_date IS NULL AND NEW.paid_date IS NOT NULL THEN
     INSERT INTO notifications (patron_id, notification_type, message, link_data)
-    VALUES (NEW.patron_id, 'FINE_PAID', 
+    VALUES (NEW.patron_id, 'FINE PAID', 
             CONCAT('Your fine of $', NEW.fine_amount, ' has been recorded as paid. Thank you!'),
             JSON_OBJECT('fine_id', NEW.fine_id));
     
@@ -731,7 +731,7 @@ FOR EACH ROW
 BEGIN
   IF NEW.loan_status_code = 1 AND NEW.loan_due_date = CURDATE() THEN
     INSERT INTO notifications (patron_id, notification_type, message, link_data)
-    VALUES (NEW.patron_id, 'LOAN_DUE_SOON', 
+    VALUES (NEW.patron_id, 'LOAN DUE SOON', 
             'Your library item is due today! Please return it to avoid fines.',
             JSON_OBJECT('loan_id', NEW.loan_id, 'item_id', NEW.item_id));
     
@@ -750,13 +750,13 @@ AFTER INSERT ON holds
 FOR EACH ROW
 BEGIN
   INSERT INTO notifications (patron_id, notification_type, message, link_data)
-  VALUES (NEW.patron_id, 'HOLD_CREATED', 
+  VALUES (NEW.patron_id, 'HOLD CREATED', 
           'Your hold request has been confirmed. We will notify you when the item is available.',
           JSON_OBJECT('hold_id', NEW.hold_id, 'item_id', NEW.item_id));
   
   -- Log the activity
   INSERT INTO activity_logs (actor_type, actor_id, action_type, hold_id, target_patron_id, description, created_at)
-  VALUES ('patron', NEW.patron_id, 'HOLD_PLACED', NEW.hold_id, NEW.patron_id, 
+  VALUES ('patron', NEW.patron_id, 'HOLD PLACED', NEW.hold_id, NEW.patron_id, 
           'Hold placed and notification created', NOW());
 END$$
 
@@ -794,7 +794,7 @@ BEGIN
       
       -- Log the activity
       INSERT INTO activity_logs (actor_type, actor_id, action_type, loan_id, item_id, description, created_at)
-      VALUES ('system', 0, 'OVERDUE_FINE_CHARGED', NEW.loan_id, NEW.item_id, 
+      VALUES ('system', 0, 'OVERDUE FINE CHARGED', NEW.loan_id, NEW.item_id, 
               CONCAT('Overdue fine: ', days_late, ' days late @ $', daily_fine_amount, '/day = $', total_fine_amount), NOW());
     END IF;
   END IF;
@@ -825,15 +825,14 @@ BEGIN
     LIMIT 1;
     
     -- Create detailed overdue notification
-    SET notification_type = 'OVERDUE_FINE';
+   SET notification_type = 'OVERDUE FINE';
     SET notification_msg = CONCAT(
-      'Late return fee: You were charged $', ROUND(daily_fine_amount, 2), 
-      ' per day for ', IFNULL(days_late, 0), ' day(s) late. ',
-      'Total amount due: $', ROUND(NEW.fine_amount, 2)
+      'Late Return Fee: You were charged $', ROUND(daily_fine_amount, 2), 
+      ' for today. Total Amount due: $', ROUND(NEW.fine_amount, 2)
     );
   ELSE
     -- Regular fine (not overdue-related)
-    SET notification_type = 'FINE_CREATED';
+    SET notification_type = 'FINE CREATED';
     SET notification_msg = CONCAT(
       'A fine of $', ROUND(NEW.fine_amount, 2), ' has been applied to your account.'
     );
