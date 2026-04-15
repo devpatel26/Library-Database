@@ -530,17 +530,21 @@ export function CarouselItem({ itemData }) {
                 {canPlaceHold ? (
                   isStaff ? (
                     <>
-                      <div className="grid grid-cols-2">
-                        <PrimaryButton
-                          title="Place Hold"
-                          onClick={() => OpenStaffAction("hold")}
-                        />
+                      {itemData.available >= 1 ? (
+                        <div className="grid grid-cols-2">
+                          <PrimaryButton
+                            title="Place Hold"
+                            onClick={() => OpenStaffAction("hold")}
+                          />
 
-                        <PrimaryButton
-                          title="Check Out"
-                          onClick={() => OpenStaffAction("checkout")}
-                        />
-                      </div>
+                          <PrimaryButton
+                            title="Check Out"
+                            onClick={() => OpenStaffAction("checkout")}
+                          />
+                        </div>
+                      ) : (
+                        <SecondaryButton title="Unavailable" disabled={true} />
+                      )}
 
                       {activeStaffAction ? (
                         <div className="mt-2 flex w-full flex-col gap-2 rounded-lg border border-white/10 bg-slate-900/70 p-3">
@@ -578,11 +582,17 @@ export function CarouselItem({ itemData }) {
                       ) : null}
                     </>
                   ) : (
-                    <PrimaryButton
-                      title="Place Hold"
-                      onClick={HandlePatronHold}
-                      disabledValue={isSubmitting}
-                    />
+                    <>
+                      {itemData.available >= 1 ? (
+                        <PrimaryButton
+                          title="Place Hold"
+                          onClick={HandlePatronHold}
+                          disabledValue={isSubmitting}
+                        />
+                      ) : (
+                        <SecondaryButton title="Unavailable" disabled={true} />
+                      )}
+                    </>
                   )
                 ) : (
                   <SecondaryButton title="Unavailable" disabled={true} />
@@ -609,17 +619,21 @@ export function CarouselItem({ itemData }) {
                 {canPlaceHold ? (
                   isStaff ? (
                     <>
-                      <div className="grid grid-cols-2">
-                        <PrimaryButton
-                          title="Place Hold"
-                          onClick={() => OpenStaffAction("hold")}
-                        />
+                      {itemData.available >= 1 ? (
+                        <div className="grid grid-cols-2">
+                          <PrimaryButton
+                            title="Place Hold"
+                            onClick={() => OpenStaffAction("hold")}
+                          />
 
-                        <PrimaryButton
-                          title="Check Out"
-                          onClick={() => OpenStaffAction("checkout")}
-                        />
-                      </div>
+                          <PrimaryButton
+                            title="Check Out"
+                            onClick={() => OpenStaffAction("checkout")}
+                          />
+                        </div>
+                      ) : (
+                        <SecondaryButton title="Unavailable" disabled={true} />
+                      )}
 
                       {activeStaffAction ? (
                         <div className="mt-2 flex w-full flex-col gap-2 rounded-lg border border-white/10 bg-slate-900/70 p-3">
@@ -657,11 +671,17 @@ export function CarouselItem({ itemData }) {
                       ) : null}
                     </>
                   ) : (
-                    <PrimaryButton
-                      title="Place Hold"
-                      onClick={HandlePatronHold}
-                      disabledValue={isSubmitting}
-                    />
+                    <>
+                      {itemData.available >= 1 ? (
+                        <PrimaryButton
+                          title="Place Hold"
+                          onClick={HandlePatronHold}
+                          disabledValue={isSubmitting}
+                        />
+                      ) : (
+                        <SecondaryButton title="Unavailable" disabled={true} />
+                      )}
+                    </>
                   )
                 ) : (
                   <SecondaryButton title="Unavailable" disabled={true} />
@@ -732,11 +752,17 @@ export function CarouselItem({ itemData }) {
                       ) : null}
                     </>
                   ) : (
-                    <PrimaryButton
-                      title="Place Hold"
-                      onClick={HandlePatronHold}
-                      disabledValue={isSubmitting}
-                    />
+                    <>
+                      {itemData.available >= 1 ? (
+                        <PrimaryButton
+                          title="Place Hold"
+                          onClick={HandlePatronHold}
+                          disabledValue={isSubmitting}
+                        />
+                      ) : (
+                        <SecondaryButton title="Unavailable" disabled={true} />
+                      )}
+                    </>
                   )
                 ) : (
                   <SecondaryButton title="Unavailable" disabled={true} />
@@ -805,11 +831,20 @@ export function CarouselItem({ itemData }) {
                         ) : null}
                       </>
                     ) : (
-                      <PrimaryButton
-                        title="Place Hold"
-                        onClick={HandlePatronHold}
-                        disabledValue={isSubmitting}
-                      />
+                      <>
+                        {itemData.available >= 1 ? (
+                          <PrimaryButton
+                            title="Place Hold"
+                            onClick={HandlePatronHold}
+                            disabledValue={isSubmitting}
+                          />
+                        ) : (
+                          <SecondaryButton
+                            title="Unavailable"
+                            disabled={true}
+                          />
+                        )}
+                      </>
                     )
                   ) : (
                     <SecondaryButton title="Unavailable" disabled={true} />
