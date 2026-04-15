@@ -53,7 +53,7 @@ export default function Report() {
             Operation
           </h2>
           <p className="mt-3 text-sm leading-6 text-slate-300">
-            View all overdue loans, the patron responsible, overdue days, and current fine totals.
+            Overview of library activities including loans, returns, lost items,new items and new patrons.
           </p >
           <div className="mt-6 flex justify-center">
             <PrimaryButton
