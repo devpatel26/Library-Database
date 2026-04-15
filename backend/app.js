@@ -6118,3 +6118,207 @@ async function PermanentlyDelete(loanId) {
     showError(error.message || "Failed to permanently delete item.");
   }
 }
+
+// Operational Report
+app.get(["/reports/operations", "/api/reports/operations"], async (req, res) => {
+  try {
+    const user = await RequireStaffUser(req, res);
+    if (!user) {
+      return;
+    }
+
+    const roleCode = Number(
+      user.roleCode ??
+      user.role ??
+      user.role_code ??
+      user.staff_role_code ??
+      user.staffRoleCode ??
+      0
+    );
+
+    if (roleCode !== 2) {
+      return res.status(403).json({
+        error: "Only admin can access the operations report.",
+      });
+    }
+
+    const startDate = String(req.query.startDate ?? "").trim();
+    const endDate = String(req.query.endDate ?? "").trim();
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = String(now.getMonth() + 1).padStart(2, "0");
+    const currentDay = String(now.getDate()).padStart(2, "0");
+
+    const defaultStartDate = `${currentYear}-${currentMonth}-01`;
+    const defaultEndDate = `${currentYear}-${currentMonth}-${currentDay}`;
+
+    const effectiveStartDate = startDate || defaultStartDate;
+    const effectiveEndDate = endDate || defaultEndDate;
+
+    const [loanRows] = await pool.query(
+      `
+      SELECT
+        'Loan' AS activityType,
+        l.loan_id AS recordId,
+        l.item_id AS itemId,
+        COALESCE(
+          b.title,
+          per.title,
+          am.title,
+          e.equipment_name
+        ) AS title,
+        CONCAT(p.first_name, ' ', p.last_name) AS patronName,
+        p.patron_id AS patronId,
+        l.loan_origin_date AS activityDate,
+        'Checked Out' AS status,
+        CONCAT('Loan ID ', l.loan_id) AS details
+      FROM loans l
+      JOIN patrons p ON p.patron_id = l.patron_id
+      LEFT JOIN books b ON b.item_id = l.item_id
+      LEFT JOIN periodicals per ON per.item_id = l.item_id
+      LEFT JOIN audiovisual_media am ON am.item_id = l.item_id
+      LEFT JOIN equipment e ON e.item_id = l.item_id
+      WHERE DATE(l.loan_origin_date) BETWEEN ? AND ?
+      `,
+      [effectiveStartDate, effectiveEndDate]
+    );
+
+    const [returnRows] = await pool.query(
+      `
+      SELECT
+        'Return' AS activityType,
+        l.loan_id AS recordId,
+        l.item_id AS itemId,
+        COALESCE(
+          b.title,
+          per.title,
+          am.title,
+          e.equipment_name
+        ) AS title,
+        CONCAT(p.first_name, ' ', p.last_name) AS patronName,
+        p.patron_id AS patronId,
+        l.return_date AS activityDate,
+        'Returned' AS status,
+        CONCAT('Loan ID ', l.loan_id) AS details
+      FROM loans l
+      JOIN patrons p ON p.patron_id = l.patron_id
+      LEFT JOIN books b ON b.item_id = l.item_id
+      LEFT JOIN periodicals per ON per.item_id = l.item_id
+      LEFT JOIN audiovisual_media am ON am.item_id = l.item_id
+      LEFT JOIN equipment e ON e.item_id = l.item_id
+      WHERE l.return_date IS NOT NULL
+        AND DATE(l.return_date) BETWEEN ? AND ?
+      `,
+      [effectiveStartDate, effectiveEndDate]
+    );
+
+    const [lostRows] = await pool.query(
+      `
+      SELECT
+        'Lost Item' AS activityType,
+        l.loan_id AS recordId,
+        l.item_id AS itemId,
+        COALESCE(
+          b.title,
+          per.title,
+          am.title,
+          e.equipment_name
+        ) AS title,
+        CONCAT(p.first_name, ' ', p.last_name) AS patronName,
+        p.patron_id AS patronId,
+        l.lost_date AS activityDate,
+        'Marked Lost' AS status,
+        CONCAT('Loan ID ', l.loan_id) AS details
+      FROM loans l
+      JOIN patrons p ON p.patron_id = l.patron_id
+      LEFT JOIN books b ON b.item_id = l.item_id
+      LEFT JOIN periodicals per ON per.item_id = l.item_id
+      LEFT JOIN audiovisual_media am ON am.item_id = l.item_id
+      LEFT JOIN equipment e ON e.item_id = l.item_id
+      WHERE l.lost_date IS NOT NULL
+        AND DATE(l.lost_date) BETWEEN ? AND ?
+      `,
+      [effectiveStartDate, effectiveEndDate]
+    );
+
+    const [newItemRows] = await pool.query(
+      `
+      SELECT
+        'New Item' AS activityType,
+        i.item_id AS recordId,
+        i.item_id AS itemId,
+        COALESCE(
+          b.title,
+          per.title,
+          am.title,
+          e.equipment_name
+        ) AS title,
+        NULL AS patronName,
+        NULL AS patronId,
+        i.created_at AS activityDate,
+        'Catalog Added' AS status,
+        CONCAT('Item ID ', i.item_id) AS details
+      FROM items i
+      LEFT JOIN books b ON b.item_id = i.item_id
+      LEFT JOIN periodicals per ON per.item_id = i.item_id
+      LEFT JOIN audiovisual_media am ON am.item_id = i.item_id
+      LEFT JOIN equipment e ON e.item_id = i.item_id
+      WHERE i.created_at IS NOT NULL
+        AND DATE(i.created_at) BETWEEN ? AND ?
+      `,
+      [effectiveStartDate, effectiveEndDate]
+    );
+
+    const [newPatronRows] = await pool.query(
+      `
+      SELECT
+        'New Patron' AS activityType,
+        p.patron_id AS recordId,
+        NULL AS itemId,
+        NULL AS title,
+        CONCAT(p.first_name, ' ', p.last_name) AS patronName,
+        p.patron_id AS patronId,
+        p.created_at AS activityDate,
+        'Registered' AS status,
+        CONCAT('Patron ID ', p.patron_id) AS details
+      FROM patrons p
+      WHERE p.created_at IS NOT NULL
+        AND DATE(p.created_at) BETWEEN ? AND ?
+      `,
+      [effectiveStartDate, effectiveEndDate]
+    );
+
+    const activities = [
+      ...loanRows,
+      ...returnRows,
+      ...lostRows,
+      ...newItemRows,
+      ...newPatronRows,
+    ].sort((a, b) => {
+      const aTime = a.activityDate ? new Date(a.activityDate).getTime() : 0;
+      const bTime = b.activityDate ? new Date(b.activityDate).getTime() : 0;
+      return bTime - aTime;
+    });
+
+    return res.json({
+      summary: {
+        loans: loanRows.length,
+        returns: returnRows.length,
+        lost: lostRows.length,
+        newItems: newItemRows.length,
+        newPatrons: newPatronRows.length,
+      },
+      activities,
+      dateRange: {
+        startDate: effectiveStartDate,
+        endDate: effectiveEndDate,
+      },
+    });
+  } catch (error) {
+    console.error("Operations report error:", error);
+    return res.status(500).json({
+      error: FormatServerError(error, "Failed to load operations report."),
+    });
+  }
+});

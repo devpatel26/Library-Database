@@ -512,3 +512,35 @@ WHERE patron_id = 23;
 UPDATE holds
 SET hold_status_code = 2
 WHERE hold_status_code = 1;
+
+
+ALTER TABLE loans
+ADD COLUMN lost_date DATE NULL;
+
+ALTER TABLE items
+ADD COLUMN created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+ALTER TABLE patrons
+ADD COLUMN created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+SET SQL_SAFE_UPDATES =0;
+
+UPDATE items
+SET created_at = NOW()
+WHERE created_at IS NULL;
+
+UPDATE patrons
+SET created_at = NOW()
+WHERE created_at IS NULL;
+
+UPDATE loans
+SET lost_date = CURDATE()
+WHERE loan_status_code = 3
+  AND lost_date IS NULL;
+
+  UPDATE items SET created_at = '2026-04-02 09:00:00' WHERE item_id = 2;
+UPDATE items SET created_at = '2026-04-05 10:30:00' WHERE item_id = 15;
+UPDATE items SET created_at = '2026-04-08 13:00:00' WHERE item_id = 33;
+UPDATE items SET created_at = '2026-04-11 15:20:00' WHERE item_id = 35;
+UPDATE items SET created_at = '2026-04-13 11:10:00' WHERE item_id = 36;
+UPDATE items SET created_at = '2026-04-14 16:45:00' WHERE item_id = 51;
