@@ -1947,6 +1947,126 @@ app.get(["/loans", "/api/loans"], async (req, res) => {
   }
 });
 
+
+// Home items endpoint
+app.get(["/mainitems", "/api/mainitems"], async (req, res) => {
+  try {
+
+    const [books] = await pool.query(`
+            SELECT
+              (
+                SELECT GROUP_CONCAT(CONCAT(a.first_name, ' ', a.last_name) SEPARATOR ', ')
+                FROM authors a
+                WHERE a.item_id = b.item_id
+              ) AS creator,
+              b.item_id as itemId,
+              b.title,
+              b.shelf_number AS shelfNumber,
+              bt.book_type AS type,
+              l.language,
+              g.genre,
+              b.summary,
+              b.cover_image_url,
+              i.available,
+              'book' AS category
+          FROM (
+              SELECT item_id
+              FROM books
+              LIMIT 4
+          ) AS first4
+          JOIN books b ON b.item_id = first4.item_id
+          LEFT JOIN authors a ON b.item_id = a.item_id
+          LEFT JOIN items i ON b.item_id = i.item_id
+          LEFT JOIN book_types bt ON bt.book_type_code = b.book_type_code
+          LEFT JOIN languages l ON l.language_code = b.language_code
+          LEFT JOIN genres g ON g.genre_code = b.genre_code
+            `
+    );
+    const [periodicals] = await pool.query(`
+            SELECT
+              p.item_id as itemId,
+              p.title,
+              p.shelf_number AS shelfNumber,
+              pt.periodical_type AS type,
+              l.language,
+              g.genre,
+              p.summary,
+              p.cover_image_url,
+              i.available,
+              'periodical' AS category
+          FROM (
+              SELECT item_id
+              FROM periodicals
+              LIMIT 4
+          ) AS first4
+          JOIN periodicals p ON p.item_id = first4.item_id
+          LEFT JOIN items i ON p.item_id = i.item_id
+          LEFT JOIN periodical_types pt ON pt.periodical_type_code = p.periodical_type_code
+          LEFT JOIN languages l ON l.language_code = p.language_code
+          LEFT JOIN genres g ON g.genre_code = p.genre_code
+            `
+    );
+    const [audiovisualmedia] = await pool.query(`
+            SELECT
+              (
+                SELECT CONCAT(c.first_name, ' ', c.last_name)
+                FROM contributors c
+                WHERE c.item_id = am.item_id
+              ) AS creator,
+              am.item_id as itemId,
+              amt.audiovisual_media_type AS type,
+              am.shelf_number AS shelfNumber,
+              l.language,
+              g.genre,
+              am.summary,
+              am.publisher,
+              am.shelf_number AS shelfNumber,
+              am.publication_date AS publicationDate,
+              am.cover_image_url AS coverImageUrl,
+              am.runtime,
+              am.title,
+              amt.audiovisual_media_type AS type,
+              l.language,
+              g.genre,
+              am.summary,
+              am.cover_image_url,
+              i.available,
+              'audiovisualmedia' AS category
+          FROM (
+              SELECT item_id
+              FROM audiovisual_media
+              LIMIT 4
+          ) AS first4
+          JOIN audiovisual_media am ON am.item_id = first4.item_id
+          LEFT JOIN contributors c ON am.item_id = am.item_id
+          LEFT JOIN items i ON am.item_id = i.item_id
+          LEFT JOIN audiovisual_media_types amt ON amt.audiovisual_media_type_code = am.audiovisual_media_type_code
+          LEFT JOIN languages l ON l.language_code = am.language_code
+          LEFT JOIN genres g ON g.genre_code = am.genre_code
+            `
+    );
+    const [equipment] = await pool.query(`
+          SELECT
+              e.item_id as itemId,
+              e.equipment_name AS title,
+              i.available,
+              'equipment' AS category
+          FROM (
+              SELECT item_id
+              FROM equipment
+              LIMIT 4
+          ) AS first4
+          JOIN equipment e ON e.item_id = first4.item_id
+          LEFT JOIN items i ON e.item_id = i.item_id
+            `
+    );
+
+    res.json({ books, periodicals, audiovisualmedia, equipment });
+  } catch (error) {
+    SendServerError(res, error, "Internal Server Error");
+  }
+});
+
 app.get(["/account/activity", "/api/account/activity"], async (req, res) => {
   try {
     await ClearExpiredHolds();

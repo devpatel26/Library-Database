@@ -1,5 +1,6 @@
-import { ReadStoredUser } from "../api";
 import { CarouselItem } from "../components/Items";
+import { useEffect, useState } from "react";
+import { FetchJson, GetErrorMessage, ReadStoredUser } from "../api";
 import {
   dummyBooks,
   dummyAVM,
@@ -7,12 +8,43 @@ import {
   dummyPeriodicals,
 } from "../data/dummy/items";
 
+async function FetchCirculationData() {
+  const payload = await FetchJson("/api/mainitems");
+
+  return {
+    books: payload.books ?? [],
+    periodicals: payload.periodicals ?? [],
+    audiovisualmedia: payload.audiovisualmedia ?? [],
+    equipment: payload.equipment ?? [],
+  };
+}
+
 export default function Home() {
   const user = ReadStoredUser();
 
   const welcomeName = user?.first_name
     ? `Welcome back, ${user.first_name}.`
     : "Welcome to Datahaven Library.";
+
+  const [data, setData] = useState({ loans: [], holds: [], history: [] });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    async function LoadCirculation() {
+      try {
+        setLoading(true);
+        setError("");
+        setData(await FetchCirculationData());
+      } catch (err) {
+        setError(GetErrorMessage(err, "Failed to load items."));
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    LoadCirculation();
+  }, []);
 
   return (
     <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/70 p-6 shadow-xl shadow-slate-950/30">
@@ -27,9 +59,24 @@ export default function Home() {
         <section>
           <h2 className="text-lg font-semibold text-sky-300">Recent Books</h2>
           <div className="mt-5 flex flex-wrap justify-center gap-8">
-            {dummyBooks.map((item, index) => (
-              <CarouselItem key={index} itemData={item} />
-            ))}
+            {loading && (
+              <p className="mt-4 text-slate-300">Loading circulation...</p>
+            )}
+            {!loading && error && <p className="mt-4 text-rose-300">{error}</p>}
+            {!loading && !error && (
+              <div className="mt-4 space-y-8">
+                <div>
+                  <div className="mt-4 flex flex-wrap justify-evenly gap-4">
+                    {data.books.map((book) => (
+                      <CarouselItem
+                        key={`book-${book.itemId}`}
+                        itemData={book}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </section>
 
@@ -38,9 +85,24 @@ export default function Home() {
             Recent Periodicals
           </h2>
           <div className="mt-5 flex flex-wrap justify-center gap-8">
-            {dummyPeriodicals.map((item, index) => (
-              <CarouselItem key={index} itemData={item} />
-            ))}
+            {loading && (
+              <p className="mt-4 text-slate-300">Loading circulation...</p>
+            )}
+            {!loading && error && <p className="mt-4 text-rose-300">{error}</p>}
+            {!loading && !error && (
+              <div className="mt-4 space-y-8">
+                <div>
+                  <div className="mt-4 flex flex-wrap justify-evenly gap-4">
+                    {data.periodicals.map((periodicals) => (
+                      <CarouselItem
+                        key={`periodicals-${periodicals.itemId}`}
+                        itemData={periodicals}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </section>
 
@@ -49,9 +111,24 @@ export default function Home() {
             Recent Audiovisual Media
           </h2>
           <div className="mt-5 flex flex-wrap justify-center gap-8">
-            {dummyAVM.map((item, index) => (
-              <CarouselItem key={index} itemData={item} />
-            ))}
+            {loading && (
+              <p className="mt-4 text-slate-300">Loading circulation...</p>
+            )}
+            {!loading && error && <p className="mt-4 text-rose-300">{error}</p>}
+            {!loading && !error && (
+              <div className="mt-4 space-y-8">
+                <div>
+                  <div className="mt-4 flex flex-wrap justify-evenly gap-4">
+                    {data.audiovisualmedia.map((audiovisualmedia) => (
+                      <CarouselItem
+                        key={`audiovisualmedia-${audiovisualmedia.itemId}`}
+                        itemData={audiovisualmedia}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </section>
 
@@ -60,9 +137,24 @@ export default function Home() {
             Recent Equipment
           </h2>
           <div className="mt-5 flex flex-wrap justify-center gap-8">
-            {dummyEquipment.map((item, index) => (
-              <CarouselItem key={index} itemData={item} />
-            ))}
+            {loading && (
+              <p className="mt-4 text-slate-300">Loading circulation...</p>
+            )}
+            {!loading && error && <p className="mt-4 text-rose-300">{error}</p>}
+            {!loading && !error && (
+              <div className="mt-4 space-y-8">
+                <div>
+                  <div className="mt-4 flex flex-wrap justify-evenly gap-4">
+                    {data.equipment.map((equipment) => (
+                      <CarouselItem
+                        key={`equipment-${equipment.itemId}`}
+                        itemData={equipment}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </section>
       </div>

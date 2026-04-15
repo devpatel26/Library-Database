@@ -72,7 +72,7 @@ function BuildFallbackImageSource(itemData) {
     String(itemData?.title ?? theme.label)
       .trim()
       .slice(0, 22)
-      .toUpperCase()
+      .toUpperCase(),
   );
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 320" role="img" aria-label="${label}">
@@ -104,7 +104,8 @@ export function ItemImage({
   className = "h-48 w-36 shrink-0 rounded-xl object-cover outline-1 outline-white/10",
 }) {
   const fallbackSource = BuildFallbackImageSource(itemData);
-  const resolvedSource = NormalizeImageSource(itemData?.coverImageUrl) ?? fallbackSource;
+  const resolvedSource =
+    NormalizeImageSource(itemData?.coverImageUrl) ?? fallbackSource;
   const [source, setSource] = useState(resolvedSource);
 
   useEffect(() => {
@@ -368,6 +369,141 @@ export default function Item({ itemData }) {
 }
 
 export function CarouselItem({ itemData }) {
+  const user = ReadStoredUser();
+  const { showSuccess, showError, showWarning /*showInfo */ } = useMessage();
+
+  const [activeStaffAction, setActiveStaffAction] = useState("");
+  const [patronIdInput, setPatronIdInput] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  function ResetStaffAction() {
+    setActiveStaffAction("");
+    setPatronIdInput("");
+  }
+
+  function RequireLoggedInUser() {
+    if (user) {
+      return true;
+    }
+
+    showWarning("Please log in first.", 1200);
+
+    setTimeout(() => {
+      window.location.href = "/login";
+    }, 1200);
+
+    return false;
+  }
+
+  async function HandlePatronHold() {
+    if (!RequireLoggedInUser()) {
+      return;
+    }
+
+    if (!user) return null;
+    try {
+      setIsSubmitting(true);
+
+      await FetchJson("/api/holds", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          item_id: itemData.itemId,
+          patron_id: user.patron_id,
+        }),
+      });
+
+      showSuccess("Hold placed successfully!");
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 800);
+    } catch (error) {
+      console.error(error);
+      showError(error.message || "Failed to place hold.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  function OpenStaffAction(actionType) {
+    if (!RequireLoggedInUser()) {
+      return;
+    }
+
+    if (user.user_type !== "staff") {
+      showWarning("Only staff can perform this action.");
+      return;
+    }
+
+    setActiveStaffAction(actionType);
+    setPatronIdInput("");
+  }
+
+  async function ConfirmStaffAction() {
+    const patronId = Number(patronIdInput);
+
+    if (!Number.isInteger(patronId) || patronId < 1) {
+      showWarning("Enter a valid patron ID.");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      if (activeStaffAction === "hold") {
+        await FetchJson("/api/holds", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            item_id: itemData.itemId,
+            patron_id: patronId,
+          }),
+        });
+
+        showSuccess("Hold placed successfully!");
+      } else if (activeStaffAction === "checkout") {
+        await FetchJson("/api/checkout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            item_id: itemData.itemId,
+            patron_id: patronId,
+          }),
+        });
+
+        showSuccess("Checkout successful!");
+      } else {
+        showWarning("Choose an action first.");
+        return;
+      }
+
+      ResetStaffAction();
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 800);
+    } catch (error) {
+      console.error(error);
+
+      if (activeStaffAction === "hold") {
+        showError(error.message || "Failed to place hold.");
+      } else {
+        showError(error.message || "Failed to check out item.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  const isStaff = user?.user_type === "staff";
+  const canPlaceHold = Number(itemData.is_removed ?? 0) !== 1;
   return (
     <div className="w-70">
       {itemData.category != "equipment" ? (
@@ -380,16 +516,64 @@ export function CarouselItem({ itemData }) {
               className={
                 itemData.available >= 1
                   ? "text-green-400 font-semibold"
-                  : "text-red-400 font-semibold"  
+                  : "text-red-400 font-semibold"
               }
-             > 
+            >
               {itemData.available >= 1 ? "Available" : "Not Available"}
             </span>
             <span>Shelf: {itemData.shelfNumber}</span>
-            {Number(itemData.is_removed ?? 0) !== 1 ? (
-              <PrimaryButton title="Place Hold" />
+            {canPlaceHold ? (
+              isStaff ? (
+                <>
+                  <PrimaryButton
+                    title="Check Out"
+                    onClick={() => OpenStaffAction("checkout")}
+                  />
+
+                  {activeStaffAction ? (
+                    <div className="mt-2 flex w-full flex-col gap-2 rounded-lg border border-white/10 bg-slate-900/70 p-3">
+                      <div className="text-xs text-slate-300">
+                        {activeStaffAction === "hold"
+                          ? "Enter the patron ID for this hold."
+                          : "Enter the patron ID for this checkout."}
+                      </div>
+
+                      <input
+                        type="number"
+                        min="1"
+                        value={patronIdInput}
+                        onChange={(event) =>
+                          setPatronIdInput(event.target.value)
+                        }
+                        placeholder="Patron ID"
+                        className="w-full rounded-md border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-sky-400"
+                      />
+
+                      <div className="flex gap-2">
+                        <PrimaryButton
+                          title={isSubmitting ? "Submitting..." : "Confirm"}
+                          onClick={ConfirmStaffAction}
+                          disabledValue={isSubmitting}
+                        />
+
+                        <SecondaryButton
+                          title="Cancel"
+                          onClick={ResetStaffAction}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                    </div>
+                  ) : null}
+                </>
+              ) : (
+                <PrimaryButton
+                  title="Place Hold"
+                  onClick={HandlePatronHold}
+                  disabledValue={isSubmitting}
+                />
+              )
             ) : (
-              <SecondaryButton title="Not Available" disabled={true} />
+              <SecondaryButton title="Unavailable" disabled={true} />
             )}
           </div>
         </div>
@@ -399,13 +583,67 @@ export function CarouselItem({ itemData }) {
             <CarouselItemHolder data={itemData} />
           </div>
           <div className="row-span-1 grid grid-cols-2 grid items-center m-2 text-center">
-            <span>
+            <span
+              className={
+                itemData.available >= 1
+                  ? "text-green-400 font-semibold"
+                  : "text-red-400 font-semibold"
+              }
+            >
               {itemData.available >= 1 ? "Available" : "Not Available"}
             </span>
-            {Number(itemData.is_removed ?? 0) !== 1 ? (
-              <PrimaryButton title="Place Hold" />
+            {canPlaceHold ? (
+              isStaff ? (
+                <>
+                  <PrimaryButton
+                    title="Check Out"
+                    onClick={() => OpenStaffAction("checkout")}
+                  />
+
+                  {activeStaffAction ? (
+                    <div className="mt-2 flex w-full flex-col gap-2 rounded-lg border border-white/10 bg-slate-900/70 p-3">
+                      <div className="text-xs text-slate-300">
+                        {activeStaffAction === "hold"
+                          ? "Enter the patron ID for this hold."
+                          : "Enter the patron ID for this checkout."}
+                      </div>
+
+                      <input
+                        type="number"
+                        min="1"
+                        value={patronIdInput}
+                        onChange={(event) =>
+                          setPatronIdInput(event.target.value)
+                        }
+                        placeholder="Patron ID"
+                        className="w-full rounded-md border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-sky-400"
+                      />
+
+                      <div className="flex gap-2">
+                        <PrimaryButton
+                          title={isSubmitting ? "Submitting..." : "Confirm"}
+                          onClick={ConfirmStaffAction}
+                          disabledValue={isSubmitting}
+                        />
+
+                        <SecondaryButton
+                          title="Cancel"
+                          onClick={ResetStaffAction}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                    </div>
+                  ) : null}
+                </>
+              ) : (
+                <PrimaryButton
+                  title="Place Hold"
+                  onClick={HandlePatronHold}
+                  disabledValue={isSubmitting}
+                />
+              )
             ) : (
-              <SecondaryButton title="Not Available" disabled={true} />
+              <SecondaryButton title="Unavailable" disabled={true} />
             )}
           </div>
         </div>
@@ -427,7 +665,10 @@ export function CarouselItemHolder({ data }) {
 
   return (
     <div className="flex flex-col items-center justify-center text-center">
-      <ItemImage itemData={data} className="h-48 w-36 rounded-xl object-cover outline-1 outline-white/10" />
+      <ItemImage
+        itemData={data}
+        className="h-48 w-36 rounded-xl object-cover outline-1 outline-white/10"
+      />
       <div className="text-xl mt-2 font-bold">{data.title}</div>
 
       {creator ? (
