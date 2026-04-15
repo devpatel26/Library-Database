@@ -2007,44 +2007,38 @@ app.get(["/mainitems", "/api/mainitems"], async (req, res) => {
             `
     );
     const [audiovisualmedia] = await pool.query(`
-            SELECT
+              SELECT
               (
                 SELECT CONCAT(c.first_name, ' ', c.last_name)
                 FROM contributors c
                 WHERE c.item_id = am.item_id
               ) AS creator,
-              am.item_id as itemId,
-              amt.audiovisual_media_type AS type,
-              am.shelf_number AS shelfNumber,
-              l.language,
-              g.genre,
-              am.summary,
-              am.publisher,
-              am.shelf_number AS shelfNumber,
-              am.publication_date AS publicationDate,
+              'audiovisualmedia' AS category,
               am.cover_image_url AS coverImageUrl,
+              am.item_id as itemId,
+              am.publication_date AS publicationDate,
+              am.publisher,
               am.runtime,
+              am.shelf_number AS shelfNumber,
+              am.summary,
               am.title,
               amt.audiovisual_media_type AS type,
-              l.language,
               g.genre,
-              am.summary,
-              am.cover_image_url,
               i.available,
-              'audiovisualmedia' AS category
+              l.language
           FROM (
               SELECT item_id
               FROM audiovisual_media
               LIMIT 4
           ) AS first4
           JOIN audiovisual_media am ON am.item_id = first4.item_id
-          LEFT JOIN contributors c ON am.item_id = am.item_id
+          LEFT JOIN contributors c ON am.item_id = c.item_id
           LEFT JOIN items i ON am.item_id = i.item_id
-          LEFT JOIN audiovisual_media_types amt ON amt.audiovisual_media_type_code = am.audiovisual_media_type_code
-          LEFT JOIN languages l ON l.language_code = am.language_code
-          LEFT JOIN genres g ON g.genre_code = am.genre_code
-            `
+          LEFT JOIN audiovisual_media_types amt ON am.audiovisual_media_type_code = amt.audiovisual_media_type_code
+          LEFT JOIN languages l ON am.language_code = l.language_code
+          LEFT JOIN genres g ON am.genre_code = g.genre_code`
     );
+
     const [equipment] = await pool.query(`
           SELECT
               e.item_id as itemId,
