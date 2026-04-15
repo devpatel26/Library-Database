@@ -5494,7 +5494,7 @@ app.get(
 );
 
 
-// Get patron summary report
+// Get all users summary report
 app.get(["/reports/patron-summary", "/api/reports/patron-summary"], async (req, res) => {
   try {
     const user = await RequireStaffUser(req, res);
@@ -5520,93 +5520,122 @@ app.get(["/reports/patron-summary", "/api/reports/patron-summary"], async (req, 
 
     const [rows] = await pool.query(
       `
-      SELECT
-        p.patron_id AS patronId,
-        p.first_name AS firstName,
-        p.last_name AS lastName,
-
-        COALESCE(ls.totalLoansHistory, 0) AS totalLoansHistory,
-        COALESCE(ls.currentLoans, 0) AS currentLoans,
-        COALESCE(ls.returnedLoans, 0) AS returnedLoans,
-        ls.lastLoanDate AS lastLoanDate,
-        ls.lastReturnDate AS lastReturnDate,
-
-        COALESCE(hs.totalHoldsHistory, 0) AS totalHoldsHistory,
-        COALESCE(hs.activeHolds, 0) AS activeHolds,
-        hs.lastHoldDate AS lastHoldDate,
-
-        COALESCE(fs.totalFineRecords, 0) AS totalFineRecords,
-        COALESCE(fs.totalFineAmount, 0) AS totalFineAmount,
-        COALESCE(fs.totalPaidAmount, 0) AS totalPaidAmount,
-        COALESCE(fs.outstandingBalance, 0) AS outstandingBalance,
-        COALESCE(fs.waivedFineCount, 0) AS waivedFineCount,
-        fs.lastFineDate AS lastFineDate,
-
-        NULLIF(
-          GREATEST(
-            COALESCE(ls.lastLoanDate, '1000-01-01'),
-            COALESCE(hs.lastHoldDate, '1000-01-01'),
-            COALESCE(fs.lastFineDate, '1000-01-01')
-          ),
-          '1000-01-01'
-        ) AS lastActivityDate
-
-      FROM patrons p
-
-      LEFT JOIN (
+      SELECT *
+      FROM (
         SELECT
-          l.patron_id,
-          COUNT(*) AS totalLoansHistory,
-          SUM(CASE WHEN l.loan_status_code = 1 THEN 1 ELSE 0 END) AS currentLoans,
-          SUM(CASE WHEN l.loan_status_code <> 1 THEN 1 ELSE 0 END) AS returnedLoans,
-          MAX(l.loan_origin_date) AS lastLoanDate,
-          MAX(l.return_date) AS lastReturnDate
-        FROM loans l
-        GROUP BY l.patron_id
-      ) ls ON ls.patron_id = p.patron_id
+          p.patron_id AS userId,
+          CONCAT(p.first_name, ' ', p.last_name) AS name,
+          'Patron' AS role,
 
-      LEFT JOIN (
+          'Active' AS accountStatus,
+
+          p.email AS email,
+          p.date_of_birth AS dob,
+
+          COALESCE(ls.totalLoansHistory, 0) AS totalLoansHistory,
+          COALESCE(ls.currentLoans, 0) AS currentLoans,
+          COALESCE(ls.returnedLoans, 0) AS returnedLoans,
+
+          COALESCE(hs.totalHoldsHistory, 0) AS totalHoldsHistory,
+          COALESCE(hs.activeHolds, 0) AS activeHolds,
+
+          COALESCE(fs.totalFineRecords, 0) AS totalFineRecords,
+          COALESCE(fs.totalFineAmount, 0) AS totalFineAmount,
+          COALESCE(fs.totalPaidAmount, 0) AS totalPaidAmount,
+          COALESCE(fs.outstandingBalance, 0) AS outstandingBalance,
+          COALESCE(fs.waivedFineCount, 0) AS waivedFineCount,
+
+          NULLIF(
+            GREATEST(
+              COALESCE(ls.lastLoanDate, '1000-01-01'),
+              COALESCE(hs.lastHoldDate, '1000-01-01'),
+              COALESCE(fs.lastFineDate, '1000-01-01')
+            ),
+            '1000-01-01'
+          ) AS lastActivityDate
+
+        FROM patrons p
+
+        LEFT JOIN (
+          SELECT
+            l.patron_id,
+            COUNT(*) AS totalLoansHistory,
+            SUM(CASE WHEN l.loan_status_code = 1 THEN 1 ELSE 0 END) AS currentLoans,
+            SUM(CASE WHEN l.loan_status_code <> 1 THEN 1 ELSE 0 END) AS returnedLoans,
+            MAX(l.loan_origin_date) AS lastLoanDate
+          FROM loans l
+          GROUP BY l.patron_id
+        ) ls ON ls.patron_id = p.patron_id
+
+        LEFT JOIN (
+          SELECT
+            h.patron_id,
+            COUNT(*) AS totalHoldsHistory,
+            SUM(
+              CASE
+                WHEN h.hold_status_code = 1 AND h.hold_expiration_date >= CURDATE()
+                THEN 1
+                ELSE 0
+              END
+            ) AS activeHolds,
+            MAX(h.hold_origin_date) AS lastHoldDate
+          FROM holds h
+          GROUP BY h.patron_id
+        ) hs ON hs.patron_id = p.patron_id
+
+        LEFT JOIN (
+          SELECT
+            f.patron_id,
+            COUNT(*) AS totalFineRecords,
+            SUM(COALESCE(f.fine_amount, 0)) AS totalFineAmount,
+            SUM(COALESCE(f.paid_amount, 0)) AS totalPaidAmount,
+            SUM(
+              CASE
+                WHEN f.waived_date IS NULL
+                THEN GREATEST(COALESCE(f.fine_amount, 0) - COALESCE(f.paid_amount, 0), 0)
+                ELSE 0
+              END
+            ) AS outstandingBalance,
+            SUM(CASE WHEN f.waived_date IS NOT NULL THEN 1 ELSE 0 END) AS waivedFineCount,
+            MAX(f.fine_date) AS lastFineDate
+          FROM fines f
+          GROUP BY f.patron_id
+        ) fs ON fs.patron_id = p.patron_id
+
+        UNION ALL
+
         SELECT
-          h.patron_id,
-          COUNT(*) AS totalHoldsHistory,
-          SUM(
-            CASE
-              WHEN h.hold_status_code = 1 AND h.hold_expiration_date >= CURDATE()
-              THEN 1
-              ELSE 0
-            END
-          ) AS activeHolds,
-          MAX(h.hold_origin_date) AS lastHoldDate
-        FROM holds h
-        GROUP BY h.patron_id
-      ) hs ON hs.patron_id = p.patron_id
+          s.staff_id AS userId,
+          CONCAT(s.first_name, ' ', s.last_name) AS name,
+          'Staff' AS role,
 
-      LEFT JOIN (
-        SELECT
-          f.patron_id,
-          COUNT(*) AS totalFineRecords,
-          SUM(COALESCE(f.fine_amount, 0)) AS totalFineAmount,
-          SUM(COALESCE(f.paid_amount, 0)) AS totalPaidAmount,
-          SUM(
-            CASE
-              WHEN f.waived_date IS NULL
-              THEN GREATEST(COALESCE(f.fine_amount, 0) - COALESCE(f.paid_amount, 0), 0)
-              ELSE 0
-            END
-          ) AS outstandingBalance,
-          SUM(CASE WHEN f.waived_date IS NOT NULL THEN 1 ELSE 0 END) AS waivedFineCount,
-          MAX(f.fine_date) AS lastFineDate
-        FROM fines f
-        GROUP BY f.patron_id
-      ) fs ON fs.patron_id = p.patron_id
+          'Active' AS accountStatus,
 
-      ORDER BY totalLoansHistory DESC, p.patron_id ASC
+          s.email AS email,
+          s.date_of_birth AS dob,
+
+          0 AS totalLoansHistory,
+          0 AS currentLoans,
+          0 AS returnedLoans,
+          0 AS totalHoldsHistory,
+          0 AS activeHolds,
+          0 AS totalFineRecords,
+          0 AS totalFineAmount,
+          0 AS totalPaidAmount,
+          0 AS outstandingBalance,
+          0 AS waivedFineCount,
+          NULL AS lastActivityDate
+
+        FROM staff s
+      ) all_users
+      ORDER BY role ASC, userId ASC
       `
     );
 
     const formattedRows = rows.map((row) => ({
       ...row,
-      patronName: `${row.firstName} ${row.lastName}`,
+      patronId: row.userId,
+      patronName: row.name,
     }));
 
     return res.json(formattedRows);

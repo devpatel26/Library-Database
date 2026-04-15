@@ -13,10 +13,6 @@ function SafeNumber(value) {
   return Number.isFinite(number) ? number : 0;
 }
 
-function FormatMoney(value) {
-  return `$${SafeNumber(value).toFixed(2)}`;
-}
-
 function FormatDateLabel(value) {
   if (!value) {
     return "Any time";
@@ -32,13 +28,9 @@ function SummaryCard({ title, value, subtitle = "" }) {
       <p className="text-xs font-semibold uppercase tracking-[0.25em] text-sky-300">
         {title}
       </p>
-      <p className="mt-3 text-3xl font-semibold text-white">
-        {value}
-      </p>
+      <p className="mt-3 text-3xl font-semibold text-white">{value}</p>
       {subtitle ? (
-        <p className="mt-2 text-sm text-slate-400">
-          {subtitle}
-        </p>
+        <p className="mt-2 text-sm text-slate-400">{subtitle}</p>
       ) : null}
     </div>
   );
@@ -53,50 +45,69 @@ function ParseDateValue(value) {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-function BuildSortValue(patron, sortBy) {
+function NormalizeRole(role) {
+  const text = SafeText(role).trim().toLowerCase();
+
+  if (text === "staff") {
+    return "Staff";
+  }
+
+  if (text === "patron") {
+    return "Patron";
+  }
+
+  return SafeText(role) || "Unknown";
+}
+
+function NormalizeAccountStatus(status) {
+  const text = SafeText(status).trim().toLowerCase();
+
+  if (
+    text === "inactive" ||
+    text === "disabled" ||
+    text === "suspended" ||
+    text === "deleted"
+  ) {
+    return "Inactive";
+  }
+
+  return "Active";
+}
+
+function BuildSortValue(user, sortBy) {
   switch (sortBy) {
-    case "patronId":
-      return SafeNumber(patron.patronId);
-    case "patronName":
-      return SafeText(patron.patronName).toLowerCase();
-    case "totalLoansHistory":
-      return SafeNumber(patron.totalLoansHistory);
-    case "currentLoans":
-      return SafeNumber(patron.currentLoans);
-    case "returnedLoans":
-      return SafeNumber(patron.returnedLoans);
-    case "totalHoldsHistory":
-      return SafeNumber(patron.totalHoldsHistory);
-    case "activeHolds":
-      return SafeNumber(patron.activeHolds);
-    case "totalFineRecords":
-      return SafeNumber(patron.totalFineRecords);
-    case "outstandingBalance":
-      return SafeNumber(patron.outstandingBalance);
-    case "totalPaidAmount":
-      return SafeNumber(patron.totalPaidAmount);
-    case "lastActivityDate":
-      return ParseDateValue(patron.lastActivityDate)?.getTime() ?? 0;
+    case "userId":
+      return SafeNumber(user.userId);
+    case "name":
+      return SafeText(user.name).toLowerCase();
+    case "role":
+      return NormalizeRole(user.role).toLowerCase();
+    case "accountStatus":
+      return NormalizeAccountStatus(user.accountStatus).toLowerCase();
+    case "email":
+      return SafeText(user.email).toLowerCase();
+    case "dob":
+      return ParseDateValue(user.dob)?.getTime() ?? 0;
     default:
-      return SafeNumber(patron.totalLoansHistory);
+      return SafeNumber(user.userId);
   }
 }
 
-export default function PatronSummaryReport() {
+export default function AllUsersReport() {
   const { showError, showWarning, showInfo } = useMessage();
 
-  const [patrons, setPatrons] = useState([]);
+  const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  const [activityFilter, setActivityFilter] = useState("All");
+  const [userFilter, setUserFilter] = useState("All");
   const [searchBy, setSearchBy] = useState("All");
   const [searchText, setSearchText] = useState("");
 
-  const [sortBy, setSortBy] = useState("totalLoansHistory");
-  const [sortDirection, setSortDirection] = useState("desc");
+  const [sortBy, setSortBy] = useState("userId");
+  const [sortDirection, setSortDirection] = useState("asc");
 
   useEffect(() => {
     const user = ReadStoredJson("user");
@@ -119,7 +130,7 @@ export default function PatronSummaryReport() {
     );
 
     if (user.user_type !== "staff" || roleCode !== 2) {
-      showError("Only admin can access the patron summary report.");
+      showError("Only admin can access the all users report.");
 
       const timeoutId = setTimeout(() => {
         window.location.href = "/report";
@@ -136,11 +147,11 @@ export default function PatronSummaryReport() {
         const data = await FetchJson("/api/reports/patron-summary");
 
         if (isMounted) {
-          setPatrons(Array.isArray(data) ? data : []);
+          setUsers(Array.isArray(data) ? data : []);
         }
       } catch (error) {
         console.error(error);
-        showError(error.message || "Failed to load patron summary report.");
+        showError(error.message || "Failed to load all users report.");
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -155,11 +166,13 @@ export default function PatronSummaryReport() {
     };
   }, [showError, showWarning]);
 
-  const filteredPatrons = useMemo(() => {
+  const filteredUsers = useMemo(() => {
     const normalizedSearch = searchText.trim().toLowerCase();
 
-    const result = patrons.filter((patron) => {
-      const lastActivityDate = ParseDateValue(patron.lastActivityDate);
+    const result = users.filter((user) => {
+      const lastActivityDate = ParseDateValue(user.lastActivityDate);
+      const role = NormalizeRole(user.role);
+      const accountStatus = NormalizeAccountStatus(user.accountStatus);
 
       if (startDate) {
         const start = new Date(`${startDate}T00:00:00`);
@@ -175,79 +188,91 @@ export default function PatronSummaryReport() {
         }
       }
 
-      if (activityFilter === "Has Current Loans" && SafeNumber(patron.currentLoans) <= 0) {
+      if (userFilter === "Patrons Only" && role !== "Patron") {
         return false;
       }
 
-      if (activityFilter === "Has Holds" && SafeNumber(patron.activeHolds) <= 0) {
+      if (userFilter === "Staff Only" && role !== "Staff") {
         return false;
       }
 
-      if (activityFilter === "Has Loan History" &&
-        SafeNumber(patron.totalLoansHistory) <= 0
+      if (userFilter === "Active Only" && accountStatus !== "Active") {
+        return false;
+      }
+
+      if (userFilter === "Inactive Only" && accountStatus !== "Inactive") {
+        return false;
+      }
+
+      if (
+        userFilter === "Active Patrons" &&
+        !(role === "Patron" && accountStatus === "Active")
       ) {
         return false;
       }
 
       if (
-        activityFilter === "Has Fine History" &&
-        SafeNumber(patron.totalFineRecords) <= 0
+        userFilter === "Inactive Patrons" &&
+        !(role === "Patron" && accountStatus === "Inactive")
       ) {
         return false;
       }
 
       if (
-        activityFilter === "Has Outstanding Fines" &&
-        SafeNumber(patron.outstandingBalance) <= 0
+        userFilter === "Active Staff" &&
+        !(role === "Staff" && accountStatus === "Active")
       ) {
         return false;
       }
 
       if (
-        activityFilter === "No Activity" &&
-        (
-          SafeNumber(patron.totalLoansHistory) > 0 ||
-          SafeNumber(patron.totalHoldsHistory) > 0 ||
-          SafeNumber(patron.totalFineRecords) > 0
-        )
-      ) {
-        return false;
-      }
-
-      if (
-        activityFilter === "Has Any Activity" &&
-        SafeNumber(patron.totalLoansHistory) === 0 &&
-        SafeNumber(patron.totalHoldsHistory) === 0 &&
-        SafeNumber(patron.totalFineRecords) === 0
+        userFilter === "Inactive Staff" &&
+        !(role === "Staff" && accountStatus === "Inactive")
       ) {
         return false;
       }
 
       if (normalizedSearch) {
         const byAll = [
-          patron.patronId,
-          patron.patronName,
-          patron.totalLoansHistory,
-          patron.currentLoans,
-          patron.activeHolds,
-          patron.outstandingBalance,
+          user.userId,
+          user.name,
+          role,
+          accountStatus,
+          user.email,
+          user.dob,
         ]
           .map(SafeText)
           .join(" ")
           .toLowerCase();
 
-        const byName = SafeText(patron.patronName).toLowerCase();
-        const byId = SafeText(patron.patronId).toLowerCase();
+        const byId = SafeText(user.userId).toLowerCase();
+        const byName = SafeText(user.name).toLowerCase();
+        const byRole = role.toLowerCase();
+        const byStatus = accountStatus.toLowerCase();
+        const byEmail = SafeText(user.email).toLowerCase();
+        const byDob = SafeText(user.dob).toLowerCase();
 
-        if (searchBy === "Patron ID" && byId !== normalizedSearch) {
+        if (searchBy === "User ID" && byId !== normalizedSearch) {
           return false;
         }
 
-        if (searchBy === "Patron Name" && !byName.includes(normalizedSearch)) {
+        if (searchBy === "Name" && !byName.includes(normalizedSearch)) {
           return false;
         }
 
-        if (searchBy === "Patron ID" && byId !== normalizedSearch) {
+        if (searchBy === "Role" && !byRole.includes(normalizedSearch)) {
+          return false;
+        }
+
+        if (searchBy === "Account Status" && !byStatus.includes(normalizedSearch)) {
+          return false;
+        }
+
+        if (searchBy === "Email" && !byEmail.includes(normalizedSearch)) {
+          return false;
+        }
+
+        if (searchBy === "DOB" && !byDob.includes(normalizedSearch)) {
           return false;
         }
 
@@ -276,10 +301,10 @@ export default function PatronSummaryReport() {
 
     return result;
   }, [
-    patrons,
+    users,
     startDate,
     endDate,
-    activityFilter,
+    userFilter,
     searchBy,
     searchText,
     sortBy,
@@ -287,85 +312,69 @@ export default function PatronSummaryReport() {
   ]);
 
   const summary = useMemo(() => {
-    const totalPatrons = filteredPatrons.length;
+    const allUsers = filteredUsers.length;
 
-    const totalLoansHistory = filteredPatrons.reduce(
-      (sum, patron) => sum + SafeNumber(patron.totalLoansHistory),
-      0
+    const patronUsers = filteredUsers.filter(
+      (user) => NormalizeRole(user.role) === "Patron"
+    );
+    const staffUsers = filteredUsers.filter(
+      (user) => NormalizeRole(user.role) === "Staff"
     );
 
-    const currentLoans = filteredPatrons.reduce(
-      (sum, patron) => sum + SafeNumber(patron.currentLoans),
-      0
-    );
-
-    const activeHolds = filteredPatrons.reduce(
-      (sum, patron) => sum + SafeNumber(patron.activeHolds),
-      0
-    );
-
-    const outstandingBalance = filteredPatrons.reduce(
-      (sum, patron) => sum + SafeNumber(patron.outstandingBalance),
-      0
-    );
-
-    const patronsWithBalance = filteredPatrons.filter(
-      (patron) => SafeNumber(patron.outstandingBalance) > 0
+    const activePatrons = patronUsers.filter(
+      (user) => NormalizeAccountStatus(user.accountStatus) === "Active"
     ).length;
 
-    const patronsWithAnyActivity = filteredPatrons.filter(
-      (patron) =>
-        SafeNumber(patron.totalLoansHistory) > 0 ||
-        SafeNumber(patron.totalHoldsHistory) > 0 ||
-        SafeNumber(patron.totalFineRecords) > 0
+    const inactivePatrons = patronUsers.filter(
+      (user) => NormalizeAccountStatus(user.accountStatus) === "Inactive"
     ).length;
 
+    const activeStaff = staffUsers.filter(
+      (user) => NormalizeAccountStatus(user.accountStatus) === "Active"
+    ).length;
 
-
-    const mostActivePatron = [...filteredPatrons].sort(
-      (a, b) => SafeNumber(b.totalLoansHistory) - SafeNumber(a.totalLoansHistory)
-    )[0];
+    const inactiveStaff = staffUsers.filter(
+      (user) => NormalizeAccountStatus(user.accountStatus) === "Inactive"
+    ).length;
 
     return {
-      totalPatrons,
-      totalLoansHistory,
-      currentLoans,
-      activeHolds,
-      outstandingBalance,
-      patronsWithBalance,
-      patronsWithAnyActivity,
-      mostActivePatronName: mostActivePatron?.patronName ?? "-",
-      mostActivePatronLoans: mostActivePatron?.totalLoansHistory ?? 0,
+      allUsers,
+      totalPatrons: patronUsers.length,
+      activePatrons,
+      inactivePatrons,
+      totalStaff: staffUsers.length,
+      activeStaff,
+      inactiveStaff,
     };
-  }, [filteredPatrons]);
+  }, [filteredUsers]);
 
   const dateRangeLabel = useMemo(() => {
     if (!startDate && !endDate) {
-      return "Showing all patrons regardless of last activity date.";
+      return "Showing all users regardless of last activity date.";
     }
 
     if (startDate && endDate) {
-      return `Showing patrons with last activity from ${FormatDateLabel(
+      return `Showing users with last activity from ${FormatDateLabel(
         startDate
       )} to ${FormatDateLabel(endDate)}.`;
     }
 
     if (startDate) {
-      return `Showing patrons with last activity from ${FormatDateLabel(startDate)} onward.`;
+      return `Showing users with last activity from ${FormatDateLabel(startDate)} onward.`;
     }
 
-    return `Showing patrons with last activity up to ${FormatDateLabel(endDate)}.`;
+    return `Showing users with last activity up to ${FormatDateLabel(endDate)}.`;
   }, [startDate, endDate]);
 
   function ResetFilters() {
     setStartDate("");
     setEndDate("");
-    setActivityFilter("All");
+    setUserFilter("All");
     setSearchBy("All");
     setSearchText("");
-    setSortBy("totalLoansHistory");
-    setSortDirection("desc");
-    showInfo("Patron summary filters reset.");
+    setSortBy("userId");
+    setSortDirection("asc");
+    showInfo("All users report filters reset.");
   }
 
   return (
@@ -375,21 +384,19 @@ export default function PatronSummaryReport() {
       </p>
 
       <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">
-        Patron Summary Report
+        All Users Report
       </h1>
 
       <p className="mt-3 text-sm font-medium text-sky-300">
-        Note: Date filters in this report use each patron’s most recent activity date
-        across loans, holds, and fines.
+        Note: Date filters in this report use each user’s most recent activity date.
       </p>
 
       <p className="mt-4 max-w-3xl text-base leading-7 text-slate-300">
-        Review patron borrowing activity, holds, fines, and balances with flexible
-        search, filter, and sorting tools.
+        Review all patron and staff accounts with flexible search, filter, and sorting tools.
       </p>
 
       {isLoading ? (
-        <div className="mt-8 text-slate-300">Loading patron summary report...</div>
+        <div className="mt-8 text-slate-300">Loading all users report...</div>
       ) : (
         <>
           <div className="mt-8">
@@ -397,27 +404,13 @@ export default function PatronSummaryReport() {
           </div>
 
           <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <SummaryCard title="All Users" value={summary.allUsers} />
             <SummaryCard title="Total Patrons" value={summary.totalPatrons} />
-            <SummaryCard title="Total Loans History" value={summary.totalLoansHistory} />
-            <SummaryCard title="Current Loans" value={summary.currentLoans} />
-            <SummaryCard title="Active Holds" value={summary.activeHolds} />
-            <SummaryCard
-              title="Outstanding Balance"
-              value={FormatMoney(summary.outstandingBalance)}
-            />
-            <SummaryCard
-              title="Patrons With Balance"
-              value={summary.patronsWithBalance}
-            />
-            <SummaryCard
-              title="Patrons With Activity"
-              value={summary.patronsWithAnyActivity}
-            />
-            <SummaryCard
-              title="Most Active Patron"
-              value={summary.mostActivePatronName}
-              subtitle={`${summary.mostActivePatronLoans} total loans`}
-            />
+            <SummaryCard title="Active Patrons" value={summary.activePatrons} />
+            <SummaryCard title="Inactive Patrons" value={summary.inactivePatrons} />
+            <SummaryCard title="Total Staff" value={summary.totalStaff} />
+            <SummaryCard title="Active Staff" value={summary.activeStaff} />
+            <SummaryCard title="Inactive Staff" value={summary.inactiveStaff} />
           </div>
 
           <div className="mt-8 rounded-2xl border border-white/10 bg-slate-950/40 p-5">
@@ -452,37 +445,22 @@ export default function PatronSummaryReport() {
 
               <div>
                 <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
-                  Filter By Activity
+                  Filter By User Type
                 </label>
                 <select
-                  value={activityFilter}
-                  onChange={(event) => setActivityFilter(event.target.value)}
+                  value={userFilter}
+                  onChange={(event) => setUserFilter(event.target.value)}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
                 >
-                  <option>
-                    All
-                  </option>
-                  <option>
-                    Has Current Loans
-                  </option>
-                  <option>
-                    Has Holds
-                  </option>
-                  <option>
-                    Has Outstanding Fines
-                  </option>
-                  <option>
-                    Has Loan History
-                  </option>
-                  <option>
-                    Has Fine History
-                  </option>
-                  <option>
-                    Has Any Activity
-                  </option>
-                  <option>
-                    No Activity
-                  </option>
+                  <option>All</option>
+                  <option>Patrons Only</option>
+                  <option>Staff Only</option>
+                  <option>Active Only</option>
+                  <option>Inactive Only</option>
+                  <option>Active Patrons</option>
+                  <option>Inactive Patrons</option>
+                  <option>Active Staff</option>
+                  <option>Inactive Staff</option>
                 </select>
               </div>
 
@@ -495,15 +473,13 @@ export default function PatronSummaryReport() {
                   onChange={(event) => setSearchBy(event.target.value)}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
                 >
-                  <option>
-                    All
-                  </option>
-                  <option>
-                    Patron Name
-                  </option>
-                  <option>
-                    Patron ID
-                  </option>
+                  <option>All</option>
+                  <option>User ID</option>
+                  <option>Name</option>
+                  <option>Role</option>
+                  <option>Account Status</option>
+                  <option>Email</option>
+                  <option>DOB</option>
                 </select>
               </div>
 
@@ -529,39 +505,12 @@ export default function PatronSummaryReport() {
                   onChange={(event) => setSortBy(event.target.value)}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
                 >
-                  <option value="totalLoansHistory">
-                    Total Loans History
-                  </option>
-                  <option value="currentLoans">
-                    Current Loans
-                  </option>
-                  <option value="returnedLoans">
-                    Returned Loans
-                  </option>
-                  <option value="totalHoldsHistory">
-                    Total Holds History
-                  </option>
-                  <option value="activeHolds">
-                    Active Holds
-                  </option>
-                  <option value="totalFineRecords">
-                    Fine Records
-                  </option>
-                  <option value="outstandingBalance">
-                    Outstanding Balance
-                  </option>
-                  <option value="totalPaidAmount">
-                    Total Paid Amount
-                  </option>
-                  <option value="lastActivityDate">
-                    Last Activity Date
-                  </option>
-                  <option value="patronName">
-                    Patron Name
-                  </option>
-                  <option value="patronId">
-                    Patron ID
-                  </option>
+                  <option value="userId">User ID</option>
+                  <option value="name">Name</option>
+                  <option value="role">Role</option>
+                  <option value="accountStatus">Account Status</option>
+                  <option value="email">Email</option>
+                  <option value="dob">DOB</option>
                 </select>
               </div>
 
@@ -574,12 +523,8 @@ export default function PatronSummaryReport() {
                   onChange={(event) => setSortDirection(event.target.value)}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
                 >
-                  <option value="desc">
-                    Descending
-                  </option>
-                  <option value="asc">
-                    Ascending
-                  </option>
+                  <option value="asc">Ascending</option>
+                  <option value="desc">Descending</option>
                 </select>
               </div>
             </div>
@@ -591,117 +536,51 @@ export default function PatronSummaryReport() {
 
           <div className="mt-8 rounded-2xl border border-white/10 bg-slate-950/40 p-5">
             <h2 className="text-xl font-semibold text-white">
-              Patron Detail Table
+              User Detail Table
             </h2>
 
             <div className="mt-4 overflow-x-auto">
               <table className="min-w-full text-left text-sm">
                 <thead>
                   <tr className="border-b border-white/10 text-slate-300">
-                    <th className="px-3 py-2">
-                      Patron ID
-                    </th>
-                    <th className="px-3 py-2">
-                      Patron Name
-                    </th>
-                    <th className="px-3 py-2">
-                      Total Loans
-                    </th>
-                    <th className="px-3 py-2">
-                      Current Loans
-                    </th>
-                    <th className="px-3 py-2">
-                      Returned Loans
-                    </th>
-                    <th className="px-3 py-2">
-                      Total Holds
-                    </th>
-                    <th className="px-3 py-2">
-                      Active Holds
-                    </th>
-                    <th className="px-3 py-2">
-                      Fine Records
-                    </th>
-                    <th className="px-3 py-2">
-                      Outstanding Balance
-                    </th>
-                    <th className="px-3 py-2">
-                      Paid Amount
-                    </th>
-                    <th className="px-3 py-2">
-                      Last Loan Date
-                    </th>
-                    <th className="px-3 py-2">
-                      Last Hold Date
-                    </th>
-                    <th className="px-3 py-2">
-                      Last Fine Date
-                    </th>
-                    <th className="px-3 py-2">
-                      Last Activity Date
-                    </th>
+                    <th className="px-3 py-2">User ID</th>
+                    <th className="px-3 py-2">Name</th>
+                    <th className="px-3 py-2">Role</th>
+                    <th className="px-3 py-2">Account Status</th>
+                    <th className="px-3 py-2">Email</th>
+                    <th className="px-3 py-2">DOB</th>
                   </tr>
                 </thead>
 
                 <tbody>
-                  {filteredPatrons.length === 0 ? (
+                  {filteredUsers.length === 0 ? (
                     <tr>
-                      <td colSpan={14} className="px-3 py-5 text-slate-400">
-                        No patron records match the current filters.
+                      <td colSpan={6} className="px-3 py-5 text-slate-400">
+                        No user records match the current filters.
                       </td>
                     </tr>
                   ) : (
-                    filteredPatrons.map((patron) => (
+                    filteredUsers.map((user) => (
                       <tr
-                        key={patron.patronId}
+                        key={`${user.role}-${user.userId}`}
                         className="border-b border-white/5 text-slate-200"
                       >
-                        <td className="px-3 py-3">{patron.patronId}</td>
+                        <td className="px-3 py-3">{user.userId}</td>
                         <td className="px-3 py-3 font-semibold text-white">
-                          {patron.patronName}
+                          {user.name || "-"}
                         </td>
                         <td className="px-3 py-3">
-                          {SafeNumber(patron.totalLoansHistory)}
+                          {NormalizeRole(user.role)}
                         </td>
                         <td className="px-3 py-3">
-                          {SafeNumber(patron.currentLoans)}
+                          {NormalizeAccountStatus(user.accountStatus)}
                         </td>
                         <td className="px-3 py-3">
-                          {SafeNumber(patron.returnedLoans)}
+                          {user.email || "-"}
                         </td>
                         <td className="px-3 py-3">
-                          {SafeNumber(patron.totalHoldsHistory)}
-                        </td>
-                        <td className="px-3 py-3">
-                          {SafeNumber(patron.activeHolds)}
-                        </td>
-                        <td className="px-3 py-3">
-                          {SafeNumber(patron.totalFineRecords)}
-                        </td>
-                        <td className="px-3 py-3 font-semibold text-red-300">
-                          {FormatMoney(patron.outstandingBalance)}
-                        </td>
-                        <td className="px-3 py-3">
-                          {FormatMoney(patron.totalPaidAmount)}
-                        </td>
-                        <td className="px-3 py-3">
-                          {patron.lastLoanDate
-                            ? FormatDate(new Date(patron.lastLoanDate), true)
-                            : "-"}
-                        </td>
-                        <td className="px-3 py-3">
-                          {patron.lastHoldDate
-                            ? FormatDate(new Date(patron.lastHoldDate), true)
-                            : "-"}
-                        </td>
-                        <td className="px-3 py-3">
-                          {patron.lastFineDate
-                            ? FormatDate(new Date(patron.lastFineDate), true)
-                            : "-"}
-                        </td>
-                        <td className="px-3 py-3">
-                          {patron.lastActivityDate
-                            ? FormatDate(new Date(patron.lastActivityDate), true)
+                          {user.dob
+                            ? FormatDate(new Date(user.dob), true)
                             : "-"}
                         </td>
                       </tr>

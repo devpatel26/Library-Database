@@ -20,7 +20,7 @@ export default function Report() {
       <div className="mt-8 grid w-full max-w-3xl grid-cols-1 gap-6 md:grid-cols-3">
         <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-left">
           <h2 className="text-xl font-semibold text-white">
-            Popularity Report
+            Popularity 
           </h2>
           <p className="mt-3 text-sm leading-6 text-slate-300">
             View most popular items in the library, including different categories.
@@ -35,10 +35,10 @@ export default function Report() {
 
         <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-left">
           <h2 className="text-xl font-semibold text-white">
-            Patron Information
+            User Overview
           </h2>
           <p className="mt-3 text-sm leading-6 text-slate-300">
-            Look up a patron by ID and view their holds, loans, and fines.
+            View all users in the system, including patrons and staffs.
           </p >
           <div className="mt-6 flex justify-center">
             <PrimaryButton
@@ -50,7 +50,7 @@ export default function Report() {
 
         <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-left">
           <h2 className="text-xl font-semibold text-white">
-            Overdue Report
+            Overdue
           </h2>
           <p className="mt-3 text-sm leading-6 text-slate-300">
             View all overdue loans, the patron responsible, overdue days, and current fine totals.
@@ -65,7 +65,7 @@ export default function Report() {
 
         <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-left">
           <h2 className="text-xl font-semibold text-white">
-            Fine Summary Report
+            Fine Summary 
           </h2>
           <p className="mt-3 text-sm leading-6 text-slate-300">
             Report of total fines, paid amounts/remaining balances.

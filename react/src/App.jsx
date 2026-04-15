@@ -110,7 +110,7 @@ function App() {
   const adminLinks =
     userType === "staff" && roleCode === 2
       ? [
-          { to: "/changerole", label: "All Users" },
+          { to: "/changerole", label: "User Management" },
           { to: "/report", label: "Reports" },
           { to: "/staffregistration", label: "Staff Signup" },
           { to: "/createsignupcode", label: "New Signup Code" },
