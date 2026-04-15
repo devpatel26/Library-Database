@@ -45,6 +45,27 @@ function ParseDateValue(value) {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
+function NormalizeDobForSearch(value) {
+  if (!value) {
+    return { full: "", monthDay: "" };
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return { full: "", monthDay: "" };
+  }
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return {
+    full: `${year}-${month}-${day}`,
+    monthDay: `${month}/${day}`,
+  };
+}
+
 function NormalizeRole(role) {
   const text = SafeText(role).trim().toLowerCase();
 
@@ -250,7 +271,19 @@ export default function AllUsersReport() {
         const byRole = role.toLowerCase();
         const byStatus = accountStatus.toLowerCase();
         const byEmail = SafeText(user.email).toLowerCase();
-        const byDob = SafeText(user.dob).toLowerCase();
+
+        if (searchBy === "DOB") {
+          const dobSearch = normalizedSearch.replace(/\s+/g, "");
+          const dobValue = NormalizeDobForSearch(user.dob);
+
+          const isFullDateMatch = dobSearch === dobValue.full;
+          const isMonthDayMatch = dobSearch === dobValue.monthDay;
+
+          if (!isFullDateMatch && !isMonthDayMatch) {
+            return false;
+          }
+        }
+        
 
         if (searchBy === "User ID" && byId !== normalizedSearch) {
           return false;
@@ -272,9 +305,7 @@ export default function AllUsersReport() {
           return false;
         }
 
-        if (searchBy === "DOB" && !byDob.includes(normalizedSearch)) {
-          return false;
-        }
+        
 
         if (searchBy === "All" && !byAll.includes(normalizedSearch)) {
           return false;
@@ -491,7 +522,7 @@ export default function AllUsersReport() {
                   type="text"
                   value={searchText}
                   onChange={(event) => setSearchText(event.target.value)}
-                  placeholder="Enter search value..."
+                  placeholder="Enter search value...(enter DOB as YYYY-MM-DD or MM/DD)"
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
                 />
               </div>
