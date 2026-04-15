@@ -1,5 +1,7 @@
-//const localApiOrigin = process.env.VITE_API_ORIGIN || "http://localhost:3000"; 
-const localApiOrigin = import.meta.env.VITE_API_ORIGIN || "https://library-database-baclend-api.onrender.com";
+//const localApiOrigin = process.env.VITE_API_ORIGIN || "http://localhost:3000";
+const localApiOrigin =
+  import.meta.env.VITE_API_ORIGIN ||
+  "https://library-database-baclend-api.onrender.com";
 
 const sessionStorageKey = "session";
 const userStorageKey = "user";
@@ -50,21 +52,17 @@ function ShouldRetryAgainstBackend(error) {
 function NormalizeRequestError(error) {
   if (error instanceof TypeError) {
     return new Error(
-      "Could not reach the backend server. Make sure the backend is running on http://localhost:3000."
+      "Could not reach the backend server. Make sure the backend is running on http://localhost:3000.",
     );
   }
 
   if (
     error instanceof Error &&
-    (
-      error.message.includes("JSON.parse") ||
+    (error.message.includes("JSON.parse") ||
       error.message.includes("unexpected end of data") ||
-      error.message.includes("Unexpected end of JSON input")
-    )
+      error.message.includes("Unexpected end of JSON input"))
   ) {
-    return new Error(
-      "The server returned an empty or invalid JSON response."
-    );
+    return new Error("The server returned an empty or invalid JSON response.");
   }
 
   return error;
@@ -225,7 +223,7 @@ export async function ReadJson(response) {
 
   if (contentType.includes("text/html")) {
     throw new Error(
-      "The server returned HTML instead of JSON. Check that the API route is pointing at the backend."
+      "The server returned HTML instead of JSON. Check that the API route is pointing at the backend.",
     );
   }
 
