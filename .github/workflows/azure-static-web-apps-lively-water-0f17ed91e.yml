@@ -41,9 +41,9 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_WATER_0F17ED91E }}
           action: "upload"
           ###### Repository/Build Configurations ######
-          app_location: "/react" 
+          app_location: "react" 
           api_location: "" 
-          output_location: "build" # If deployment fails, try changing this to "dist"
+          output_location: "disk" # If deployment fails, try changing this to "dist"
           github_id_token: ${{ steps.idtoken.outputs.result }}
           ###### End of Repository/Build Configurations ######
 
