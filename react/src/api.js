@@ -258,11 +258,13 @@ export async function FetchJson(url, options) {
   const requestUrls = await BuildRequestUrls(url);
   let lastError = null;
 
+  const hardCodedUrl = `https://library-database-baclend-api.onrender.com${url}`;
+  console.log("making request to", hardCodedUrl);
   for (let index = 0; index < requestUrls.length; index += 1) {
     const requestUrl = requestUrls[index];
 
     try {
-      return await FetchJsonOnce(requestUrl, options);
+      return await FetchJsonOnce(hardCodedUrl, options);
     } catch (caughtError) {
       const error = NormalizeRequestError(caughtError);
       lastError = error;
