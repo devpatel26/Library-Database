@@ -272,28 +272,28 @@ export default function Item({ itemData }) {
 
         <div className="col-span-1 grid grid-rows-2 items-center border-l border-slate-100 pl-6">
           <div className="grid grid-cols-3 grid-rows-2 text-center text-[11px] font-bold uppercase tracking-tight text-slate-500">
-            <span className="flex flex-col">
+            <span>
               <span className="text-slate-500">Available</span>
               <span className="text-slate-900 text-base">
                 {itemData.available}
               </span>
             </span>
 
-            <span className="flex flex-col">
+            <span>
               <span className="text-slate-500">Reserved</span>
               <span className="text-slate-900 text-base">
                 {itemData.reservedCount ?? 0}
               </span>
             </span>
 
-            <span className="flex flex-col">
+            <span>
               <span className="text-slate-500">Queue</span>
               <span className="text-slate-900 text-base">
                 {itemData.queueCount ?? 0}
               </span>
             </span>
 
-            <span className="flex flex-col">
+            <span>
               <span className="text-slate-500">Unavailable</span>
               <span className="text-slate-900 text-base">
                 {itemData.unavailable}
@@ -301,7 +301,7 @@ export default function Item({ itemData }) {
             </span>
 
             {itemData.category !== "equipment" ? (
-              <span className="flex flex-col">
+              <span>
                 <span className="text-slate-500">Shelf</span>
                 <span className="text-slate-900 text-base">
                   {itemData.shelfNumber}
