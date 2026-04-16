@@ -514,345 +514,191 @@ export function CarouselItem({ itemData }) {
   const canPlaceHold = Number(itemData.is_removed ?? 0) !== 1;
   return (
     <div className="w-70">
-      {isStaff ? (
-        <>
-          {itemData.category != "equipment" ? (
-            <div className="h-full grid grid-rows-4 rounded-3xl bg-white border border-slate-200 p-4 transition transform hover:-translate-y-1 hover:shadow-md">
-              <div className="row-span-4 mt-2">
-                <CarouselItemHolder data={itemData} />
-              </div>
-              <div className="row-span-1 grid grid-cols-1 grid items-center text-center">
-                <div className="grid grid-cols-2 text-[10px] font-bold uppercase tracking-widest mb-2">
-                  <span
-                    className={
-                      itemData.available >= 1
-                        ? "text-green-700"
-                        : "text-red-600"
-                    }
-                  >
-                    {itemData.available >= 1 ? "Available" : "Not Available"}
-                  </span>
-                  <span className="text-slate-500">
-                    Shelf: {itemData.shelfNumber}
-                  </span>
-                </div>
-                {canPlaceHold ? (
-                  isStaff ? (
-                    <>
-                      {itemData.available >= 1 ? (
-                        <div className="grid grid-cols-2 gap-2">
-                          <PrimaryButton
-                            title="Place Hold"
-                            onClick={() => OpenStaffAction("hold")}
-                          />
-
-                          <PrimaryButton
-                            title="Check Out"
-                            onClick={() => OpenStaffAction("checkout")}
-                          />
-                        </div>
-                      ) : (
-                        <SecondaryButton title="Unavailable" disabled={true} />
-                      )}
-
-                      {activeStaffAction ? (
-                        <div className="mt-2 flex w-full flex-col gap-2 rounded-2xl bg-slate-50 p-3 border border-slate-200">
-                          <div className="text-[10px] font-bold text-sky-700 uppercase">
-                            Patron ID
-                          </div>
-
-                          <input
-                            type="number"
-                            min="1"
-                            value={patronIdInput}
-                            onChange={(event) =>
-                              setPatronIdInput(event.target.value)
-                            }
-                            placeholder="ID"
-                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 outline-none focus:ring-2 focus:ring-sky-500"
-                          />
-
-                          <div className="flex gap-2">
-                            <PrimaryButton
-                              title={isSubmitting ? "..." : "OK"}
-                              onClick={ConfirmStaffAction}
-                              disabledValue={isSubmitting}
-                            />
-
-                            <SecondaryButton
-                              title="X"
-                              onClick={ResetStaffAction}
-                              disabled={isSubmitting}
-                            />
-                          </div>
-                        </div>
-                      ) : null}
-                    </>
-                  ) : (
-                    <>
-                      {itemData.available >= 1 ? (
-                        <PrimaryButton
-                          title="Place Hold"
-                          onClick={HandlePatronHold}
-                          disabledValue={isSubmitting}
-                        />
-                      ) : (
-                        <SecondaryButton title="Unavailable" disabled={true} />
-                      )}
-                    </>
-                  )
-                ) : (
-                  <SecondaryButton title="Unavailable" disabled={true} />
-                )}
-              </div>
+      {itemData.category != "equipment" ? (
+        <div className="h-full grid grid-rows-4 rounded-3xl bg-white border border-slate-200 p-4 transition transform hover:-translate-y-1 hover:shadow-md">
+          <div className="row-span-4 m-2">
+            <CarouselItemHolder data={itemData} />
+          </div>
+          <div className="row-span-1 grid grid-cols-1 grid items-center text-center">
+            <div className="grid grid-cols-2 text-xs font-bold uppercase tracking-widest mb-2">
+              <span
+                className={
+                  itemData.available >= 1 ? "text-green-700" : "text-red-600"
+                }
+              >
+                {itemData.available >= 1 ? "Available" : "Not Available"}
+              </span>
+              <span className="text-slate-500">
+                Shelf: {itemData.shelfNumber}
+              </span>
             </div>
-          ) : (
-            <div className="h-full grid grid-rows-4 rounded-3xl bg-white border border-slate-200 p-4 transition transform hover:-translate-y-1 hover:shadow-md">
-              <div className="row-span-4 mt-2">
-                <CarouselItemHolder data={itemData} />
-              </div>
-              <div className="row-span-1 grid grid-cols-1 grid items-center text-center">
-                <div className="grid grid-cols-1 text-[10px] font-bold uppercase tracking-widest mb-2">
-                  <span
-                    className={
-                      itemData.available >= 1
-                        ? "text-green-700"
-                        : "text-red-600"
-                    }
-                  >
-                    {itemData.available >= 1 ? "Available" : "Not Available"}
-                  </span>
-                </div>
-                {canPlaceHold ? (
-                  isStaff ? (
-                    <>
-                      {itemData.available >= 1 ? (
-                        <div className="grid grid-cols-2 gap-2">
-                          <PrimaryButton
-                            title="Place Hold"
-                            onClick={() => OpenStaffAction("hold")}
-                          />
+            {canPlaceHold ? (
+              isStaff ? (
+                <>
+                  {itemData.available >= 1 ? (
+                    <div className="grid grid-cols-2 gap-2">
+                      <PrimaryButton
+                        title="Place Hold"
+                        onClick={() => OpenStaffAction("hold")}
+                      />
 
-                          <PrimaryButton
-                            title="Check Out"
-                            onClick={() => OpenStaffAction("checkout")}
-                          />
-                        </div>
-                      ) : (
-                        <SecondaryButton title="Unavailable" disabled={true} />
-                      )}
-
-                      {activeStaffAction ? (
-                        <div className="mt-2 flex w-full flex-col gap-2 rounded-2xl bg-slate-50 p-3 border border-slate-200">
-                          <div className="text-[10px] font-bold text-sky-700 uppercase">
-                            Patron ID
-                          </div>
-
-                          <input
-                            type="number"
-                            min="1"
-                            value={patronIdInput}
-                            onChange={(event) =>
-                              setPatronIdInput(event.target.value)
-                            }
-                            placeholder="ID"
-                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 outline-none focus:ring-2 focus:ring-sky-500"
-                          />
-
-                          <div className="flex gap-2">
-                            <PrimaryButton
-                              title={isSubmitting ? "..." : "OK"}
-                              onClick={ConfirmStaffAction}
-                              disabledValue={isSubmitting}
-                            />
-
-                            <SecondaryButton
-                              title="X"
-                              onClick={ResetStaffAction}
-                              disabled={isSubmitting}
-                            />
-                          </div>
-                        </div>
-                      ) : null}
-                    </>
-                  ) : (
-                    <>
-                      {itemData.available >= 1 ? (
-                        <PrimaryButton
-                          title="Place Hold"
-                          onClick={HandlePatronHold}
-                          disabledValue={isSubmitting}
-                        />
-                      ) : (
-                        <SecondaryButton title="Unavailable" disabled={true} />
-                      )}
-                    </>
-                  )
-                ) : (
-                  <SecondaryButton title="Unavailable" disabled={true} />
-                )}
-              </div>
-            </div>
-          )}
-        </>
-      ) : (
-        <>
-          {itemData.category != "equipment" ? (
-            <div className="h-full grid grid-rows-5 rounded-3xl bg-white border border-slate-200 p-4 transition transform hover:-translate-y-1 hover:shadow-md">
-              <div className="row-span-4 mt-2">
-                <CarouselItemHolder data={itemData} />
-              </div>
-              <div className="row-span-1 grid grid-cols-3 grid items-center text-center text-[10px] font-bold uppercase tracking-widest">
-                <span
-                  className={
-                    itemData.available >= 1 ? "text-green-700" : "text-red-600"
-                  }
-                >
-                  {itemData.available >= 1 ? "Available" : "Not Available"}
-                </span>
-                <span className="text-slate-500">
-                  Shelf: {itemData.shelfNumber}
-                </span>
-                {canPlaceHold ? (
-                  isStaff ? (
-                    <>
                       <PrimaryButton
                         title="Check Out"
                         onClick={() => OpenStaffAction("checkout")}
                       />
-
-                      {activeStaffAction ? (
-                        <div className="mt-2 flex w-full flex-col gap-2 rounded-2xl bg-slate-50 p-3 border border-slate-200">
-                          <div className="text-[10px] font-bold text-sky-700 uppercase">
-                            Patron ID
-                          </div>
-
-                          <input
-                            type="number"
-                            min="1"
-                            value={patronIdInput}
-                            onChange={(event) =>
-                              setPatronIdInput(event.target.value)
-                            }
-                            placeholder="ID"
-                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 outline-none focus:ring-2 focus:ring-sky-500"
-                          />
-
-                          <div className="flex gap-2">
-                            <PrimaryButton
-                              title={isSubmitting ? "..." : "OK"}
-                              onClick={ConfirmStaffAction}
-                              disabledValue={isSubmitting}
-                            />
-
-                            <SecondaryButton
-                              title="X"
-                              onClick={ResetStaffAction}
-                              disabled={isSubmitting}
-                            />
-                          </div>
-                        </div>
-                      ) : null}
-                    </>
-                  ) : (
-                    <>
-                      {itemData.available >= 1 ? (
-                        <PrimaryButton
-                          title="Place Hold"
-                          onClick={HandlePatronHold}
-                          disabledValue={isSubmitting}
-                        />
-                      ) : (
-                        <SecondaryButton title="Unavailable" disabled={true} />
-                      )}
-                    </>
-                  )
-                ) : (
-                  <SecondaryButton title="Unavailable" disabled={true} />
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="h-full grid grid-rows-4 rounded-3xl bg-white border border-slate-200 p-4 text-center transition transform hover:-translate-y-1 hover:shadow-md">
-              <div className="row-span-4 mt-2">
-                <CarouselItemHolder data={itemData} />
-              </div>
-              <div className="grid grid-cols-2 justify-items-center items-center">
-                <span
-                  className={
-                    itemData.available >= 1
-                      ? "text-green-700 font-bold text-[10px] uppercase"
-                      : "text-red-600 font-bold text-[10px] uppercase"
-                  }
-                >
-                  {itemData.available >= 1 ? "Available" : "Not Available"}
-                </span>
-                <div className="row-span-1 grid grid-cols-1 grid items-center text-center">
-                  {canPlaceHold ? (
-                    isStaff ? (
-                      <>
-                        <PrimaryButton
-                          title="Check Out"
-                          onClick={() => OpenStaffAction("checkout")}
-                        />
-
-                        {activeStaffAction ? (
-                          <div className="mt-2 flex w-full flex-col gap-2 rounded-2xl bg-slate-50 p-3 border border-slate-200">
-                            <div className="text-[10px] font-bold text-sky-700 uppercase">
-                              Patron ID
-                            </div>
-
-                            <input
-                              type="number"
-                              min="1"
-                              value={patronIdInput}
-                              onChange={(event) =>
-                                setPatronIdInput(event.target.value)
-                              }
-                              placeholder="ID"
-                              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 outline-none focus:ring-2 focus:ring-sky-500"
-                            />
-
-                            <div className="flex gap-2">
-                              <PrimaryButton
-                                title={isSubmitting ? "..." : "OK"}
-                                onClick={ConfirmStaffAction}
-                                disabledValue={isSubmitting}
-                              />
-
-                              <SecondaryButton
-                                title="X"
-                                onClick={ResetStaffAction}
-                                disabled={isSubmitting}
-                              />
-                            </div>
-                          </div>
-                        ) : null}
-                      </>
-                    ) : (
-                      <>
-                        {itemData.available >= 1 ? (
-                          <PrimaryButton
-                            title="Place Hold"
-                            onClick={HandlePatronHold}
-                            disabledValue={isSubmitting}
-                          />
-                        ) : (
-                          <SecondaryButton
-                            title="Unavailable"
-                            disabled={true}
-                          />
-                        )}
-                      </>
-                    )
+                    </div>
                   ) : (
                     <SecondaryButton title="Unavailable" disabled={true} />
                   )}
-                </div>
-              </div>
+
+                  {activeStaffAction ? (
+                    <div className="mt-2 flex w-full flex-col gap-2 rounded-2xl bg-slate-50 p-3 border border-slate-200">
+                      <div className="text-xs font-bold text-sky-700 uppercase">
+                        Patron ID
+                      </div>
+
+                      <input
+                        type="number"
+                        min="1"
+                        value={patronIdInput}
+                        onChange={(event) =>
+                          setPatronIdInput(event.target.value)
+                        }
+                        placeholder="ID"
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 outline-none focus:ring-2 focus:ring-sky-500"
+                      />
+
+                      <div className="flex gap-2">
+                        <PrimaryButton
+                          title={
+                            isSubmitting
+                              ? "..."
+                              : activeStaffAction == "checkout"
+                                ? "Loan"
+                                : "Hold"
+                          }
+                          onClick={ConfirmStaffAction}
+                          disabledValue={isSubmitting}
+                        />
+
+                        <SecondaryButton
+                          title="Cancel"
+                          onClick={ResetStaffAction}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                    </div>
+                  ) : null}
+                </>
+              ) : (
+                <>
+                  {itemData.available >= 1 ? (
+                    <PrimaryButton
+                      title="Place Hold"
+                      onClick={HandlePatronHold}
+                      disabledValue={isSubmitting}
+                    />
+                  ) : (
+                    <SecondaryButton title="Unavailable" disabled={true} />
+                  )}
+                </>
+              )
+            ) : (
+              <SecondaryButton title="Unavailable" disabled={true} />
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="h-full grid grid-rows-4 rounded-3xl bg-white border border-slate-200 p-4 transition transform hover:-translate-y-1 hover:shadow-md">
+          <div className="row-span-4 m-2">
+            <CarouselItemHolder data={itemData} />
+          </div>
+          <div className="row-span-1 grid grid-cols-1 grid items-center text-center">
+            <div className="grid grid-cols-1 text-xs font-bold uppercase tracking-widest mb-2">
+              <span
+                className={
+                  itemData.available >= 1 ? "text-green-700" : "text-red-600"
+                }
+              >
+                {itemData.available >= 1 ? "Available" : "Not Available"}
+              </span>
             </div>
-          )}
-        </>
+            {canPlaceHold ? (
+              isStaff ? (
+                <>
+                  {itemData.available >= 1 ? (
+                    <div className="grid grid-cols-2 gap-2">
+                      <PrimaryButton
+                        title="Place Hold"
+                        onClick={() => OpenStaffAction("hold")}
+                      />
+
+                      <PrimaryButton
+                        title="Check Out"
+                        onClick={() => OpenStaffAction("checkout")}
+                      />
+                    </div>
+                  ) : (
+                    <SecondaryButton title="Unavailable" disabled={true} />
+                  )}
+
+                  {activeStaffAction ? (
+                    <div className="mt-2 flex w-full flex-col gap-2 rounded-2xl bg-slate-50 p-3 border border-slate-200">
+                      <div className="text-sm font-bold text-sky-700 uppercase">
+                        Patron ID
+                      </div>
+
+                      <input
+                        type="number"
+                        min="1"
+                        value={patronIdInput}
+                        onChange={(event) =>
+                          setPatronIdInput(event.target.value)
+                        }
+                        placeholder="ID"
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 outline-none focus:ring-2 focus:ring-sky-500"
+                      />
+
+                      <div className="flex gap-2">
+                        <PrimaryButton
+                          title={
+                            isSubmitting
+                              ? "..."
+                              : activeStaffAction == "checkout"
+                                ? "Loan"
+                                : "Hold"
+                          }
+                          onClick={ConfirmStaffAction}
+                          disabledValue={isSubmitting}
+                        />
+
+                        <SecondaryButton
+                          title="Cancel"
+                          onClick={ResetStaffAction}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                    </div>
+                  ) : null}
+                </>
+              ) : (
+                <>
+                  {itemData.available >= 1 ? (
+                    <PrimaryButton
+                      title="Place Hold"
+                      onClick={HandlePatronHold}
+                      disabledValue={isSubmitting}
+                    />
+                  ) : (
+                    <SecondaryButton title="Unavailable" disabled={true} />
+                  )}
+                </>
+              )
+            ) : (
+              <SecondaryButton title="Unavailable" disabled={true} />
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
@@ -885,7 +731,7 @@ export function CarouselItemHolder({ data }) {
       ) : null}
 
       {metaLine ? (
-        <div className="text-[10px] font-bold text-slate-600 mt-1 uppercase tracking-widest">
+        <div className="text-xs font-bold text-slate-600 mt-1 uppercase tracking-widest">
           {metaLine}
           {data.category === "audiovisualmedia" && data.runtime
             ? `, ${data.runtime} MINS`
@@ -895,11 +741,11 @@ export function CarouselItemHolder({ data }) {
 
       {data.summary ? (
         data.summary.length > 120 ? (
-          <div className="text-xs text-slate-500 mt-3 leading-relaxed">
+          <div className="text-sm text-slate-600 mt-2 mb-2 leading-relaxed">
             {data.summary.slice(0, 120)}...
           </div>
         ) : (
-          <div className="text-xs text-slate-500 mt-3 leading-relaxed">
+          <div className="text-sm text-slate-600 mt-2 mb-2 leading-relaxed">
             {data.summary}
           </div>
         )
