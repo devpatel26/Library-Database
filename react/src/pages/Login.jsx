@@ -6,17 +6,15 @@ export default function Login() {
   const { showSuccess, showWarning } = useMessage();
 
   // Standardized classes for the high-visibility theme
-  const inputClasses = 
+  const inputClasses =
     "mt-2 block w-full rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-sky-500 transition-all placeholder:text-slate-400";
-  
-  const labelClasses = 
+
+  const labelClasses =
     "block text-sm font-bold text-slate-700 uppercase tracking-wide mt-6 text-center";
 
   return (
     <section className="mx-auto flex w-full max-w-lg flex-col items-center rounded-3xl bg-white p-10 shadow-sm border border-slate-200">
-      <p className="text-xs font-bold uppercase tracking-[0.3em] text-sky-600">
-        Welcome Back
-      </p>
+      <p className="font-bold tracking-[0.15em] text-sky-600">Welcome back!</p>
       <h1 className="mt-2 text-4xl font-bold tracking-tight text-slate-900">
         Login
       </h1>
@@ -79,8 +77,8 @@ export default function Login() {
         </div>
 
         <div className="mt-10 flex justify-center w-full">
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="w-full max-w-sm rounded-2xl bg-sky-600 px-4 py-3 font-bold text-white shadow-md hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 transition-all active:scale-[0.98]"
           >
             Sign In
@@ -91,13 +89,20 @@ export default function Login() {
       <div className="mt-8 space-y-3">
         <p className="text-sm text-slate-500">
           Don't have an account?{" "}
-          <Link to="/registration" className="font-bold text-sky-600 hover:text-sky-700 transition-colors">
+          <Link
+            to="/registration"
+            className="font-bold text-sky-600 hover:text-sky-700 transition-colors"
+          >
             Create one
           </Link>
         </p>
-        <p className="text-sm text-slate-500">
-          <Link to="/forgotpassword" Greenland className="font-medium text-slate-400 hover:text-slate-600 transition-colors">
-            Forgot password?
+        <p className="text-sm text-slate-500 text-center">
+          <Link
+            to="/forgotpassword"
+            Greenland
+            className="font-bold text-sky-600/70 hover:text-sky-700 transition-colors underline"
+          >
+            Forgot your password?
           </Link>
         </p>
       </div>
