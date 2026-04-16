@@ -101,7 +101,8 @@ function App() {
   const staffLinks =
     userType === "staff" && (roleCode === 1 || roleCode === 2)
       ? [
-          { to: "/itementry", label: "Item Entry" },
+          // { to: "/itementry", label: "Item Entry" },
+          { to: "/itementry/manage", label: "Item Management" },
           { to: "/staffloans", label: "Loans" },
           { to: "/holds", label: "Holds" },
           { to: "/stafffines", label: "Fines" },
@@ -147,20 +148,14 @@ function App() {
                 </svg>
               </button>
 
-              <NavLink
-                to="/about"
-                className="hover:text-white transition-colors"
-              >
+              <NavLink to="/" className="hover:text-white transition-colors">
                 <img
                   src="/Datahaven.jpg"
                   className="h-9 w-9 rounded-lg bg-white p-0.5"
                   alt="logo"
                 />
               </NavLink>
-              <NavLink
-                to="/about"
-                className="hover:text-white transition-colors"
-              >
+              <NavLink to="/" className="hover:text-white transition-colors">
                 <div>
                   <h1 className="text-xl font-bold tracking-wide hidden sm:block">
                     Datahaven Library
