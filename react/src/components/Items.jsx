@@ -271,29 +271,29 @@ export default function Item({ itemData }) {
         </div>
 
         <div className="col-span-1 grid grid-rows-2 items-center border-l border-slate-100 pl-6">
-          <div className="grid grid-cols-3 grid-rows-2 text-center text-[11px] font-bold uppercase tracking-tight text-slate-500">
-            <div className="flex flex-col">
+          <div className="flex flex-wrap justify-center gap-2 text-center text-xs font-bold uppercase tracking-tight text-slate-500">
+            <div className="flex flex-col flex-1">
               <span className="text-slate-500">Available</span>
               <span className="text-slate-900 text-base">
                 {itemData.available}
               </span>
             </div>
 
-            <div className="flex flex-col">
+            <div className="flex flex-col flex-1">
               <span className="text-slate-500">Reserved</span>
               <span className="text-slate-900 text-base">
                 {itemData.reservedCount ?? 0}
               </span>
             </div>
 
-            <div className="flex flex-col">
+            <div className="flex flex-col flex-1">
               <span className="text-slate-500">Queue</span>
               <span className="text-slate-900 text-base">
                 {itemData.queueCount ?? 0}
               </span>
             </div>
 
-            <div className="flex flex-col">
+            <div className="flex flex-col flex-1">
               <span className="text-slate-500">Unavailable</span>
               <span className="text-slate-900 text-base">
                 {itemData.unavailable}
@@ -301,7 +301,7 @@ export default function Item({ itemData }) {
             </div>
 
             {itemData.category !== "equipment" ? (
-              <div className="flex flex-col">
+              <div className="flex flex-col flex-1">
                 <span className="text-slate-500">Shelf</span>
                 <span className="text-slate-900 text-base">
                   {itemData.shelfNumber}
@@ -965,7 +965,7 @@ export function ItemHolder({ data }) {
   }
 
   return (
-    <div className="flex flex-col justify-center">
+    <div className="flex flex-col justify-center pr-2">
       <div className="flex-1">
         <div className="text-2xl font-bold text-slate-900 leading-tight">
           {data.title}
@@ -992,9 +992,15 @@ export function ItemHolder({ data }) {
       </div>
 
       {data.summary ? (
-        <div className="text-sm text-slate-600 mt-4 leading-relaxed line-clamp-3 max-w-xl flex-1">
-          {data.summary}
-        </div>
+        data.summary.length > 1000 ? (
+          <div className="text-sm text-slate-600 mt-2 mb-2 leading-relaxed flex-1">
+            {data.summary.slice(0, 1000)}...
+          </div>
+        ) : (
+          <div className="text-sm text-slate-600 mt-2 mb-2 leading-relaxed flex-1">
+            {data.summary}
+          </div>
+        )
       ) : null}
     </div>
   );
