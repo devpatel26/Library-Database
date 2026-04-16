@@ -59,9 +59,7 @@ export default function Home() {
         <section>
           <h2 className="text-lg font-semibold text-slate-900">Recent Books</h2>
           <div className="mt-5 flex flex-wrap justify-center gap-8">
-            {loading && (
-              <p className="mt-4 text-slate-600">Loading circulation...</p>
-            )}
+            {loading && <p className="mt-4 text-slate-600">Loading books...</p>}
             {!loading && error && <p className="mt-4 text-rose-600">{error}</p>}
             {!loading && !error && (
               <div className="mt-4 space-y-8">
@@ -86,7 +84,7 @@ export default function Home() {
           </h2>
           <div className="mt-5 flex flex-wrap justify-center gap-8">
             {loading && (
-              <p className="mt-4 text-slate-600">Loading circulation...</p>
+              <p className="mt-4 text-slate-600">Loading periodicals...</p>
             )}
             {!loading && error && <p className="mt-4 text-rose-600">{error}</p>}
             {!loading && !error && (
@@ -107,13 +105,9 @@ export default function Home() {
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold text-slate-900">
-            Recent Audiovisual Media
-          </h2>
+          <h2 className="text-lg font-semibold text-slate-900">Recent Media</h2>
           <div className="mt-5 flex flex-wrap justify-center gap-8">
-            {loading && (
-              <p className="mt-4 text-slate-600">Loading circulation...</p>
-            )}
+            {loading && <p className="mt-4 text-slate-600">Loading media...</p>}
             {!loading && error && <p className="mt-4 text-rose-600">{error}</p>}
             {!loading && !error && (
               <div className="mt-4 space-y-8">
@@ -138,7 +132,7 @@ export default function Home() {
           </h2>
           <div className="mt-5 flex flex-wrap justify-center gap-8">
             {loading && (
-              <p className="mt-4 text-slate-600">Loading circulation...</p>
+              <p className="mt-4 text-slate-600">Loading equipment...</p>
             )}
             {!loading && error && <p className="mt-4 text-rose-600">{error}</p>}
             {!loading && !error && (
