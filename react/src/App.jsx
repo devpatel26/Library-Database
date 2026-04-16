@@ -311,8 +311,8 @@ function App() {
 
           {/* Footer */}
           <footer className="bg-[#164e63] text-cyan-100 pt-10 pb-6 text-sm mt-auto z-10 relative shadow-inner">
-            <div className="max-w-6xl mx-auto px-6 w-full">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 text-center md:text-left">
+            <div className="w-full mx-auto px-6 w-full">
+              <div className="flex flex-wrap gap-8 mb-8 text-center justify-evenly wrap">
                 <div>
                   <h3 className="text-white font-bold mb-3 text-lg">
                     Resources
