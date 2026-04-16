@@ -2,7 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PrimaryButton, { SecondaryButton } from "../components/Buttons";
 import FileUploadField from "../components/FileUploadField";
-import { FetchJson, GetErrorMessage, ReadStoredUser, UploadImageFile } from "../api";
+import {
+  FetchJson,
+  GetErrorMessage,
+  ReadStoredUser,
+  UploadImageFile,
+} from "../api";
 import { useMessage } from "../hooks/useMessage";
 
 const inputClassName =
@@ -53,7 +58,9 @@ function BuildItemForm(item) {
     languageCode: item.languageCode == null ? "" : String(item.languageCode),
     formatCode: item.formatCode == null ? "" : String(item.formatCode),
     publisher: item.publisher ?? "",
-    publicationDate: item.publicationDate ? String(item.publicationDate).slice(0, 10) : "",
+    publicationDate: item.publicationDate
+      ? String(item.publicationDate).slice(0, 10)
+      : "",
     summary: item.summary ?? "",
     coverImageUrl: item.coverImageUrl ?? "",
     authorFirstName: item.authorFirstName ?? "",
@@ -121,14 +128,19 @@ export default function ItemManager() {
     async function LoadOptions() {
       try {
         setOptionsLoading(true);
-        const [languageData, genreData, bookTypeData, periodicalTypeData, audiovisualTypeData] =
-          await Promise.all([
-            FetchJson("/api/languages"),
-            FetchJson("/api/genres"),
-            FetchJson("/api/book_types"),
-            FetchJson("/api/periodical_types"),
-            FetchJson("/api/audiovisual_media_types"),
-          ]);
+        const [
+          languageData,
+          genreData,
+          bookTypeData,
+          periodicalTypeData,
+          audiovisualTypeData,
+        ] = await Promise.all([
+          FetchJson("/api/languages"),
+          FetchJson("/api/genres"),
+          FetchJson("/api/book_types"),
+          FetchJson("/api/periodical_types"),
+          FetchJson("/api/audiovisual_media_types"),
+        ]);
 
         if (!isMounted) {
           return;
@@ -137,8 +149,12 @@ export default function ItemManager() {
         setLanguages(Array.isArray(languageData) ? languageData : []);
         setGenres(Array.isArray(genreData) ? genreData : []);
         setBookTypes(Array.isArray(bookTypeData) ? bookTypeData : []);
-        setPeriodicalTypes(Array.isArray(periodicalTypeData) ? periodicalTypeData : []);
-        setAudiovisualTypes(Array.isArray(audiovisualTypeData) ? audiovisualTypeData : []);
+        setPeriodicalTypes(
+          Array.isArray(periodicalTypeData) ? periodicalTypeData : [],
+        );
+        setAudiovisualTypes(
+          Array.isArray(audiovisualTypeData) ? audiovisualTypeData : [],
+        );
       } catch (error) {
         if (isMounted) {
           showError(GetErrorMessage(error, "Failed to load item metadata."));
@@ -187,10 +203,11 @@ export default function ItemManager() {
 
         setItems(nextItems);
 
-        const nextSelectedId =
-          nextItems.some((item) => Number(item.itemId) === Number(selectedItemId))
-            ? selectedItemId
-            : nextItems[0]?.itemId ?? null;
+        const nextSelectedId = nextItems.some(
+          (item) => Number(item.itemId) === Number(selectedItemId),
+        )
+          ? selectedItemId
+          : (nextItems[0]?.itemId ?? null);
 
         setSelectedItemId(nextSelectedId);
 
@@ -316,10 +333,14 @@ export default function ItemManager() {
     const payload = {
       title: formState.title,
       totalCopies: Number(formState.totalCopies),
-      shelfNumber: formState.shelfNumber === "" ? null : Number(formState.shelfNumber),
-      genreCode: formState.genreCode === "" ? null : Number(formState.genreCode),
-      languageCode: formState.languageCode === "" ? null : Number(formState.languageCode),
-      formatCode: formState.formatCode === "" ? null : Number(formState.formatCode),
+      shelfNumber:
+        formState.shelfNumber === "" ? null : Number(formState.shelfNumber),
+      genreCode:
+        formState.genreCode === "" ? null : Number(formState.genreCode),
+      languageCode:
+        formState.languageCode === "" ? null : Number(formState.languageCode),
+      formatCode:
+        formState.formatCode === "" ? null : Number(formState.formatCode),
       publisher: formState.publisher,
       publicationDate: formState.publicationDate,
       summary: formState.summary,
@@ -364,7 +385,7 @@ export default function ItemManager() {
     }
 
     const confirmed = window.confirm(
-      `Delete "${selectedItem.title}"? This only works when the item has no holds or loan history.`
+      `Delete "${selectedItem.title}"? This only works when the item has no holds or loan history.`,
     );
 
     if (!confirmed) {
@@ -392,7 +413,10 @@ export default function ItemManager() {
   function RenderSelectField(id, label, value, onChange, options) {
     return (
       <div>
-        <label htmlFor={id} className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
+        <label
+          htmlFor={id}
+          className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700"
+        >
           {label}
         </label>
         <select
@@ -402,9 +426,7 @@ export default function ItemManager() {
           className={inputClassName}
           required
         >
-          <option value="">
-            Select {label}
-          </option>
+          <option value="">Select {label}</option>
           {options.map((option) => {
             const { valueKey, labelKey } = BuildOptionKeys(option);
 
@@ -426,8 +448,8 @@ export default function ItemManager() {
           Manage Items
         </h2>
         <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">
-          Search the existing inventory, update item details, or delete records that
-          have no hold or loan history.
+          Search the existing inventory, update item details, or delete records
+          that have no hold or loan history.
         </p>
       </div>
 
@@ -436,7 +458,10 @@ export default function ItemManager() {
         className="grid gap-4 rounded-2xl border border-slate-200 bg-white shadow-sm p-6 lg:grid-cols-[1.2fr_220px_auto_auto]"
       >
         <div>
-          <label htmlFor="item-search" className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
+          <label
+            htmlFor="item-search"
+            className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700"
+          >
             Search by title, creator, publisher, or summary
           </label>
           <input
@@ -449,7 +474,10 @@ export default function ItemManager() {
         </div>
 
         <div>
-          <label htmlFor="item-category-filter" className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
+          <label
+            htmlFor="item-category-filter"
+            className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700"
+          >
             Category
           </label>
           <select
@@ -479,13 +507,19 @@ export default function ItemManager() {
         <aside className="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-bold text-slate-900">Inventory</h3>
-            <span className="text-sm font-semibold text-slate-500">{items.length} items</span>
+            <span className="text-sm font-semibold text-slate-500">
+              {items.length} items
+            </span>
           </div>
 
-          {listLoading ? <p className="mt-4 font-medium text-slate-600">Loading items...</p> : null}
+          {listLoading ? (
+            <p className="mt-4 font-medium text-slate-600">Loading items...</p>
+          ) : null}
 
           {!listLoading && items.length === 0 ? (
-            <p className="mt-4 font-medium text-slate-600">No items match the current filters.</p>
+            <p className="mt-4 font-medium text-slate-600">
+              No items match the current filters.
+            </p>
           ) : null}
 
           <div className="mt-6 space-y-3">
@@ -497,20 +531,22 @@ export default function ItemManager() {
                   key={item.itemId}
                   type="button"
                   onClick={() => setSelectedItemId(item.itemId)}
-                  className={`w-full rounded-2xl border px-4 py-4 text-left transition-all ${isSelected
+                  className={`w-full rounded-2xl border px-4 py-4 text-left transition-all ${
+                    isSelected
                       ? "border-sky-200 bg-sky-50 shadow-sm"
                       : "border-slate-100 bg-white hover:border-slate-300 hover:bg-slate-50"
-                    }`}
+                  }`}
                 >
                   <p className="font-bold text-slate-900">{item.title}</p>
-                  <p className="mt-1 text-sm font-medium text-slate-500">
+                  <p className="mt-1 text-sm font-medium text-slate-600">
                     {BuildCategoryLabel(item.category)} · Item #{item.itemId}
                   </p>
                   <p className="mt-2 text-sm font-medium text-slate-700">
                     Total copies: {item.totalCopies}
                   </p>
-                  <p className="mt-1 text-xs text-slate-500">
-                    Available {item.available} · On hold {item.onHold} · Unavailable {item.unavailable}
+                  <p className="mt-1 text-xs text-slate-600">
+                    Available {item.available} · On hold {item.onHold} ·
+                    Unavailable {item.unavailable}
                   </p>
                 </button>
               );
@@ -562,40 +598,60 @@ export default function ItemManager() {
 
               <div className="grid gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm text-slate-600 md:grid-cols-4">
                 <div>
-                  <span className="font-bold text-slate-900">Available:</span> {selectedItem.available}
+                  <span className="font-bold text-slate-900">Available:</span>{" "}
+                  {selectedItem.available}
                 </div>
                 <div>
-                  <span className="font-bold text-slate-900">On Hold:</span> {selectedItem.onHold}
+                  <span className="font-bold text-slate-900">On Hold:</span>{" "}
+                  {selectedItem.onHold}
                 </div>
                 <div>
-                  <span className="font-bold text-slate-900">Unavailable:</span> {selectedItem.unavailable}
+                  <span className="font-bold text-slate-900">Unavailable:</span>{" "}
+                  {selectedItem.unavailable}
                 </div>
                 <div>
-                  <span className="font-bold text-slate-900">Locked Copies:</span> {lockedCopies}
+                  <span className="font-bold text-slate-900">
+                    Locked Copies:
+                  </span>{" "}
+                  {lockedCopies}
                 </div>
               </div>
 
-              {optionsLoading ? <p className="font-medium text-slate-600">Loading form options...</p> : null}
+              {optionsLoading ? (
+                <p className="font-medium text-slate-600">
+                  Loading form options...
+                </p>
+              ) : null}
 
               <div className="grid gap-6 md:grid-cols-2">
                 <div>
-                  <label htmlFor="title" className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
-                    {selectedItem.category === "equipment" ? "Equipment Name" : "Title"}
+                  <label
+                    htmlFor="title"
+                    className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700"
+                  >
+                    {selectedItem.category === "equipment"
+                      ? "Equipment Name"
+                      : "Title"}
                   </label>
                   <input
                     id="title"
                     value={formState.title}
-                    onChange={(event) => setFormState((current) => ({
-                      ...current,
-                      title: event.target.value,
-                    }))}
+                    onChange={(event) =>
+                      setFormState((current) => ({
+                        ...current,
+                        title: event.target.value,
+                      }))
+                    }
                     className={inputClassName}
                     required
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="totalCopies" className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
+                  <label
+                    htmlFor="totalCopies"
+                    className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700"
+                  >
                     Total Copies
                   </label>
                   <input
@@ -603,10 +659,12 @@ export default function ItemManager() {
                     type="number"
                     min={Math.max(1, lockedCopies)}
                     value={formState.totalCopies}
-                    onChange={(event) => setFormState((current) => ({
-                      ...current,
-                      totalCopies: event.target.value,
-                    }))}
+                    onChange={(event) =>
+                      setFormState((current) => ({
+                        ...current,
+                        totalCopies: event.target.value,
+                      }))
+                    }
                     className={inputClassName}
                     required
                   />
@@ -615,7 +673,10 @@ export default function ItemManager() {
                 {selectedItem.category !== "equipment" ? (
                   <>
                     <div>
-                      <label htmlFor="shelfNumber" className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
+                      <label
+                        htmlFor="shelfNumber"
+                        className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700"
+                      >
                         Shelf Number
                       </label>
                       <input
@@ -623,10 +684,12 @@ export default function ItemManager() {
                         type="number"
                         min="1"
                         value={formState.shelfNumber}
-                        onChange={(event) => setFormState((current) => ({
-                          ...current,
-                          shelfNumber: event.target.value,
-                        }))}
+                        onChange={(event) =>
+                          setFormState((current) => ({
+                            ...current,
+                            shelfNumber: event.target.value,
+                          }))
+                        }
                         className={inputClassName}
                         required
                       />
@@ -636,22 +699,24 @@ export default function ItemManager() {
                       "genreCode",
                       "Genre",
                       formState.genreCode,
-                      (event) => setFormState((current) => ({
-                        ...current,
-                        genreCode: event.target.value,
-                      })),
-                      genres
+                      (event) =>
+                        setFormState((current) => ({
+                          ...current,
+                          genreCode: event.target.value,
+                        })),
+                      genres,
                     )}
 
                     {RenderSelectField(
                       "languageCode",
                       "Language",
                       formState.languageCode,
-                      (event) => setFormState((current) => ({
-                        ...current,
-                        languageCode: event.target.value,
-                      })),
-                      languages
+                      (event) =>
+                        setFormState((current) => ({
+                          ...current,
+                          languageCode: event.target.value,
+                        })),
+                      languages,
                     )}
 
                     {RenderSelectField(
@@ -662,41 +727,52 @@ export default function ItemManager() {
                           ? "Periodical Type"
                           : "Media Type",
                       formState.formatCode,
-                      (event) => setFormState((current) => ({
-                        ...current,
-                        formatCode: event.target.value,
-                      })),
-                      formatOptions
+                      (event) =>
+                        setFormState((current) => ({
+                          ...current,
+                          formatCode: event.target.value,
+                        })),
+                      formatOptions,
                     )}
 
                     <div>
-                      <label htmlFor="publisher" className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
+                      <label
+                        htmlFor="publisher"
+                        className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700"
+                      >
                         Publisher
                       </label>
                       <input
                         id="publisher"
                         value={formState.publisher}
-                        onChange={(event) => setFormState((current) => ({
-                          ...current,
-                          publisher: event.target.value,
-                        }))}
+                        onChange={(event) =>
+                          setFormState((current) => ({
+                            ...current,
+                            publisher: event.target.value,
+                          }))
+                        }
                         className={inputClassName}
                         required
                       />
                     </div>
 
                     <div>
-                      <label htmlFor="publicationDate" className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
+                      <label
+                        htmlFor="publicationDate"
+                        className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700"
+                      >
                         Publication Date
                       </label>
                       <input
                         id="publicationDate"
                         type="date"
                         value={formState.publicationDate}
-                        onChange={(event) => setFormState((current) => ({
-                          ...current,
-                          publicationDate: event.target.value,
-                        }))}
+                        onChange={(event) =>
+                          setFormState((current) => ({
+                            ...current,
+                            publicationDate: event.target.value,
+                          }))
+                        }
                         className={inputClassName}
                         required
                       />
@@ -705,32 +781,42 @@ export default function ItemManager() {
                     {selectedItem.category === "book" ? (
                       <>
                         <div>
-                          <label htmlFor="authorFirstName" className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
+                          <label
+                            htmlFor="authorFirstName"
+                            className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700"
+                          >
                             Author First Name
                           </label>
                           <input
                             id="authorFirstName"
                             value={formState.authorFirstName}
-                            onChange={(event) => setFormState((current) => ({
-                              ...current,
-                              authorFirstName: event.target.value,
-                            }))}
+                            onChange={(event) =>
+                              setFormState((current) => ({
+                                ...current,
+                                authorFirstName: event.target.value,
+                              }))
+                            }
                             className={inputClassName}
                             required
                           />
                         </div>
 
                         <div>
-                          <label htmlFor="authorLastName" className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
+                          <label
+                            htmlFor="authorLastName"
+                            className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700"
+                          >
                             Author Last Name
                           </label>
                           <input
                             id="authorLastName"
                             value={formState.authorLastName}
-                            onChange={(event) => setFormState((current) => ({
-                              ...current,
-                              authorLastName: event.target.value,
-                            }))}
+                            onChange={(event) =>
+                              setFormState((current) => ({
+                                ...current,
+                                authorLastName: event.target.value,
+                              }))
+                            }
                             className={inputClassName}
                             required
                           />
@@ -740,7 +826,10 @@ export default function ItemManager() {
 
                     {selectedItem.category === "audiovisualmedia" ? (
                       <div>
-                        <label htmlFor="runtime" className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
+                        <label
+                          htmlFor="runtime"
+                          className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700"
+                        >
                           Runtime (mins)
                         </label>
                         <input
@@ -748,10 +837,12 @@ export default function ItemManager() {
                           type="number"
                           min="1"
                           value={formState.runtime}
-                          onChange={(event) => setFormState((current) => ({
-                            ...current,
-                            runtime: event.target.value,
-                          }))}
+                          onChange={(event) =>
+                            setFormState((current) => ({
+                              ...current,
+                              runtime: event.target.value,
+                            }))
+                          }
                           className={inputClassName}
                           required
                         />
@@ -759,16 +850,21 @@ export default function ItemManager() {
                     ) : null}
 
                     <div className="md:col-span-2">
-                      <label htmlFor="summary" className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
+                      <label
+                        htmlFor="summary"
+                        className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700"
+                      >
                         Summary
                       </label>
                       <textarea
                         id="summary"
                         value={formState.summary}
-                        onChange={(event) => setFormState((current) => ({
-                          ...current,
-                          summary: event.target.value,
-                        }))}
+                        onChange={(event) =>
+                          setFormState((current) => ({
+                            ...current,
+                            summary: event.target.value,
+                          }))
+                        }
                         className={`${inputClassName} min-h-32 resize-y`}
                         required
                       />

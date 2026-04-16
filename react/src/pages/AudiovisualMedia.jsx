@@ -36,14 +36,14 @@ export default function AudiovisualMedia() {
   }, []);
 
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+    <section>
       <h2 className="text-3xl font-bold text-slate-900">
         Audiovisual Media Entry
       </h2>
       <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600">
         Enter audiovisual media information below.
       </p>
-      
+
       <div className="mt-8">
         <form
           className="w-full"
@@ -56,7 +56,8 @@ export default function AudiovisualMedia() {
               setSubmitting(true);
               if (selectedImageFile) {
                 const uploadResult = await UploadImageFile(selectedImageFile);
-                coverImageUrl = String(uploadResult?.url ?? "").trim() || coverImageUrl;
+                coverImageUrl =
+                  String(uploadResult?.url ?? "").trim() || coverImageUrl;
               }
 
               const avmData = {
@@ -80,7 +81,9 @@ export default function AudiovisualMedia() {
               });
 
               showSuccess("AVM entry successful!");
-              setTimeout(() => { window.location.reload(); }, 800);
+              setTimeout(() => {
+                window.location.reload();
+              }, 800);
             } catch (error) {
               showError(error.message || "AVM entry failed.");
             } finally {
@@ -91,7 +94,10 @@ export default function AudiovisualMedia() {
           <div className="space-y-6">
             {/* Title Section */}
             <div>
-              <label htmlFor="title" className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">
+              <label
+                htmlFor="title"
+                className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2"
+              >
                 Title
               </label>
               <input
@@ -106,7 +112,10 @@ export default function AudiovisualMedia() {
             {/* Numeric Grid */}
             <div className="grid grid-cols-3 gap-6">
               <div>
-                <label htmlFor="available" className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">
+                <label
+                  htmlFor="available"
+                  className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2"
+                >
                   Copies
                 </label>
                 <input
@@ -114,12 +123,16 @@ export default function AudiovisualMedia() {
                   type="number"
                   id="available"
                   name="available"
-                  placeholder="0"
+                  placeholder="1"
+                  min="1"
                   className="block w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-sky-500 transition-all"
                 />
               </div>
               <div>
-                <label htmlFor="shelfnumber" className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">
+                <label
+                  htmlFor="shelfnumber"
+                  className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2"
+                >
                   Shelf Number
                 </label>
                 <input
@@ -127,12 +140,16 @@ export default function AudiovisualMedia() {
                   type="number"
                   id="shelfnumber"
                   name="shelfnumber"
-                  placeholder="Number"
+                  placeholder="1"
+                  min="1"
                   className="block w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-sky-500 transition-all"
                 />
               </div>
               <div>
-                <label htmlFor="runtime" className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">
+                <label
+                  htmlFor="Shelf No."
+                  className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2"
+                >
                   Runtime (Mins)
                 </label>
                 <input
@@ -141,6 +158,7 @@ export default function AudiovisualMedia() {
                   id="runtime"
                   name="runtime"
                   placeholder="Minutes"
+                  min="1"
                   className="block w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-sky-500 transition-all"
                 />
               </div>
@@ -170,7 +188,10 @@ export default function AudiovisualMedia() {
             {/* Publisher Info */}
             <div className="grid grid-cols-3 gap-6">
               <div className="col-span-2">
-                <label htmlFor="publisher" className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">
+                <label
+                  htmlFor="publisher"
+                  className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2"
+                >
                   Publisher
                 </label>
                 <input
@@ -182,7 +203,10 @@ export default function AudiovisualMedia() {
                 />
               </div>
               <div className="col-span-1">
-                <label htmlFor="publicationdate" className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">
+                <label
+                  htmlFor="publicationdate"
+                  className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2"
+                >
                   Publication Date
                 </label>
                 <input
@@ -212,7 +236,10 @@ export default function AudiovisualMedia() {
 
             {/* Summary */}
             <div>
-              <label htmlFor="summary" className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">
+              <label
+                htmlFor="summary"
+                className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2"
+              >
                 Summary
               </label>
               <textarea

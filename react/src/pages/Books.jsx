@@ -37,7 +37,7 @@ export default function Books() {
   }, []);
 
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+    <section>
       <h2 className="text-3xl font-bold text-slate-900">Book Entry</h2>
       <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600">
         Enter book information below.
@@ -55,7 +55,8 @@ export default function Books() {
               setSubmitting(true);
               if (selectedImageFile) {
                 const uploadResult = await UploadImageFile(selectedImageFile);
-                coverImageUrl = String(uploadResult?.url ?? "").trim() || coverImageUrl;
+                coverImageUrl =
+                  String(uploadResult?.url ?? "").trim() || coverImageUrl;
               }
 
               const bookData = {
@@ -80,7 +81,9 @@ export default function Books() {
               });
 
               showSuccess("Book entry successful!");
-              setTimeout(() => { window.location.reload(); }, 800);
+              setTimeout(() => {
+                window.location.reload();
+              }, 800);
             } catch (error) {
               showError(error.message || "Book entry failed.");
             } finally {
@@ -94,7 +97,7 @@ export default function Books() {
                 colspan={2}
                 pattern="(?=.*\S)[\s\S]{1,45}"
                 id="title"
-                label="Book Title"
+                label="Title"
                 placeholder="Enter title"
               />
               <InputComponent

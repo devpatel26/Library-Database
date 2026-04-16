@@ -36,7 +36,7 @@ export default function Periodicals() {
   }, []);
 
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+    <section>
       <h2 className="text-3xl font-bold text-slate-900">Periodical Entry</h2>
       <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600">
         Enter periodical information below.
@@ -56,7 +56,13 @@ export default function Periodicals() {
             const available = formData.get("available");
             const shelfnumber = formData.get("shelfnumber");
 
-            if (!title || !publisher || !publicationdate || !available || !shelfnumber) {
+            if (
+              !title ||
+              !publisher ||
+              !publicationdate ||
+              !available ||
+              !shelfnumber
+            ) {
               showWarning("Please fill in all required fields.");
               return;
             }
@@ -65,7 +71,8 @@ export default function Periodicals() {
               setSubmitting(true);
               if (selectedImageFile) {
                 const uploadResult = await UploadImageFile(selectedImageFile);
-                coverImageUrl = String(uploadResult?.url ?? "").trim() || coverImageUrl;
+                coverImageUrl =
+                  String(uploadResult?.url ?? "").trim() || coverImageUrl;
               }
 
               const periodicalData = {
@@ -102,7 +109,10 @@ export default function Periodicals() {
             {/* Header Grid */}
             <div className="grid grid-cols-4 gap-6">
               <div className="col-span-2">
-                <label htmlFor="title" className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">
+                <label
+                  htmlFor="title"
+                  className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2"
+                >
                   Title
                 </label>
                 <input
@@ -114,7 +124,10 @@ export default function Periodicals() {
                 />
               </div>
               <div className="col-span-1">
-                <label htmlFor="available" className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">
+                <label
+                  htmlFor="available"
+                  className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2"
+                >
                   Copies
                 </label>
                 <input
@@ -122,12 +135,16 @@ export default function Periodicals() {
                   type="number"
                   id="available"
                   name="available"
-                  placeholder="0"
+                  placeholder="Copy Count"
+                  min="1"
                   className="block w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-sky-500 transition-all"
                 />
               </div>
               <div className="col-span-1">
-                <label htmlFor="shelfnumber" className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">
+                <label
+                  htmlFor="shelfnumber"
+                  className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2"
+                >
                   Shelf
                 </label>
                 <input
@@ -135,7 +152,8 @@ export default function Periodicals() {
                   type="number"
                   id="shelfnumber"
                   name="shelfnumber"
-                  placeholder="No."
+                  placeholder="Shelf No."
+                  min="1"
                   className="block w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-sky-500 transition-all"
                 />
               </div>
@@ -165,7 +183,10 @@ export default function Periodicals() {
             {/* Publisher Info */}
             <div className="grid grid-cols-3 gap-6">
               <div className="col-span-2">
-                <label htmlFor="publisher" className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">
+                <label
+                  htmlFor="publisher"
+                  className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2"
+                >
                   Publisher
                 </label>
                 <input
@@ -177,7 +198,10 @@ export default function Periodicals() {
                 />
               </div>
               <div className="col-span-1">
-                <label htmlFor="publicationdate" className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">
+                <label
+                  htmlFor="publicationdate"
+                  className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2"
+                >
                   Release Date
                 </label>
                 <input
@@ -207,7 +231,10 @@ export default function Periodicals() {
 
             {/* Summary */}
             <div>
-              <label htmlFor="summary" className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">
+              <label
+                htmlFor="summary"
+                className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2"
+              >
                 Summary
               </label>
               <textarea
