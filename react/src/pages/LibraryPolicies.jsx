@@ -61,7 +61,7 @@ const LibraryPolicies = () => {
         "Covered beverages and food are permitted in the library, but are not allowed at the computer tables. Please use headphones when applicable and keep conversations at a respectful volume.",
     },
     {
-      title: "Digital Privacy",
+      title: "Privacy",
       icon: (
         <svg
           className="w-7 h-7 text-sky-600"
