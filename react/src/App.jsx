@@ -71,7 +71,7 @@ function NavSection({ title, links }) {
             to={to}
             className={({ isActive }) =>
               `block w-full px-6 py-2.5 text-sm transition-colors transition-all ${
-                isActive ? "bg-cyan-500 " : "text-cyan-100 hover:bg-cyan-800 "
+                isActive ? "bg-cyan-700 " : "text-cyan-100 hover:bg-cyan-800 "
               }`
             }
           >
@@ -147,16 +147,26 @@ function App() {
                 </svg>
               </button>
 
-              <img
-                src="/Datahaven.jpg"
-                className="h-9 w-9 rounded-lg bg-white p-0.5"
-                alt="logo"
-              />
-              <div>
-                <h1 className="text-xl font-bold tracking-wide hidden sm:block">
-                  Datahaven Library
-                </h1>
-              </div>
+              <NavLink
+                to="/about"
+                className="hover:text-white transition-colors"
+              >
+                <img
+                  src="/Datahaven.jpg"
+                  className="h-9 w-9 rounded-lg bg-white p-0.5"
+                  alt="logo"
+                />
+              </NavLink>
+              <NavLink
+                to="/about"
+                className="hover:text-white transition-colors"
+              >
+                <div>
+                  <h1 className="text-xl font-bold tracking-wide hidden sm:block">
+                    Datahaven Library
+                  </h1>
+                </div>
+              </NavLink>
             </div>
 
             {!user ? (

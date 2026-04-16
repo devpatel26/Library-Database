@@ -271,31 +271,41 @@ export default function Item({ itemData }) {
         </div>
 
         <div className="col-span-1 grid grid-rows-2 items-center border-l border-slate-100 pl-6">
-          <div className="grid grid-cols-3 grid-rows-2 text-center text-[11px] font-bold uppercase tracking-tight text-slate-400">
+          <div className="grid grid-cols-3 grid-rows-2 text-center text-[11px] font-bold uppercase tracking-tight text-slate-500">
             <span className="flex flex-col">
               <span className="text-slate-500">Available</span>
-              <span className="text-slate-900 text-base">{itemData.available}</span>
+              <span className="text-slate-900 text-base">
+                {itemData.available}
+              </span>
             </span>
 
             <span className="flex flex-col">
               <span className="text-slate-500">Reserved</span>
-              <span className="text-slate-900 text-base">{itemData.reservedCount ?? 0}</span>
+              <span className="text-slate-900 text-base">
+                {itemData.reservedCount ?? 0}
+              </span>
             </span>
 
             <span className="flex flex-col">
               <span className="text-slate-500">Queue</span>
-              <span className="text-slate-900 text-base">{itemData.queueCount ?? 0}</span>
+              <span className="text-slate-900 text-base">
+                {itemData.queueCount ?? 0}
+              </span>
             </span>
 
             <span className="flex flex-col">
               <span className="text-slate-500">Unavailable</span>
-              <span className="text-slate-900 text-base">{itemData.unavailable}</span>
+              <span className="text-slate-900 text-base">
+                {itemData.unavailable}
+              </span>
             </span>
 
             {itemData.category !== "equipment" ? (
               <span className="flex flex-col">
                 <span className="text-slate-500">Shelf</span>
-                <span className="text-slate-900 text-base">{itemData.shelfNumber}</span>
+                <span className="text-slate-900 text-base">
+                  {itemData.shelfNumber}
+                </span>
               </span>
             ) : null}
           </div>
@@ -516,13 +526,15 @@ export function CarouselItem({ itemData }) {
                   <span
                     className={
                       itemData.available >= 1
-                        ? "text-green-600"
-                        : "text-red-500"
+                        ? "text-green-700"
+                        : "text-red-600"
                     }
                   >
                     {itemData.available >= 1 ? "Available" : "Not Available"}
                   </span>
-                  <span className="text-slate-400">Shelf: {itemData.shelfNumber}</span>
+                  <span className="text-slate-500">
+                    Shelf: {itemData.shelfNumber}
+                  </span>
                 </div>
                 {canPlaceHold ? (
                   isStaff ? (
@@ -604,8 +616,8 @@ export function CarouselItem({ itemData }) {
                   <span
                     className={
                       itemData.available >= 1
-                        ? "text-green-600"
-                        : "text-red-500"
+                        ? "text-green-700"
+                        : "text-red-600"
                     }
                   >
                     {itemData.available >= 1 ? "Available" : "Not Available"}
@@ -693,14 +705,14 @@ export function CarouselItem({ itemData }) {
               <div className="row-span-1 grid grid-cols-3 grid items-center text-center text-[10px] font-bold uppercase tracking-widest">
                 <span
                   className={
-                    itemData.available >= 1
-                      ? "text-green-600"
-                      : "text-red-500"
+                    itemData.available >= 1 ? "text-green-700" : "text-red-600"
                   }
                 >
                   {itemData.available >= 1 ? "Available" : "Not Available"}
                 </span>
-                <span className="text-slate-400">Shelf: {itemData.shelfNumber}</span>
+                <span className="text-slate-500">
+                  Shelf: {itemData.shelfNumber}
+                </span>
                 {canPlaceHold ? (
                   isStaff ? (
                     <>
@@ -769,8 +781,8 @@ export function CarouselItem({ itemData }) {
                 <span
                   className={
                     itemData.available >= 1
-                      ? "text-green-600 font-bold text-[10px] uppercase"
-                      : "text-red-500 font-bold text-[10px] uppercase"
+                      ? "text-green-700 font-bold text-[10px] uppercase"
+                      : "text-red-600 font-bold text-[10px] uppercase"
                   }
                 >
                   {itemData.available >= 1 ? "Available" : "Not Available"}
@@ -803,9 +815,7 @@ export function CarouselItem({ itemData }) {
 
                             <div className="flex gap-2">
                               <PrimaryButton
-                                title={
-                                  isSubmitting ? "..." : "OK"
-                                }
+                                title={isSubmitting ? "..." : "OK"}
                                 onClick={ConfirmStaffAction}
                                 disabledValue={isSubmitting}
                               />
@@ -864,14 +874,18 @@ export function CarouselItemHolder({ data }) {
         itemData={data}
         className="h-52 w-36 rounded-2xl object-cover shadow-md mb-4 border border-slate-100"
       />
-      <div className="text-lg font-bold text-slate-900 leading-tight">{data.title}</div>
+      <div className="text-lg font-bold text-slate-900 leading-tight">
+        {data.title}
+      </div>
 
       {creator ? (
-        <div className="text-sm font-bold text-sky-700 mt-1 uppercase tracking-wide">{creator}</div>
+        <div className="text-sm font-bold text-sky-700 mt-1 uppercase tracking-wide">
+          {creator}
+        </div>
       ) : null}
 
       {metaLine ? (
-        <div className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">
+        <div className="text-[10px] font-bold text-slate-600 mt-1 uppercase tracking-widest">
           {metaLine}
           {data.category === "audiovisualmedia" && data.runtime
             ? `, ${data.runtime} MINS`
@@ -881,9 +895,13 @@ export function CarouselItemHolder({ data }) {
 
       {data.summary ? (
         data.summary.length > 120 ? (
-          <div className="text-xs text-slate-500 mt-3 leading-relaxed">{data.summary.slice(0, 120)}...</div>
+          <div className="text-xs text-slate-500 mt-3 leading-relaxed">
+            {data.summary.slice(0, 120)}...
+          </div>
         ) : (
-          <div className="text-xs text-slate-500 mt-3 leading-relaxed">{data.summary}</div>
+          <div className="text-xs text-slate-500 mt-3 leading-relaxed">
+            {data.summary}
+          </div>
         )
       ) : null}
     </div>
@@ -910,27 +928,71 @@ export function ItemStaff({
         <div className="col-span-1 grid grid-cols-2 items-center border-l border-slate-100 pl-6">
           {itemData.status === "Available" ? (
             <div className="grid grid-rows-2 col-span-1 text-sm text-slate-600">
-              <div>Copy: <span className="font-bold text-slate-900">{itemData.copy}</span></div>
-              <div>Status: <span className="font-bold text-slate-900">{itemData.status}</span></div>
+              <div>
+                Copy:{" "}
+                <span className="font-bold text-slate-900">
+                  {itemData.copy}
+                </span>
+              </div>
+              <div>
+                Status:{" "}
+                <span className="font-bold text-slate-900">
+                  {itemData.status}
+                </span>
+              </div>
             </div>
           ) : itemData.status === "On hold" ? (
             <div className="grid grid-rows-4 col-span-1 text-sm text-slate-600">
-              <div>Copy: <span className="font-bold text-slate-900">{itemData.copy}</span></div>
-              <div>Status: <span className="font-bold text-slate-900">{itemData.status}</span></div>
+              <div>
+                Copy:{" "}
+                <span className="font-bold text-slate-900">
+                  {itemData.copy}
+                </span>
+              </div>
+              <div>
+                Status:{" "}
+                <span className="font-bold text-slate-900">
+                  {itemData.status}
+                </span>
+              </div>
               <div className="text-xs italic mt-1">Held until {holdEnd}</div>
-              <div className="text-xs">By {itemData.userId ?? itemData.userid}</div>
+              <div className="text-xs">
+                By {itemData.userId ?? itemData.userid}
+              </div>
             </div>
           ) : itemData.status === "Loaned" ? (
             <div className="grid grid-rows-4 col-span-1 text-sm text-slate-600">
-              <div>Copy: <span className="font-bold text-slate-900">{itemData.copy}</span></div>
-              <div>Status: <span className="font-bold text-slate-900">{itemData.status}</span></div>
+              <div>
+                Copy:{" "}
+                <span className="font-bold text-slate-900">
+                  {itemData.copy}
+                </span>
+              </div>
+              <div>
+                Status:{" "}
+                <span className="font-bold text-slate-900">
+                  {itemData.status}
+                </span>
+              </div>
               <div className="text-xs italic mt-1">Due {loanEnd}</div>
-              <div className="text-xs">To {itemData.userId ?? itemData.userid}</div>
+              <div className="text-xs">
+                To {itemData.userId ?? itemData.userid}
+              </div>
             </div>
           ) : (
             <div className="grid grid-rows-2 col-span-1 text-sm text-slate-600">
-              <div>Copy: <span className="font-bold text-slate-900">{itemData.copy}</span></div>
-              <div>Status: <span className="font-bold text-slate-900">{itemData.status}</span></div>
+              <div>
+                Copy:{" "}
+                <span className="font-bold text-slate-900">
+                  {itemData.copy}
+                </span>
+              </div>
+              <div>
+                Status:{" "}
+                <span className="font-bold text-slate-900">
+                  {itemData.status}
+                </span>
+              </div>
             </div>
           )}
         </div>
@@ -979,12 +1041,20 @@ export function ItemLoan({ itemData }) {
 
         {itemData.overdue ? (
           <div className="col-span-1 grid grid-rows-2 items-center text-center border-l border-slate-100 pl-6">
-            <div className="text-sm font-medium text-slate-600">Due: <span className="font-bold text-slate-900">{formattedDate}</span></div>
-            <div className="font-bold text-red-600 bg-red-50 px-3 py-1 rounded-full text-xs uppercase tracking-widest">Overdue</div>
+            <div className="text-sm font-medium text-slate-600">
+              Due:{" "}
+              <span className="font-bold text-slate-900">{formattedDate}</span>
+            </div>
+            <div className="font-bold text-red-600 bg-red-60 px-3 py-1 rounded-full text-xs uppercase tracking-widest">
+              Overdue
+            </div>
           </div>
         ) : (
           <div className="col-span-1 grid grid-rows-2 items-center text-center border-l border-slate-100 pl-6">
-            <div className="text-sm font-medium text-slate-600">Due: <span className="font-bold text-slate-900">{formattedDate}</span></div>
+            <div className="text-sm font-medium text-slate-600">
+              Due:{" "}
+              <span className="font-bold text-slate-900">{formattedDate}</span>
+            </div>
           </div>
         )}
       </div>
@@ -1003,7 +1073,9 @@ export function ItemHold({ itemData, onCancel }) {
 
         {itemData.ready ? (
           <div className="col-span-1 grid grid-rows-2 items-center text-center border-l border-slate-100 pl-6 gap-2">
-            <span className="text-xs font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full uppercase tracking-widest">Ready for pickup</span>
+            <span className="text-xs font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full uppercase tracking-widest">
+              Ready for pickup
+            </span>
             <PrimaryButton
               title="Cancel"
               disabledValue={!onCancel}
@@ -1012,7 +1084,9 @@ export function ItemHold({ itemData, onCancel }) {
           </div>
         ) : (
           <div className="col-span-1 grid grid-rows-2 items-center text-center border-l border-slate-100 pl-6 gap-2">
-            <span className="text-xs font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded-full uppercase tracking-widest">In queue</span>
+            <span className="text-xs font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded-full uppercase tracking-widest">
+              In queue
+            </span>
             <PrimaryButton
               title="Cancel"
               disabledValue={!onCancel}
@@ -1047,22 +1121,32 @@ export function ItemHolder({ data }) {
   return (
     <div className="flex flex-col justify-center">
       <div>
-        <div className="text-2xl font-bold text-slate-900 leading-tight">{data.title}</div>
+        <div className="text-2xl font-bold text-slate-900 leading-tight">
+          {data.title}
+        </div>
 
         {creator ? (
           <div className="text-lg font-bold text-sky-700 mt-1">{creator}</div>
         ) : null}
 
-        <div className="mt-2 text-xs font-bold text-slate-400 uppercase tracking-widest">
-           {metaLine}
-           {data.category === "audiovisualmedia" && data.runtime
-              ? ` • ${data.runtime} MINS`
-              : ""}
+        <div className="mt-2 text-xs font-bold text-slate-500 uppercase tracking-widest">
+          {metaLine}
+          {data.category === "audiovisualmedia" && data.runtime
+            ? ` • ${data.runtime} MINS`
+            : ""}
         </div>
 
-        {pubLine ? <div className="text-xs font-medium text-slate-500 mt-1">{pubLine}</div> : null}
+        {pubLine ? (
+          <div className="text-xs font-medium text-slate-500 mt-1">
+            {pubLine}
+          </div>
+        ) : null}
 
-        {data.summary ? <div className="text-sm text-slate-600 mt-4 leading-relaxed line-clamp-3 max-w-xl">{data.summary}</div> : null}
+        {data.summary ? (
+          <div className="text-sm text-slate-600 mt-4 leading-relaxed line-clamp-3 max-w-xl">
+            {data.summary}
+          </div>
+        ) : null}
       </div>
     </div>
   );

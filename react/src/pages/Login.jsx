@@ -14,7 +14,7 @@ export default function Login() {
 
   return (
     <section className="mx-auto flex w-full max-w-lg flex-col items-center rounded-3xl bg-white p-10 shadow-sm border border-slate-200">
-      <p className="font-bold tracking-[0.15em] text-sky-600">Welcome back!</p>
+      <p className="font-bold tracking-[0.15em] text-sky-700">Welcome back!</p>
       <h1 className="mt-2 text-4xl font-bold tracking-tight text-slate-900">
         Login
       </h1>
@@ -79,7 +79,7 @@ export default function Login() {
         <div className="mt-10 flex justify-center w-full">
           <button
             type="submit"
-            className="w-full max-w-sm rounded-2xl bg-sky-600 px-4 py-3 font-bold text-white shadow-md hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 transition-all active:scale-[0.98]"
+            className="w-full max-w-sm rounded-2xl bg-sky-700 px-4 py-3 font-bold text-white shadow-md hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 transition-all active:scale-[0.98]"
           >
             Sign In
           </button>
@@ -91,7 +91,7 @@ export default function Login() {
           Don't have an account?{" "}
           <Link
             to="/registration"
-            className="font-bold text-sky-600 hover:text-sky-700 transition-colors"
+            className="font-bold text-sky-700 hover:text-sky-700 transition-colors"
           >
             Create one
           </Link>
@@ -100,7 +100,7 @@ export default function Login() {
           <Link
             to="/forgotpassword"
             Greenland
-            className="font-bold text-sky-600/70 hover:text-sky-700 transition-colors underline"
+            className="font-bold text-sky-700/90 hover:text-sky-700 transition-colors underline"
           >
             Forgot your password?
           </Link>
