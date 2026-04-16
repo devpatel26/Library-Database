@@ -318,8 +318,8 @@ export default function ChangeRole() {
         </div>
       </form>
 
-      <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
-        <aside className="rounded-2xl border border-slate-200 bg-white p-6">
+      <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]  ">
+        <aside className="rounded-2xl border border-slate-200 p-6 bg-white h-screen overflow-auto">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-slate-900">Accounts</h2>
             <span className="text-sm font-semibold text-slate-600">
@@ -327,7 +327,7 @@ export default function ChangeRole() {
             </span>
           </div>
 
-          <div className="mt-6 space-y-3">
+          <div className="mt-6 space-y-3 ">
             {listLoading && <p className="text-slate-600">Loading users...</p>}
             {!listLoading && users.length === 0 && (
               <p className="text-slate-600">No matches found.</p>
@@ -339,7 +339,7 @@ export default function ChangeRole() {
                   key={BuildUserRecordKey(user)}
                   type="button"
                   onClick={() => HandleSelectUser(user)}
-                  className={`w-full rounded-2xl border px-4 py-4 text-left transition-all ${isSelected ? "border-sky-200 bg-sky-50 shadow-sm" : "border-slate-100 bg-white hover:border-slate-300 hover:bg-slate-50"}`}
+                  className={`w-full rounded-2xl border px-4 py-4 text-left transition-all ${isSelected ? "border-sky-200 bg-sky-50 shadow-sm" : "border-slate-200 shadow bg-white hover:border-slate-300 hover:bg-slate-50"}`}
                 >
                   <div className="flex items-center justify-between gap-4">
                     <div>
