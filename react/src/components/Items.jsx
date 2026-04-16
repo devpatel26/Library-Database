@@ -966,13 +966,15 @@ export function ItemHolder({ data }) {
 
   return (
     <div className="flex flex-col justify-center">
-      <div>
+      <div className="flex-1">
         <div className="text-2xl font-bold text-slate-900 leading-tight">
           {data.title}
         </div>
 
         {creator ? (
-          <div className="text-lg font-bold text-sky-700 mt-1">{creator}</div>
+          <div className="text-lg font-medium mt-1">
+            by <span className="text-sky-800">{creator}</span>
+          </div>
         ) : null}
 
         <div className="mt-2 text-xs font-bold text-slate-500 uppercase tracking-widest">
@@ -987,13 +989,13 @@ export function ItemHolder({ data }) {
             {pubLine}
           </div>
         ) : null}
-
-        {data.summary ? (
-          <div className="text-sm text-slate-600 mt-4 leading-relaxed line-clamp-3 max-w-xl">
-            {data.summary}
-          </div>
-        ) : null}
       </div>
+
+      {data.summary ? (
+        <div className="text-sm text-slate-600 mt-4 leading-relaxed line-clamp-3 max-w-xl flex-1">
+          {data.summary}
+        </div>
+      ) : null}
     </div>
   );
 }
