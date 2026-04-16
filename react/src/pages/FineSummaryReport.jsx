@@ -137,11 +137,11 @@ function StatusCard({ title, count, amount, colorClasses }) {
 
 function SummaryCard({ title, value }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.25em] text-sky-300">
+    <div className="rounded-2xl border border-slate-100 bg-slate-50 p-6">
+      <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-600">
         {title}
       </p>
-      <p className="mt-3 text-3xl font-semibold text-white">
+      <p className="mt-3 text-3xl font-semibold text-slate-900">
         {value}
       </p>
     </div>
@@ -156,6 +156,9 @@ function FormatDateLabel(value) {
   const date = new Date(`${value}T00:00:00`);
   return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString();
 }
+
+const inputClassName =
+  "mt-2 block w-full rounded-md bg-white px-3 py-1.5 outline-1 -outline-offset-1 outline-slate-200 focus:outline-2 focus:-outline-offset-2 focus:outline-[#244c5a] sm:text-sm/6";
 
 export default function FineSummaryReport() {
   const { showError, showWarning, showInfo } = useMessage();
@@ -428,32 +431,32 @@ export default function FineSummaryReport() {
   }
 
   return (
-    <section className="flex w-full flex-col rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-2xl shadow-slate-950/30">
-      <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
+    <section className="space-y-6">
+      <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-600">
         Admin Report
       </p>
 
-      <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">
+      <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-900">
         Fine Summary Report
       </h1>
 
-      <p className="mt-3 text-sm font-medium text-sky-300">
+      <p className="mt-3 text-sm font-medium text-slate-600">
         Note: All dates in this report refer to the date the fine was generated (the day the item became overdue).
       </p>
 
-      <p className="mt-4 max-w-3xl text-base leading-7 text-slate-300">
+      <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">
         Review fine totals, unpaid balances, status breakdowns, and detailed
         fine records with flexible filters.
       </p>
 
       {isLoading ? (
-        <div className="mt-8 text-slate-300">
+        <div className="mt-8 text-slate-600">
           Loading fine summary report...
         </div>
       ) : (
         <>
           <div className="mt-8">
-            <p className="text-sm font-medium text-slate-300">
+            <p className="text-sm font-medium text-slate-600">
               {dateRangeLabel}
             </p>
           </div>
@@ -479,12 +482,12 @@ export default function FineSummaryReport() {
 
           <div className="mt-8">
             <div className="flex items-center justify-between gap-4">
-              <h2 className="text-xl font-semibold text-white">
+              <h2 className="text-xl font-semibold text-slate-900">
                 Status Breakdown
               </h2>
             </div>
 
-            <p className="mt-2 text-sm font-medium text-slate-300">
+            <p className="mt-2 text-sm font-medium text-slate-600">
               {dateRangeLabel}
             </p>
 
@@ -493,77 +496,77 @@ export default function FineSummaryReport() {
                 title="Unpaid"
                 count={statusBreakdown.Unpaid.count}
                 amount={statusBreakdown.Unpaid.amount}
-                colorClasses="border-orange-400/20 bg-orange-500/10 text-orange-200"
+                colorClasses="border-orange-200 bg-orange-50 text-orange-800"
               />
 
               <StatusCard
                 title="Overdue"
                 count={statusBreakdown.Overdue.count}
                 amount={statusBreakdown.Overdue.amount}
-                colorClasses="border-red-400/20 bg-red-500/10 text-red-200"
+                colorClasses="border-rose-200 bg-rose-50 text-rose-800"
               />
 
               <StatusCard
                 title="Returned but unpaid"
                 count={statusBreakdown["Returned but unpaid"].count}
                 amount={statusBreakdown["Returned but unpaid"].amount}
-                colorClasses="border-yellow-400/20 bg-yellow-500/10 text-yellow-200"
+                colorClasses="border-amber-200 bg-amber-50 text-amber-800"
               />
 
               <StatusCard
                 title="Paid"
                 count={statusBreakdown.Paid.count}
                 amount={statusBreakdown.Paid.amount}
-                colorClasses="border-emerald-400/20 bg-emerald-500/10 text-emerald-200"
+                colorClasses="border-emerald-200 bg-emerald-50 text-emerald-800"
               />
 
               <StatusCard
                 title="Waived"
                 count={statusBreakdown.Waived.count}
                 amount={statusBreakdown.Waived.amount}
-                colorClasses="border-sky-400/20 bg-sky-500/10 text-sky-200"
+                colorClasses="border-sky-200 bg-sky-50 text-sky-800"
               />
             </div>
           </div>
 
-          <div className="mt-8 rounded-2xl border border-white/10 bg-slate-950/40 p-5">
-            <h2 className="text-xl font-semibold text-white">
+          <div className="mt-8 rounded-2xl border border-slate-100 bg-slate-50 p-6">
+            <h2 className="text-xl font-semibold text-slate-900">
               Search / Filter / Sort
             </h2>
 
             <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <div>
-                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-700">
                   Start Date
                 </label>
                 <input
                   type="date"
                   value={startDate}
                   onChange={(event) => setStartDate(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
+                  className={inputClassName}
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-700">
                   End Date
                 </label>
                 <input
                   type="date"
                   value={endDate}
                   onChange={(event) => setEndDate(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
+                  className={inputClassName}
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-700">
                   Filter By Status
                 </label>
                 <select
                   value={statusFilter}
                   onChange={(event) => setStatusFilter(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
+                  className={inputClassName}
                 >
                   <option>All</option>
                   <option>Unpaid</option>
@@ -575,7 +578,7 @@ export default function FineSummaryReport() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-700">
                   Min Days Overdue
                 </label>
                 <input
@@ -584,18 +587,18 @@ export default function FineSummaryReport() {
                   value={minDaysOverdue}
                   onChange={(event) => setMinDaysOverdue(event.target.value)}
                   placeholder="e.g. 7"
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
+                  className={inputClassName}
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-700">
                   Search By
                 </label>
                 <select
                   value={searchBy}
                   onChange={(event) => setSearchBy(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
+                  className={inputClassName}
                 >
                   <option>All</option>
                   <option>Name</option>
@@ -608,7 +611,7 @@ export default function FineSummaryReport() {
               </div>
 
               <div className="xl:col-span-2">
-                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-700">
                   Search Text
                 </label>
                 <input
@@ -616,64 +619,42 @@ export default function FineSummaryReport() {
                   value={searchText}
                   onChange={(event) => setSearchText(event.target.value)}
                   placeholder="Enter search value..."
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
+                  className={inputClassName}
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-700">
                   Sort By
                 </label>
                 <select
                   value={sortBy}
                   onChange={(event) => setSortBy(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
+                  className={inputClassName}
                 >
-                  <option value="remainingAmount">
-                    Remaining Amount
-                  </option>
-                  <option value="fineAmount">
-                    Total Fine
-                  </option>
-                  <option value="paidAmount">
-                    Paid Amount
-                  </option>
-                  <option value="daysOverdue">
-                    Days Overdue
-                  </option>
-                  <option value="patronName">
-                    Patron Name
-                  </option>
-                  <option value="title">
-                    Book Name
-                  </option>
-                  <option value="loanDueDate">
-                    Due Date
-                  </option>
-                  <option value="fineStatus">
-                    Status
-                  </option>
-                  <option value="fineId">
-                    Fine ID
-                  </option>
+                  <option value="remainingAmount">Remaining Amount</option>
+                  <option value="fineAmount">Total Fine</option>
+                  <option value="paidAmount">Paid Amount</option>
+                  <option value="daysOverdue">Days Overdue</option>
+                  <option value="patronName">Patron Name</option>
+                  <option value="title">Book Name</option>
+                  <option value="loanDueDate">Due Date</option>
+                  <option value="fineStatus">Status</option>
+                  <option value="fineId">Fine ID</option>
                 </select>
               </div>
 
               <div>
-                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-700">
                   Sort Direction
                 </label>
                 <select
                   value={sortDirection}
                   onChange={(event) => setSortDirection(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
+                  className={inputClassName}
                 >
-                  <option value="desc">
-                    Descending
-                  </option>
-                  <option value="asc">
-                    Ascending
-                  </option>
+                  <option value="desc">Descending</option>
+                  <option value="asc">Ascending</option>
                 </select>
               </div>
             </div>
@@ -683,15 +664,15 @@ export default function FineSummaryReport() {
             </div>
           </div>
 
-          <div className="mt-8 rounded-2xl border border-white/10 bg-slate-950/40 p-5">
-            <h2 className="text-xl font-semibold text-white">
+          <div className="mt-8 rounded-2xl border border-slate-100 bg-slate-50 p-6">
+            <h2 className="text-xl font-semibold text-slate-900">
               Fine Detail Table
             </h2>
 
             <div className="mt-4 overflow-x-auto">
               <table className="min-w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-white/10 text-slate-300">
+                  <tr className="border-b border-slate-200 text-slate-900">
                     <th className="px-3 py-2">Fine ID</th>
                     <th className="px-3 py-2">Patron</th>
                     <th className="px-3 py-2">Book Name</th>
@@ -708,13 +689,13 @@ export default function FineSummaryReport() {
                 <tbody>
                   {filteredFines.length === 0 ? (
                     <tr>
-                      <td colSpan={10} className="px-3 py-5 text-slate-400">
+                      <td colSpan={10} className="px-3 py-5 text-slate-600">
                         No fine records match the current filters.
                       </td>
                     </tr>
                   ) : (
                     filteredFines.map((fine) => (
-                      <tr key={fine.fineId} className="border-b border-white/5 text-slate-200">
+                      <tr key={fine.fineId} className="border-b border-slate-100 text-slate-700">
                         <td className="px-3 py-3">{fine.fineId}</td>
 
                         <td className="px-3 py-3">
@@ -733,7 +714,7 @@ export default function FineSummaryReport() {
 
                         <td className="px-3 py-3">{SafeNumber(fine.daysOverdue)}</td>
 
-                        <td className="px-3 py-3 text-red-300">
+                        <td className="px-3 py-3 text-rose-600">
                           {FormatMoney(fine.fineAmount)}
                         </td>
 
@@ -741,19 +722,19 @@ export default function FineSummaryReport() {
                           {FormatMoney(fine.paidAmount)}
                         </td>
 
-                        <td className="px-3 py-3 font-semibold text-white">
+                        <td className="px-3 py-3 font-semibold text-slate-900">
                           {FormatMoney(fine.remainingAmount)}
                         </td>
 
                         <td
                           className={`px-3 py-3 font-semibold ${
                             NormalizeStatus(fine) === "Overdue"
-                              ? "text-red-300"
+                              ? "text-rose-600"
                               : NormalizeStatus(fine) === "Returned but unpaid"
-                                ? "text-yellow-300"
+                                ? "text-amber-600"
                                 : NormalizeStatus(fine) === "Paid"
-                                  ? "text-emerald-300"
-                                  : "text-sky-300"
+                                  ? "text-emerald-600"
+                                  : "text-sky-600"
                           }`}
                         >
                           {NormalizeStatus(fine)}

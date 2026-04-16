@@ -21,33 +21,33 @@ function BuildDisplayDate(value, includeTime = false) {
 const itemImageThemes = {
   book: {
     label: "BOOK",
-    start: "#0f172a",
-    end: "#1d4ed8",
-    accent: "#7dd3fc",
+    start: "#0369a1",
+    end: "#075985",
+    accent: "#bae6fd",
   },
   periodical: {
     label: "PRESS",
-    start: "#1f2937",
-    end: "#0f766e",
+    start: "#0f766e",
+    end: "#134e4a",
     accent: "#99f6e4",
   },
   audiovisualmedia: {
     label: "MEDIA",
-    start: "#312e81",
-    end: "#be123c",
-    accent: "#fda4af",
+    start: "#7e22ce",
+    end: "#581c87",
+    accent: "#e9d5ff",
   },
   equipment: {
     label: "GEAR",
     start: "#3f3f46",
-    end: "#a16207",
-    accent: "#fde68a",
+    end: "#18181b",
+    accent: "#e4e4e7",
   },
   default: {
     label: "ITEM",
-    start: "#111827",
-    end: "#334155",
-    accent: "#cbd5e1",
+    start: "#334155",
+    end: "#1e293b",
+    accent: "#f1f5f9",
   },
 };
 
@@ -84,16 +84,13 @@ function BuildFallbackImageSource(itemData) {
         </linearGradient>
       </defs>
       <rect width="240" height="320" rx="28" fill="url(#item-gradient)" />
-      <rect x="16" y="16" width="208" height="288" rx="20" fill="#ffffff" opacity="0.08" />
+      <rect x="16" y="16" width="208" height="288" rx="20" fill="#ffffff" opacity="0.1" />
       <circle cx="188" cy="62" r="26" fill="${theme.accent}" opacity="0.85" />
       <path d="M0 245 C48 220 92 204 140 218 C182 230 210 254 240 274 L240 320 L0 320 Z" fill="${theme.accent}" opacity="0.28" />
       <rect x="32" y="38" width="84" height="96" rx="16" fill="#ffffff" opacity="0.14" />
-      <rect x="44" y="54" width="60" height="8" rx="4" fill="#ffffff" opacity="0.45" />
-      <rect x="44" y="72" width="46" height="8" rx="4" fill="#ffffff" opacity="0.35" />
-      <rect x="44" y="90" width="54" height="8" rx="4" fill="#ffffff" opacity="0.25" />
-      <text x="32" y="182" fill="#f8fafc" font-family="Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="2">${label}</text>
-      <text x="32" y="214" fill="#f8fafc" font-family="Arial, sans-serif" font-size="22" font-weight="700">${title}</text>
-      <text x="32" y="244" fill="#e2e8f0" font-family="Arial, sans-serif" font-size="12" letter-spacing="3">DATAHAVEN LIBRARY</text>
+      <text x="32" y="182" fill="#ffffff" font-family="Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="2">${label}</text>
+      <text x="32" y="214" fill="#ffffff" font-family="Arial, sans-serif" font-size="22" font-weight="700">${title}</text>
+      <text x="32" y="244" fill="#ffffff" font-family="Arial, sans-serif" font-size="10" letter-spacing="3" opacity="0.7">DATAHAVEN LIBRARY</text>
     </svg>
   `;
 
@@ -102,7 +99,7 @@ function BuildFallbackImageSource(itemData) {
 
 export function ItemImage({
   itemData,
-  className = "h-48 w-36 shrink-0 rounded-xl object-cover outline-1 outline-white/10",
+  className = "h-48 w-36 shrink-0 rounded-2xl object-cover border border-slate-200 shadow-sm",
 }) {
   const fallbackSource = BuildFallbackImageSource(itemData);
   const resolvedSource =
@@ -130,7 +127,7 @@ export function ItemImage({
 
 export default function Item({ itemData }) {
   const user = ReadStoredUser();
-  const { showSuccess, showError, showWarning /*showInfo */ } = useMessage();
+  const { showSuccess, showError, showWarning } = useMessage();
 
   const [activeStaffAction, setActiveStaffAction] = useState("");
   const [patronIdInput, setPatronIdInput] = useState("");
@@ -267,43 +264,43 @@ export default function Item({ itemData }) {
 
   return (
     <div className="w-full">
-      <div className="grid grid-cols-4 rounded-xl bg-white/2 px-3 py-1.5 outline-2 outline-white/10">
-        <div className="col-span-3 m-2 flex gap-4">
+      <div className="grid grid-cols-4 rounded-3xl bg-white border border-slate-200 p-4 shadow-sm">
+        <div className="col-span-3 flex gap-6">
           <ItemImage itemData={itemData} />
           <ItemHolder data={itemData} />
         </div>
 
-        <div className="col-span-1 grid grid-rows-2 items-center m-2">
-          <div className="grid grid-cols-3 grid-rows-2 text-center">
-            <span>
-              Available: <br />
-              {itemData.available}
+        <div className="col-span-1 grid grid-rows-2 items-center border-l border-slate-100 pl-6">
+          <div className="grid grid-cols-3 grid-rows-2 text-center text-[11px] font-bold uppercase tracking-tight text-slate-400">
+            <span className="flex flex-col">
+              <span className="text-slate-500">Available</span>
+              <span className="text-slate-900 text-base">{itemData.available}</span>
             </span>
 
-            <span>
-              Reserved: <br />
-              {itemData.reservedCount ?? 0}
+            <span className="flex flex-col">
+              <span className="text-slate-500">Reserved</span>
+              <span className="text-slate-900 text-base">{itemData.reservedCount ?? 0}</span>
             </span>
 
-            <span>
-              Queue: <br />
-              {itemData.queueCount ?? 0}
+            <span className="flex flex-col">
+              <span className="text-slate-500">Queue</span>
+              <span className="text-slate-900 text-base">{itemData.queueCount ?? 0}</span>
             </span>
 
-            <span>
-              Unavailable: <br />
-              {itemData.unavailable}
+            <span className="flex flex-col">
+              <span className="text-slate-500">Unavailable</span>
+              <span className="text-slate-900 text-base">{itemData.unavailable}</span>
             </span>
 
             {itemData.category !== "equipment" ? (
-              <span>
-                Shelf: <br />
-                {itemData.shelfNumber}
+              <span className="flex flex-col">
+                <span className="text-slate-500">Shelf</span>
+                <span className="text-slate-900 text-base">{itemData.shelfNumber}</span>
               </span>
             ) : null}
           </div>
 
-          <div className="grid h-full justify-items-center gap-2">
+          <div className="grid h-full justify-items-center gap-2 pt-4">
             {canPlaceHold ? (
               isStaff ? (
                 <>
@@ -318,11 +315,11 @@ export default function Item({ itemData }) {
                   />
 
                   {activeStaffAction ? (
-                    <div className="mt-2 flex w-full flex-col gap-2 rounded-lg border border-white/10 bg-slate-900/70 p-3">
-                      <div className="text-xs text-slate-300">
+                    <div className="mt-2 flex w-full flex-col gap-2 rounded-2xl bg-slate-50 p-4 border border-slate-200 shadow-inner">
+                      <div className="text-[10px] font-bold text-sky-700 uppercase tracking-widest">
                         {activeStaffAction === "hold"
-                          ? "Enter the patron ID for this hold."
-                          : "Enter the patron ID for this checkout."}
+                          ? "Enter hold patron ID"
+                          : "Enter checkout patron ID"}
                       </div>
 
                       <input
@@ -333,12 +330,12 @@ export default function Item({ itemData }) {
                           setPatronIdInput(event.target.value)
                         }
                         placeholder="Patron ID"
-                        className="w-full rounded-md border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-sky-400"
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-sky-500"
                       />
 
                       <div className="flex gap-2">
                         <PrimaryButton
-                          title={isSubmitting ? "Submitting..." : "Confirm"}
+                          title={isSubmitting ? "..." : "Confirm"}
                           onClick={ConfirmStaffAction}
                           disabledValue={isSubmitting}
                         />
@@ -360,7 +357,7 @@ export default function Item({ itemData }) {
                 />
               )
             ) : (
-              <SecondaryButton title="Unavailable" disabled={true} />
+              <SecondaryButton title="Removed" disabled={true} />
             )}
           </div>
         </div>
@@ -371,7 +368,7 @@ export default function Item({ itemData }) {
 
 export function CarouselItem({ itemData }) {
   const user = ReadStoredUser();
-  const { showSuccess, showError, showWarning /*showInfo */ } = useMessage();
+  const { showSuccess, showError, showWarning } = useMessage();
 
   const [activeStaffAction, setActiveStaffAction] = useState("");
   const [patronIdInput, setPatronIdInput] = useState("");
@@ -510,28 +507,28 @@ export function CarouselItem({ itemData }) {
       {isStaff ? (
         <>
           {itemData.category != "equipment" ? (
-            <div className="h-full grid grid-rows-4 rounded-xl bg-white/2 px-3 py-1.5 outline-2 outline-white/10 transition transform hover:-translate-y-1 hover:shadow-lg hover:shadow-sky-500/10">
-              <div className="row-span-4 m-2 mt-2">
+            <div className="h-full grid grid-rows-4 rounded-3xl bg-white border border-slate-200 p-4 transition transform hover:-translate-y-1 hover:shadow-md">
+              <div className="row-span-4 mt-2">
                 <CarouselItemHolder data={itemData} />
               </div>
-              <div className="row-span-1 grid grid-cols-1 grid items-center m-2 text-center">
-                <div className="grid grid-cols-2">
+              <div className="row-span-1 grid grid-cols-1 grid items-center text-center">
+                <div className="grid grid-cols-2 text-[10px] font-bold uppercase tracking-widest mb-2">
                   <span
                     className={
                       itemData.available >= 1
-                        ? "text-green-400 font-semibold"
-                        : "text-red-400 font-semibold"
+                        ? "text-green-600"
+                        : "text-red-500"
                     }
                   >
                     {itemData.available >= 1 ? "Available" : "Not Available"}
                   </span>
-                  <span>Shelf: {itemData.shelfNumber}</span>
+                  <span className="text-slate-400">Shelf: {itemData.shelfNumber}</span>
                 </div>
                 {canPlaceHold ? (
                   isStaff ? (
                     <>
                       {itemData.available >= 1 ? (
-                        <div className="grid grid-cols-2">
+                        <div className="grid grid-cols-2 gap-2">
                           <PrimaryButton
                             title="Place Hold"
                             onClick={() => OpenStaffAction("hold")}
@@ -547,11 +544,9 @@ export function CarouselItem({ itemData }) {
                       )}
 
                       {activeStaffAction ? (
-                        <div className="mt-2 flex w-full flex-col gap-2 rounded-lg border border-white/10 bg-slate-900/70 p-3">
-                          <div className="text-xs text-slate-300">
-                            {activeStaffAction === "hold"
-                              ? "Enter the patron ID for this hold."
-                              : "Enter the patron ID for this checkout."}
+                        <div className="mt-2 flex w-full flex-col gap-2 rounded-2xl bg-slate-50 p-3 border border-slate-200">
+                          <div className="text-[10px] font-bold text-sky-700 uppercase">
+                            Patron ID
                           </div>
 
                           <input
@@ -561,19 +556,19 @@ export function CarouselItem({ itemData }) {
                             onChange={(event) =>
                               setPatronIdInput(event.target.value)
                             }
-                            placeholder="Patron ID"
-                            className="w-full rounded-md border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-sky-400"
+                            placeholder="ID"
+                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 outline-none focus:ring-2 focus:ring-sky-500"
                           />
 
                           <div className="flex gap-2">
                             <PrimaryButton
-                              title={isSubmitting ? "Submitting..." : "Confirm"}
+                              title={isSubmitting ? "..." : "OK"}
                               onClick={ConfirmStaffAction}
                               disabledValue={isSubmitting}
                             />
 
                             <SecondaryButton
-                              title="Cancel"
+                              title="X"
                               onClick={ResetStaffAction}
                               disabled={isSubmitting}
                             />
@@ -600,17 +595,17 @@ export function CarouselItem({ itemData }) {
               </div>
             </div>
           ) : (
-            <div className="h-full grid grid-rows-4 rounded-xl bg-white/2 px-3 py-1.5 outline-2 outline-white/10 transition transform hover:-translate-y-1 hover:shadow-lg hover:shadow-sky-500/10">
-              <div className="row-span-4 m-2 mt-2">
+            <div className="h-full grid grid-rows-4 rounded-3xl bg-white border border-slate-200 p-4 transition transform hover:-translate-y-1 hover:shadow-md">
+              <div className="row-span-4 mt-2">
                 <CarouselItemHolder data={itemData} />
               </div>
-              <div className="row-span-1 grid grid-cols-1 grid items-center m-2 text-center">
-                <div className="grid grid-cols-1">
+              <div className="row-span-1 grid grid-cols-1 grid items-center text-center">
+                <div className="grid grid-cols-1 text-[10px] font-bold uppercase tracking-widest mb-2">
                   <span
                     className={
                       itemData.available >= 1
-                        ? "text-green-400 font-semibold"
-                        : "text-red-400 font-semibold"
+                        ? "text-green-600"
+                        : "text-red-500"
                     }
                   >
                     {itemData.available >= 1 ? "Available" : "Not Available"}
@@ -620,7 +615,7 @@ export function CarouselItem({ itemData }) {
                   isStaff ? (
                     <>
                       {itemData.available >= 1 ? (
-                        <div className="grid grid-cols-2">
+                        <div className="grid grid-cols-2 gap-2">
                           <PrimaryButton
                             title="Place Hold"
                             onClick={() => OpenStaffAction("hold")}
@@ -636,11 +631,9 @@ export function CarouselItem({ itemData }) {
                       )}
 
                       {activeStaffAction ? (
-                        <div className="mt-2 flex w-full flex-col gap-2 rounded-lg border border-white/10 bg-slate-900/70 p-3">
-                          <div className="text-xs text-slate-300">
-                            {activeStaffAction === "hold"
-                              ? "Enter the patron ID for this hold."
-                              : "Enter the patron ID for this checkout."}
+                        <div className="mt-2 flex w-full flex-col gap-2 rounded-2xl bg-slate-50 p-3 border border-slate-200">
+                          <div className="text-[10px] font-bold text-sky-700 uppercase">
+                            Patron ID
                           </div>
 
                           <input
@@ -650,19 +643,19 @@ export function CarouselItem({ itemData }) {
                             onChange={(event) =>
                               setPatronIdInput(event.target.value)
                             }
-                            placeholder="Patron ID"
-                            className="w-full rounded-md border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-sky-400"
+                            placeholder="ID"
+                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 outline-none focus:ring-2 focus:ring-sky-500"
                           />
 
                           <div className="flex gap-2">
                             <PrimaryButton
-                              title={isSubmitting ? "Submitting..." : "Confirm"}
+                              title={isSubmitting ? "..." : "OK"}
                               onClick={ConfirmStaffAction}
                               disabledValue={isSubmitting}
                             />
 
                             <SecondaryButton
-                              title="Cancel"
+                              title="X"
                               onClick={ResetStaffAction}
                               disabled={isSubmitting}
                             />
@@ -693,21 +686,21 @@ export function CarouselItem({ itemData }) {
       ) : (
         <>
           {itemData.category != "equipment" ? (
-            <div className="h-full grid grid-rows-5 rounded-xl bg-white/2 px-3 py-1.5 outline-2 outline-white/10 transition transform hover:-translate-y-1 hover:shadow-lg hover:shadow-sky-500/10">
-              <div className="row-span-4 m-2 mt-2">
+            <div className="h-full grid grid-rows-5 rounded-3xl bg-white border border-slate-200 p-4 transition transform hover:-translate-y-1 hover:shadow-md">
+              <div className="row-span-4 mt-2">
                 <CarouselItemHolder data={itemData} />
               </div>
-              <div className="row-span-1 grid grid-cols-3 grid items-center m-2 text-center">
+              <div className="row-span-1 grid grid-cols-3 grid items-center text-center text-[10px] font-bold uppercase tracking-widest">
                 <span
                   className={
                     itemData.available >= 1
-                      ? "text-green-400 font-semibold"
-                      : "text-red-400 font-semibold"
+                      ? "text-green-600"
+                      : "text-red-500"
                   }
                 >
                   {itemData.available >= 1 ? "Available" : "Not Available"}
                 </span>
-                <span>Shelf: {itemData.shelfNumber}</span>
+                <span className="text-slate-400">Shelf: {itemData.shelfNumber}</span>
                 {canPlaceHold ? (
                   isStaff ? (
                     <>
@@ -717,11 +710,9 @@ export function CarouselItem({ itemData }) {
                       />
 
                       {activeStaffAction ? (
-                        <div className="mt-2 flex w-full flex-col gap-2 rounded-lg border border-white/10 bg-slate-900/70 p-3">
-                          <div className="text-xs text-slate-300">
-                            {activeStaffAction === "hold"
-                              ? "Enter the patron ID for this hold."
-                              : "Enter the patron ID for this checkout."}
+                        <div className="mt-2 flex w-full flex-col gap-2 rounded-2xl bg-slate-50 p-3 border border-slate-200">
+                          <div className="text-[10px] font-bold text-sky-700 uppercase">
+                            Patron ID
                           </div>
 
                           <input
@@ -731,19 +722,19 @@ export function CarouselItem({ itemData }) {
                             onChange={(event) =>
                               setPatronIdInput(event.target.value)
                             }
-                            placeholder="Patron ID"
-                            className="w-full rounded-md border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-sky-400"
+                            placeholder="ID"
+                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 outline-none focus:ring-2 focus:ring-sky-500"
                           />
 
                           <div className="flex gap-2">
                             <PrimaryButton
-                              title={isSubmitting ? "Submitting..." : "Confirm"}
+                              title={isSubmitting ? "..." : "OK"}
                               onClick={ConfirmStaffAction}
                               disabledValue={isSubmitting}
                             />
 
                             <SecondaryButton
-                              title="Cancel"
+                              title="X"
                               onClick={ResetStaffAction}
                               disabled={isSubmitting}
                             />
@@ -770,21 +761,21 @@ export function CarouselItem({ itemData }) {
               </div>
             </div>
           ) : (
-            <div className="h-full grid grid-rows-4 rounded-xl bg-white/2 px-3 py-1.5 outline-2 outline-white/10 text-center transition transform hover:-translate-y-1 hover:shadow-lg hover:shadow-sky-500/10">
-              <div className="row-span-4 m-2 mt-2">
+            <div className="h-full grid grid-rows-4 rounded-3xl bg-white border border-slate-200 p-4 text-center transition transform hover:-translate-y-1 hover:shadow-md">
+              <div className="row-span-4 mt-2">
                 <CarouselItemHolder data={itemData} />
               </div>
               <div className="grid grid-cols-2 justify-items-center items-center">
                 <span
                   className={
                     itemData.available >= 1
-                      ? "text-green-400 font-semibold"
-                      : "text-red-400 font-semibold"
+                      ? "text-green-600 font-bold text-[10px] uppercase"
+                      : "text-red-500 font-bold text-[10px] uppercase"
                   }
                 >
                   {itemData.available >= 1 ? "Available" : "Not Available"}
                 </span>
-                <div className="row-span-1 grid grid-cols-1 grid items-center m-2 text-center">
+                <div className="row-span-1 grid grid-cols-1 grid items-center text-center">
                   {canPlaceHold ? (
                     isStaff ? (
                       <>
@@ -794,11 +785,9 @@ export function CarouselItem({ itemData }) {
                         />
 
                         {activeStaffAction ? (
-                          <div className="mt-2 flex w-full flex-col gap-2 rounded-lg border border-white/10 bg-slate-900/70 p-3">
-                            <div className="text-xs text-slate-300">
-                              {activeStaffAction === "hold"
-                                ? "Enter the patron ID for this hold."
-                                : "Enter the patron ID for this checkout."}
+                          <div className="mt-2 flex w-full flex-col gap-2 rounded-2xl bg-slate-50 p-3 border border-slate-200">
+                            <div className="text-[10px] font-bold text-sky-700 uppercase">
+                              Patron ID
                             </div>
 
                             <input
@@ -808,21 +797,21 @@ export function CarouselItem({ itemData }) {
                               onChange={(event) =>
                                 setPatronIdInput(event.target.value)
                               }
-                              placeholder="Patron ID"
-                              className="w-full rounded-md border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-sky-400"
+                              placeholder="ID"
+                              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 outline-none focus:ring-2 focus:ring-sky-500"
                             />
 
                             <div className="flex gap-2">
                               <PrimaryButton
                                 title={
-                                  isSubmitting ? "Submitting..." : "Confirm"
+                                  isSubmitting ? "..." : "OK"
                                 }
                                 onClick={ConfirmStaffAction}
                                 disabledValue={isSubmitting}
                               />
 
                               <SecondaryButton
-                                title="Cancel"
+                                title="X"
                                 onClick={ResetStaffAction}
                                 disabled={isSubmitting}
                               />
@@ -865,7 +854,6 @@ export function CarouselItemHolder({ data }) {
     (data.author ? `${data.author.lastName}, ${data.author.firstName}` : null);
 
   const formattedDate = BuildDisplayDate(data.publicationDate);
-  const pubLine = [data.publisher, formattedDate].filter(Boolean).join(", ");
   const metaLine = [data.type, data.language, data.genre]
     .filter(Boolean)
     .join(", ");
@@ -874,30 +862,28 @@ export function CarouselItemHolder({ data }) {
     <div className="flex flex-col items-center justify-center text-center">
       <ItemImage
         itemData={data}
-        className="h-48 w-36 rounded-xl object-cover outline-1 outline-white/10"
+        className="h-52 w-36 rounded-2xl object-cover shadow-md mb-4 border border-slate-100"
       />
-      <div className="text-xl mt-2 font-bold">{data.title}</div>
+      <div className="text-lg font-bold text-slate-900 leading-tight">{data.title}</div>
 
       {creator ? (
-        <div className="text-lg font-semibold text-sky-300">{creator}</div>
+        <div className="text-sm font-bold text-sky-700 mt-1 uppercase tracking-wide">{creator}</div>
       ) : null}
 
-      {/* {pubLine ? <div>{pubLine}</div> : null} */}
-
       {metaLine ? (
-        <div>
+        <div className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">
           {metaLine}
           {data.category === "audiovisualmedia" && data.runtime
-            ? `, ${data.runtime} mins`
+            ? `, ${data.runtime} MINS`
             : ""}
         </div>
       ) : null}
 
       {data.summary ? (
         data.summary.length > 120 ? (
-          <div>{data.summary.slice(0, 120)}...</div>
+          <div className="text-xs text-slate-500 mt-3 leading-relaxed">{data.summary.slice(0, 120)}...</div>
         ) : (
-          <div>{data.summary}</div>
+          <div className="text-xs text-slate-500 mt-3 leading-relaxed">{data.summary}</div>
         )
       ) : null}
     </div>
@@ -914,42 +900,42 @@ export function ItemStaff({
   const loanEnd = BuildDisplayDate(itemData.loanEnd, true);
 
   return (
-    <div>
-      <div className="grid grid-cols-4 rounded-xl bg-white/2 px-3 py-1.5 outline-2 outline-white/10">
-        <div className="col-span-3 m-2 flex gap-4">
+    <div className="w-full">
+      <div className="grid grid-cols-4 rounded-3xl bg-white border border-slate-200 p-4 shadow-sm">
+        <div className="col-span-3 flex gap-6">
           <ItemImage itemData={itemData} />
           <ItemHolder data={itemData} />
         </div>
 
-        <div className="col-span-1 grid grid-cols-2 items-center m-2">
+        <div className="col-span-1 grid grid-cols-2 items-center border-l border-slate-100 pl-6">
           {itemData.status === "Available" ? (
-            <div className="grid grid-rows-2 col-span-1">
-              <div>Copy number: {itemData.copy}</div>
-              <div>Item status: {itemData.status}</div>
+            <div className="grid grid-rows-2 col-span-1 text-sm text-slate-600">
+              <div>Copy: <span className="font-bold text-slate-900">{itemData.copy}</span></div>
+              <div>Status: <span className="font-bold text-slate-900">{itemData.status}</span></div>
             </div>
           ) : itemData.status === "On hold" ? (
-            <div className="grid grid-rows-4 col-span-1">
-              <div>Copy number: {itemData.copy}</div>
-              <div>Item status: {itemData.status}</div>
-              <div>On hold until {holdEnd}</div>
-              <div>Held by user {itemData.userId ?? itemData.userid}</div>
+            <div className="grid grid-rows-4 col-span-1 text-sm text-slate-600">
+              <div>Copy: <span className="font-bold text-slate-900">{itemData.copy}</span></div>
+              <div>Status: <span className="font-bold text-slate-900">{itemData.status}</span></div>
+              <div className="text-xs italic mt-1">Held until {holdEnd}</div>
+              <div className="text-xs">By {itemData.userId ?? itemData.userid}</div>
             </div>
           ) : itemData.status === "Loaned" ? (
-            <div className="grid grid-rows-4 col-span-1">
-              <div>Copy number: {itemData.copy}</div>
-              <div>Item status: {itemData.status}</div>
-              <div>Loaned until {loanEnd}</div>
-              <div>Loaned by user {itemData.userId ?? itemData.userid}</div>
+            <div className="grid grid-rows-4 col-span-1 text-sm text-slate-600">
+              <div>Copy: <span className="font-bold text-slate-900">{itemData.copy}</span></div>
+              <div>Status: <span className="font-bold text-slate-900">{itemData.status}</span></div>
+              <div className="text-xs italic mt-1">Due {loanEnd}</div>
+              <div className="text-xs">To {itemData.userId ?? itemData.userid}</div>
             </div>
           ) : (
-            <div className="grid grid-rows-2 col-span-1">
-              <div>Copy number: {itemData.copy}</div>
-              <div>Item status: {itemData.status}</div>
+            <div className="grid grid-rows-2 col-span-1 text-sm text-slate-600">
+              <div>Copy: <span className="font-bold text-slate-900">{itemData.copy}</span></div>
+              <div>Status: <span className="font-bold text-slate-900">{itemData.status}</span></div>
             </div>
           )}
         </div>
 
-        <div className="col-span-1 items-center justify-items-center text-center m-2">
+        <div className="col-span-1 items-center justify-items-center text-center p-2 flex flex-col justify-center">
           {itemData.status === "On hold" ? (
             <div>
               <SecondaryButton
@@ -960,17 +946,17 @@ export function ItemStaff({
           ) : itemData.status === "Loaned" ? (
             <div className="grid gap-2">
               <PrimaryButton
-                title="Mark as returned"
+                title="Mark returned"
                 onClick={() => onMarkReturned?.(itemData.loanId)}
               />
               <SecondaryButton
-                title="Mark as missing"
+                title="Mark missing"
                 onClick={() => onMarkMissing?.(itemData.loanId)}
               />
             </div>
           ) : itemData.status === "Available" ? (
             <SecondaryButton
-              title="Mark as missing"
+              title="Mark missing"
               onClick={() => onMarkMissing?.(itemData.itemId)}
             />
           ) : null}
@@ -985,20 +971,20 @@ export function ItemLoan({ itemData }) {
 
   return (
     <div className="w-full">
-      <div className="grid grid-cols-4 rounded-xl bg-white/2 px-3 py-1.5 outline-2 outline-white/10">
-        <div className="col-span-3 m-2 flex gap-4">
+      <div className="grid grid-cols-4 rounded-3xl bg-white border border-slate-200 p-4 shadow-sm">
+        <div className="col-span-3 flex gap-6">
           <ItemImage itemData={itemData} />
           <ItemHolder data={itemData} />
         </div>
 
         {itemData.overdue ? (
-          <div className="col-span-1 grid grid-rows-2 items-center text-center">
-            <div>Due: {formattedDate}</div>
-            <div className="font-semibold text-red-400">Overdue</div>
+          <div className="col-span-1 grid grid-rows-2 items-center text-center border-l border-slate-100 pl-6">
+            <div className="text-sm font-medium text-slate-600">Due: <span className="font-bold text-slate-900">{formattedDate}</span></div>
+            <div className="font-bold text-red-600 bg-red-50 px-3 py-1 rounded-full text-xs uppercase tracking-widest">Overdue</div>
           </div>
         ) : (
-          <div className="col-span-1 grid grid-rows-2 items-center text-center">
-            <div>Due: {formattedDate}</div>
+          <div className="col-span-1 grid grid-rows-2 items-center text-center border-l border-slate-100 pl-6">
+            <div className="text-sm font-medium text-slate-600">Due: <span className="font-bold text-slate-900">{formattedDate}</span></div>
           </div>
         )}
       </div>
@@ -1009,15 +995,15 @@ export function ItemLoan({ itemData }) {
 export function ItemHold({ itemData, onCancel }) {
   return (
     <div className="w-full">
-      <div className="grid grid-cols-4 rounded-xl bg-white/2 px-3 py-1.5 outline-2 outline-white/10">
-        <div className="col-span-3 m-2 flex gap-4">
+      <div className="grid grid-cols-4 rounded-3xl bg-white border border-slate-200 p-4 shadow-sm">
+        <div className="col-span-3 flex gap-6">
           <ItemImage itemData={itemData} />
           <ItemHolder data={itemData} />
         </div>
 
         {itemData.ready ? (
-          <div className="col-span-1 grid grid-rows-2 items-center text-center">
-            <span>Item ready to pickup</span>
+          <div className="col-span-1 grid grid-rows-2 items-center text-center border-l border-slate-100 pl-6 gap-2">
+            <span className="text-xs font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full uppercase tracking-widest">Ready for pickup</span>
             <PrimaryButton
               title="Cancel"
               disabledValue={!onCancel}
@@ -1025,8 +1011,8 @@ export function ItemHold({ itemData, onCancel }) {
             />
           </div>
         ) : (
-          <div className="col-span-1 grid grid-rows-2 items-center text-center">
-            <span>Item not ready</span>
+          <div className="col-span-1 grid grid-rows-2 items-center text-center border-l border-slate-100 pl-6 gap-2">
+            <span className="text-xs font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded-full uppercase tracking-widest">In queue</span>
             <PrimaryButton
               title="Cancel"
               disabledValue={!onCancel}
@@ -1052,33 +1038,31 @@ export function ItemHolder({ data }) {
 
   if (data.category === "equipment") {
     return (
-      <div>
-        <div className="text-xl font-bold">{data.title}</div>
+      <div className="flex flex-col justify-center">
+        <div className="text-2xl font-bold text-slate-900">{data.title}</div>
       </div>
     );
   }
 
   return (
-    <div className="inline">
+    <div className="flex flex-col justify-center">
       <div>
-        <div className="text-xl font-bold">{data.title}</div>
+        <div className="text-2xl font-bold text-slate-900 leading-tight">{data.title}</div>
 
         {creator ? (
-          <div className="text-lg font-semibold text-sky-300">{creator}</div>
+          <div className="text-lg font-bold text-sky-700 mt-1">{creator}</div>
         ) : null}
 
-        {pubLine ? <div>{pubLine}</div> : null}
-
-        {metaLine ? (
-          <div>
-            {metaLine}
-            {data.category === "audiovisualmedia" && data.runtime
-              ? `, ${data.runtime} mins`
+        <div className="mt-2 text-xs font-bold text-slate-400 uppercase tracking-widest">
+           {metaLine}
+           {data.category === "audiovisualmedia" && data.runtime
+              ? ` • ${data.runtime} MINS`
               : ""}
-          </div>
-        ) : null}
+        </div>
 
-        {data.summary ? <div>{data.summary}</div> : null}
+        {pubLine ? <div className="text-xs font-medium text-slate-500 mt-1">{pubLine}</div> : null}
+
+        {data.summary ? <div className="text-sm text-slate-600 mt-4 leading-relaxed line-clamp-3 max-w-xl">{data.summary}</div> : null}
       </div>
     </div>
   );

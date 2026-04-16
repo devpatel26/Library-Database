@@ -24,13 +24,13 @@ function FormatDateLabel(value) {
 
 function SummaryCard({ title, value, subtitle = "" }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.25em] text-sky-300">
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <p className="text-xs font-bold uppercase tracking-[0.25em] text-sky-700">
         {title}
       </p>
-      <p className="mt-3 text-3xl font-semibold text-white">{value}</p>
+      <p className="mt-3 text-3xl font-bold text-slate-900">{value}</p>
       {subtitle ? (
-        <p className="mt-2 text-sm text-slate-400">{subtitle}</p>
+        <p className="mt-2 text-sm font-medium text-slate-600">{subtitle}</p>
       ) : null}
     </div>
   );
@@ -284,7 +284,6 @@ export default function AllUsersReport() {
           }
         }
         
-
         if (searchBy === "User ID" && byId !== normalizedSearch) {
           return false;
         }
@@ -304,8 +303,6 @@ export default function AllUsersReport() {
         if (searchBy === "Email" && !byEmail.includes(normalizedSearch)) {
           return false;
         }
-
-        
 
         if (searchBy === "All" && !byAll.includes(normalizedSearch)) {
           return false;
@@ -409,32 +406,32 @@ export default function AllUsersReport() {
   }
 
   return (
-    <section className="flex w-full flex-col rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-2xl shadow-slate-950/30">
-      <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
+    <section className="flex w-full flex-col rounded-3xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50">
+      <p className="text-sm font-bold uppercase tracking-[0.3em] text-sky-700">
         Admin Report
       </p>
 
-      <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">
+      <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-900">
         All Users Report
       </h1>
 
-      <p className="mt-3 text-sm font-medium text-sky-300">
+      <p className="mt-3 text-sm font-medium text-sky-700">
         Note: Date filters in this report use each user’s most recent activity date.
       </p>
 
-      <p className="mt-4 max-w-3xl text-base leading-7 text-slate-300">
+      <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">
         Review all patron and staff accounts with flexible search, filter, and sorting tools.
       </p>
 
       {isLoading ? (
-        <div className="mt-8 text-slate-300">Loading all users report...</div>
+        <div className="mt-8 font-medium text-slate-600">Loading all users report...</div>
       ) : (
         <>
           <div className="mt-8">
-            <p className="text-sm font-medium text-slate-300">{dateRangeLabel}</p>
+            <p className="text-sm font-semibold text-slate-700">{dateRangeLabel}</p>
           </div>
 
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3 bg-slate-50 p-6 rounded-2xl border border-slate-200">
             <SummaryCard title="All Users" value={summary.allUsers} />
             <SummaryCard title="Total Patrons" value={summary.totalPatrons} />
             <SummaryCard title="Active Patrons" value={summary.activePatrons} />
@@ -444,44 +441,44 @@ export default function AllUsersReport() {
             <SummaryCard title="Inactive Staff" value={summary.inactiveStaff} />
           </div>
 
-          <div className="mt-8 rounded-2xl border border-white/10 bg-slate-950/40 p-5">
-            <h2 className="text-xl font-semibold text-white">
+          <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 className="text-xl font-bold text-slate-900">
               Search / Filter / Sort
             </h2>
 
-            <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <div>
-                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
                   Start Date
                 </label>
                 <input
                   type="date"
                   value={startDate}
                   onChange={(event) => setStartDate(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
                   End Date
                 </label>
                 <input
                   type="date"
                   value={endDate}
                   onChange={(event) => setEndDate(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
                   Filter By User Type
                 </label>
                 <select
                   value={userFilter}
                   onChange={(event) => setUserFilter(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
                 >
                   <option>All</option>
                   <option>Patrons Only</option>
@@ -496,13 +493,13 @@ export default function AllUsersReport() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
                   Search By
                 </label>
                 <select
                   value={searchBy}
                   onChange={(event) => setSearchBy(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
                 >
                   <option>All</option>
                   <option>User ID</option>
@@ -515,7 +512,7 @@ export default function AllUsersReport() {
               </div>
 
               <div className="xl:col-span-2">
-                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
                   Search Text
                 </label>
                 <input
@@ -523,18 +520,18 @@ export default function AllUsersReport() {
                   value={searchText}
                   onChange={(event) => setSearchText(event.target.value)}
                   placeholder="Enter search value...(enter DOB as YYYY-MM-DD or MM/DD)"
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
                   Sort By
                 </label>
                 <select
                   value={sortBy}
                   onChange={(event) => setSortBy(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
                 >
                   <option value="userId">User ID</option>
                   <option value="name">Name</option>
@@ -546,13 +543,13 @@ export default function AllUsersReport() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
                   Sort Direction
                 </label>
                 <select
                   value={sortDirection}
                   onChange={(event) => setSortDirection(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
                 >
                   <option value="asc">Ascending</option>
                   <option value="desc">Descending</option>
@@ -560,33 +557,33 @@ export default function AllUsersReport() {
               </div>
             </div>
 
-            <div className="mt-5">
+            <div className="mt-6">
               <PrimaryButton title="Reset Filters" onClick={ResetFilters} />
             </div>
           </div>
 
-          <div className="mt-8 rounded-2xl border border-white/10 bg-slate-950/40 p-5">
-            <h2 className="text-xl font-semibold text-white">
+          <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 className="text-xl font-bold text-slate-900">
               User Detail Table
             </h2>
 
-            <div className="mt-4 overflow-x-auto">
+            <div className="mt-6 overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
               <table className="min-w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-white/10 text-slate-300">
-                    <th className="px-3 py-2">User ID</th>
-                    <th className="px-3 py-2">Name</th>
-                    <th className="px-3 py-2">Role</th>
-                    <th className="px-3 py-2">Account Status</th>
-                    <th className="px-3 py-2">Email</th>
-                    <th className="px-3 py-2">DOB</th>
+                  <tr className="bg-slate-100 text-left text-sm text-slate-700 border-b border-slate-200">
+                    <th className="px-4 py-3 font-semibold">User ID</th>
+                    <th className="px-4 py-3 font-semibold">Name</th>
+                    <th className="px-4 py-3 font-semibold">Role</th>
+                    <th className="px-4 py-3 font-semibold">Account Status</th>
+                    <th className="px-4 py-3 font-semibold">Email</th>
+                    <th className="px-4 py-3 font-semibold">DOB</th>
                   </tr>
                 </thead>
 
                 <tbody>
                   {filteredUsers.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-3 py-5 text-slate-400">
+                      <td colSpan={6} className="px-4 py-5 text-center font-medium text-slate-500">
                         No user records match the current filters.
                       </td>
                     </tr>
@@ -594,22 +591,24 @@ export default function AllUsersReport() {
                     filteredUsers.map((user) => (
                       <tr
                         key={`${user.role}-${user.userId}`}
-                        className="border-b border-white/5 text-slate-200"
+                        className="border-b border-slate-100 bg-white text-slate-600 hover:bg-slate-50 transition-colors"
                       >
-                        <td className="px-3 py-3">{user.userId}</td>
-                        <td className="px-3 py-3 font-semibold text-white">
+                        <td className="px-4 py-3 font-medium text-slate-900">{user.userId}</td>
+                        <td className="px-4 py-3 font-bold text-slate-900">
                           {user.name || "-"}
                         </td>
-                        <td className="px-3 py-3">
+                        <td className="px-4 py-3 font-medium">
                           {NormalizeRole(user.role)}
                         </td>
-                        <td className="px-3 py-3">
-                          {NormalizeAccountStatus(user.accountStatus)}
+                        <td className="px-4 py-3">
+                          <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold ${NormalizeAccountStatus(user.accountStatus) === 'Active' ? 'bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20' : 'bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-600/20'}`}>
+                            {NormalizeAccountStatus(user.accountStatus)}
+                          </span>
                         </td>
-                        <td className="px-3 py-3">
+                        <td className="px-4 py-3">
                           {user.email || "-"}
                         </td>
-                        <td className="px-3 py-3">
+                        <td className="px-4 py-3">
                           {user.dob
                             ? FormatDate(new Date(user.dob), true)
                             : "-"}

@@ -141,27 +141,27 @@ export default function Lost() {
 
   return (
 
-    <section className="mx-auto flex w-full max-w-6xl flex-col rounded-3xl border border-white/10 bg-slate-900/70 p-6 shadow-xl">
+    <section className="mx-auto flex w-full max-w-6xl flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/50">
 
-      <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
+      <p className="text-sm font-bold uppercase tracking-[0.3em] text-sky-700">
         Staff
       </p>
 
-      <h1 className="mt-3 text-4xl font-semibold text-white">
+      <h1 className="mt-3 text-4xl font-semibold text-slate-900">
         Lost Items
       </h1>
 
       <div className="mt-6 grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2">
 
         <div>
-          <label className="text-xs text-sky-300 uppercase">
+          <label className="text-xs font-semibold text-sky-700 uppercase">
             Search By
           </label>
 
           <select
             value={searchBy}
             onChange={(e) => setSearchBy(e.target.value)}
-            className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white"
+            className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none transition-all"
           >
 
             <option value="all">
@@ -190,7 +190,7 @@ export default function Lost() {
         </div>
 
         <div>
-          <label className="text-xs text-sky-300 uppercase">
+          <label className="text-xs font-semibold text-sky-700 uppercase">
             Search Text
           </label>
 
@@ -198,7 +198,7 @@ export default function Lost() {
             type="text"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white"
+            className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none transition-all"
           />
         </div>
 
@@ -208,13 +208,13 @@ export default function Lost() {
 
         {isLoading ? (
 
-          <div className="text-slate-300">
+          <div className="text-slate-600 font-medium">
             Loading lost items...
           </div>
 
         ) : filteredLost.length === 0 ? (
 
-          <div className="text-slate-300">
+          <div className="text-slate-600 font-medium">
             No lost items.
           </div>
 
@@ -223,34 +223,34 @@ export default function Lost() {
           filteredLost.map((loan) => (
             <div
               key={loan.loanId}
-              className="grid grid-cols-1 gap-4 rounded-xl bg-white/5 p-4 outline outline-1 outline-white/10 lg:grid-cols-4"
+              className="grid grid-cols-1 gap-4 rounded-xl bg-slate-50 p-4 border border-slate-200 hover:border-sky-200 transition-colors lg:grid-cols-4"
             >
 
               <div className="lg:col-span-3">
 
-                <div className="text-xl font-bold text-white">
+                <div className="text-xl font-bold text-slate-900">
                   {loan.title}
                 </div>
 
-                <div className="text-slate-400">
+                <div className="text-slate-500 text-sm mt-1">
                   Loan ID: {loan.loanId}
                 </div>
 
-                <div className="text-slate-400">
+                <div className="text-slate-500 text-sm">
                   Item ID: {loan.itemId}
                 </div>
 
-                <div className="text-slate-300 mt-2">
+                <div className="text-slate-700 mt-3 font-medium">
                   Patron: {loan.patronName} ({loan.patronId})
                 </div>
 
-                <div className="text-slate-400">
+                <div className="text-slate-600 text-sm mt-1">
                   Lost Date: {loan.lostDate ? FormatDate(new Date(loan.lostDate), true) : "-"}
                 </div>
 
               </div>
 
-              <div className="flex flex-col gap-2 items-end">
+              <div className="flex flex-col gap-2 items-end justify-center">
 
                 <PrimaryButton
                   title="Found"

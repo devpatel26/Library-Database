@@ -16,6 +16,7 @@ export default function Books() {
   const [selectedImageFile, setSelectedImageFile] = useState(null);
   const [selectedImageName, setSelectedImageName] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
   useEffect(() => {
     async function LoadDropdowns() {
       try {
@@ -34,24 +35,24 @@ export default function Books() {
     }
     LoadDropdowns();
   }, []);
+
   return (
-    <section className="rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
-      <h2 className="text-3xl font-bold text-white">Book Entry</h2>
-      <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
+    <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+      <h2 className="text-3xl font-bold text-slate-900">Book Entry</h2>
+      <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600">
         Enter book information below.
       </p>
-      <div className="flex gap-4 flex-wrap justify-evenly mt-4">
+
+      <div className="mt-8">
         <form
           className="w-full"
           onSubmit={async (e) => {
             e.preventDefault();
-
             const formData = new FormData(e.target);
             let coverImageUrl = "";
 
             try {
               setSubmitting(true);
-
               if (selectedImageFile) {
                 const uploadResult = await UploadImageFile(selectedImageFile);
                 coverImageUrl = String(uploadResult?.url ?? "").trim() || coverImageUrl;
@@ -74,134 +75,118 @@ export default function Books() {
 
               await FetchJson("/api/itementry/book", {
                 method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(bookData),
               });
 
               showSuccess("Book entry successful!");
-              setTimeout(() => {
-                window.location.reload();
-              }, 800);
+              setTimeout(() => { window.location.reload(); }, 800);
             } catch (error) {
-              console.error(error);
               showError(error.message || "Book entry failed.");
             } finally {
               setSubmitting(false);
             }
           }}
         >
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 grid-rows-6 gap-x-6 ">
-              <div className="grid grid-cols-4 gap-x-6">
-                <InputComponent
-                  colspan={2}
-                  pattern="(?=.*\S)[\s\S]{1,45}"
-                  id="title"
-                  label="Book Title"
-                  min={1}
-                  max={45}
-                />
-                <InputComponent
-                  id="available"
-                  label="Copies"
-                  type="number"
-                  min={1}
-                  max={100}
-                />
-                <InputComponent
-                  id="shelfnumber"
-                  label="Shelf Number"
-                  type="number"
-                  min={1}
-                  max={100}
-                />
-              </div>
-              {loading && !error && (
-                <div className="grid grid-cols-3 gap-x-6">
-                  <DisabledDropdown name="genre" />
-                  <DisabledDropdown name="language" />
-                  <DisabledDropdown name="format" />
-                </div>
-              )}
-              {!loading && error && (
-                <div className="rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
-                  {error}
-                </div>
-              )}
-              {!loading && !error && (
-                <div className="grid grid-cols-3 gap-x-6">
-                  <ObjectDropdown name="genre" options={genres} />
-                  <ObjectDropdown name="language" options={languages} />
-                  <ObjectDropdown name="format" options={format} />
-                </div>
-              )}
+          <div className="space-y-6">
+            <div className="grid grid-cols-4 gap-6">
+              <InputComponent
+                colspan={2}
+                pattern="(?=.*\S)[\s\S]{1,45}"
+                id="title"
+                label="Book Title"
+                placeholder="Enter title"
+              />
+              <InputComponent
+                id="available"
+                label="Copies"
+                type="number"
+                placeholder="0"
+              />
+              <InputComponent
+                id="shelfnumber"
+                label="Shelf"
+                type="number"
+                placeholder="No."
+              />
+            </div>
 
-              <div className="grid grid-cols-2 gap-x-6">
-                <InputComponent
-                  pattern="(?=.*\S)[\s\S]{1,30}"
-                  id="authorfirstname"
-                  label="Author First Name"
-                  min={1}
-                  max={30}
-                />
-                <InputComponent
-                  pattern="(?=.*\S)[\s\S]{1,30}"
-                  id="authorlastname"
-                  label="Author Last Name"
-                  min={1}
-                  max={30}
-                />
+            {loading && !error && (
+              <div className="grid grid-cols-3 gap-6">
+                <DisabledDropdown name="genre" />
+                <DisabledDropdown name="language" />
+                <DisabledDropdown name="format" />
               </div>
-              <div className="grid grid-cols-3 gap-x-6">
-                <InputComponent
-                  colspan={2}
-                  pattern="(?=.*\S)[\s\S]{1,50}"
-                  id="publisher"
-                  label="Publisher"
-                  min={1}
-                  max={50}
-                />
+            )}
+            {!loading && error && (
+              <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                {error}
+              </div>
+            )}
+            {!loading && !error && (
+              <div className="grid grid-cols-3 gap-6">
+                <ObjectDropdown name="genre" options={genres} />
+                <ObjectDropdown name="language" options={languages} />
+                <ObjectDropdown name="format" options={format} />
+              </div>
+            )}
 
-                <InputComponent
-                  id="publicationdate"
-                  label="Publication Date"
-                  type="date"
-                />
-              </div>
-              <div>
-                <InputComponent
-                  colspan={3}
-                  pattern="(?=.*\S)[\s\S]{1,1000}"
-                  id="summary"
-                  label="Summary"
-                  type="textarea"
-                  min={1}
-                  max={1000}
-                />
-              </div>
-              <div>
-                <FileUploadField
-                  id="coverImageFile"
-                  label="Upload Cover Image (Optional)"
-                  accept="image/jpeg,image/png,image/webp,image/gif"
-                  selectedFileName={selectedImageName}
-                  onChange={(event) => {
-                    const nextFile = event.target.files?.[0] ?? null;
-                    setSelectedImageFile(nextFile);
-                    setSelectedImageName(nextFile?.name ?? "");
-                  }}
-                />
-              </div>
-              <div className="mt-4 flex justify-center items-center w-full">
-                <SubmitButton
-                  title={submitting ? "Saving..." : "Submit"}
-                  value={"OK"}
-                  halfwidth={true}
-                  disabledValue={submitting}
-                />
-              </div>
+            <div className="grid grid-cols-2 gap-6">
+              <InputComponent
+                id="authorfirstname"
+                label="Author First Name"
+                placeholder="First Name"
+              />
+              <InputComponent
+                id="authorlastname"
+                label="Author Last Name"
+                placeholder="Last Name"
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-6">
+              <InputComponent
+                colspan={2}
+                id="publisher"
+                label="Publisher"
+                placeholder="Publishing Co."
+              />
+              <InputComponent
+                id="publicationdate"
+                label="Publication Date"
+                type="date"
+              />
+            </div>
+
+            <InputComponent
+              colspan={3}
+              id="summary"
+              label="Summary"
+              type="textarea"
+              placeholder="Brief summary of the book..."
+            />
+
+            <div className="rounded-2xl border-2 border-dashed border-slate-200 p-4 bg-slate-50/50">
+              <FileUploadField
+                id="coverImageFile"
+                label="Upload Cover Image (Optional)"
+                accept="image/*"
+                selectedFileName={selectedImageName}
+                onChange={(event) => {
+                  const nextFile = event.target.files?.[0] ?? null;
+                  setSelectedImageFile(nextFile);
+                  setSelectedImageName(nextFile?.name ?? "");
+                }}
+              />
+            </div>
+
+            <div className="pt-4 flex justify-center">
+              <SubmitButton
+                title={submitting ? "Saving..." : "Submit Book"}
+                value={"OK"}
+                halfwidth={true}
+                disabledValue={submitting}
+              />
             </div>
           </div>
         </form>

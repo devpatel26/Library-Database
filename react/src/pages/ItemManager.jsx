@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PrimaryButton, { SecondaryButton } from "../components/Buttons";
-import { FetchJson, GetErrorMessage, ReadStoredUser } from "../api";
+import FileUploadField from "../components/FileUploadField";
+import { FetchJson, GetErrorMessage, ReadStoredUser, UploadImageFile } from "../api";
 import { useMessage } from "../hooks/useMessage";
 
 const inputClassName =
-  "mt-2 block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6";
+  "mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all";
 
 const emptyFormState = {
   title: "",
@@ -83,6 +84,8 @@ export default function ItemManager() {
   const [optionsLoading, setOptionsLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
+  const [selectedImageName, setSelectedImageName] = useState("");
 
   const [selectedItemId, setSelectedItemId] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -223,6 +226,8 @@ export default function ItemManager() {
     if (!selectedItemId) {
       setSelectedItem(null);
       setFormState(emptyFormState);
+      setSelectedImageFile(null);
+      setSelectedImageName("");
       return () => {
         isMounted = false;
       };
@@ -239,10 +244,14 @@ export default function ItemManager() {
 
         setSelectedItem(data);
         setFormState(BuildItemForm(data));
+        setSelectedImageFile(null);
+        setSelectedImageName("");
       } catch (error) {
         if (isMounted) {
           setSelectedItem(null);
           setFormState(emptyFormState);
+          setSelectedImageFile(null);
+          setSelectedImageName("");
           showError(GetErrorMessage(error, "Failed to load item details."));
         }
       } finally {
@@ -302,6 +311,8 @@ export default function ItemManager() {
       return;
     }
 
+    let coverImageUrl = formState.coverImageUrl;
+
     const payload = {
       title: formState.title,
       totalCopies: Number(formState.totalCopies),
@@ -312,7 +323,7 @@ export default function ItemManager() {
       publisher: formState.publisher,
       publicationDate: formState.publicationDate,
       summary: formState.summary,
-      coverImageUrl: formState.coverImageUrl,
+      coverImageUrl,
       authorFirstName: formState.authorFirstName,
       authorLastName: formState.authorLastName,
       runtime: formState.runtime === "" ? null : Number(formState.runtime),
@@ -320,6 +331,13 @@ export default function ItemManager() {
 
     try {
       setSaving(true);
+
+      if (selectedImageFile) {
+        const uploadResult = await UploadImageFile(selectedImageFile);
+        coverImageUrl = String(uploadResult?.url ?? "").trim() || coverImageUrl;
+        payload.coverImageUrl = coverImageUrl;
+      }
+
       await FetchJson(`/api/items/manage/${selectedItem.itemId}`, {
         method: "PUT",
         headers: {
@@ -329,6 +347,8 @@ export default function ItemManager() {
       });
 
       showSuccess("Item updated successfully.");
+      setSelectedImageFile(null);
+      setSelectedImageName("");
       setRefreshKey((current) => current + 1);
     } catch (error) {
       showError(GetErrorMessage(error, "Failed to update item."));
@@ -372,7 +392,7 @@ export default function ItemManager() {
   function RenderSelectField(id, label, value, onChange, options) {
     return (
       <div>
-        <label htmlFor={id} className="text-sm text-slate-200">
+        <label htmlFor={id} className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
           {label}
         </label>
         <select
@@ -382,18 +402,14 @@ export default function ItemManager() {
           className={inputClassName}
           required
         >
-          <option value="" style={{ color: "#0f172a", backgroundColor: "#ffffff" }}>
+          <option value="">
             Select {label}
           </option>
           {options.map((option) => {
             const { valueKey, labelKey } = BuildOptionKeys(option);
 
             return (
-              <option
-                key={option[valueKey]}
-                value={option[valueKey]}
-                style={{ color: "#0f172a", backgroundColor: "#ffffff" }}
-              >
+              <option key={option[valueKey]} value={option[valueKey]}>
                 {option[labelKey]}
               </option>
             );
@@ -406,10 +422,10 @@ export default function ItemManager() {
   return (
     <section className="space-y-6">
       <div>
-        <h2 className="mt-3 text-4xl font-semibold tracking-tight text-white">
+        <h2 className="mt-3 text-4xl font-semibold tracking-tight text-slate-900">
           Manage Items
         </h2>
-        <p className="mt-4 max-w-3xl text-base leading-7 text-slate-300">
+        <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">
           Search the existing inventory, update item details, or delete records that
           have no hold or loan history.
         </p>
@@ -417,10 +433,10 @@ export default function ItemManager() {
 
       <form
         onSubmit={HandleSearchSubmit}
-        className="grid gap-4 rounded-2xl border border-white/10 bg-slate-950/40 p-5 lg:grid-cols-[1.2fr_220px_auto_auto]"
+        className="grid gap-4 rounded-2xl border border-slate-200 bg-white shadow-sm p-6 lg:grid-cols-[1.2fr_220px_auto_auto]"
       >
         <div>
-          <label htmlFor="item-search" className="text-sm text-slate-200">
+          <label htmlFor="item-search" className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
             Search by title, creator, publisher, or summary
           </label>
           <input
@@ -433,7 +449,7 @@ export default function ItemManager() {
         </div>
 
         <div>
-          <label htmlFor="item-category-filter" className="text-sm text-slate-200">
+          <label htmlFor="item-category-filter" className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
             Category
           </label>
           <select
@@ -442,24 +458,11 @@ export default function ItemManager() {
             onChange={(event) => setCategoryFilter(event.target.value)}
             className={inputClassName}
           >
-            <option value="all" style={{ color: "#0f172a", backgroundColor: "#ffffff" }}>
-              All Categories
-            </option>
-            <option value="book" style={{ color: "#0f172a", backgroundColor: "#ffffff" }}>
-              Books
-            </option>
-            <option value="periodical" style={{ color: "#0f172a", backgroundColor: "#ffffff" }}>
-              Periodicals
-            </option>
-            <option
-              value="audiovisualmedia"
-              style={{ color: "#0f172a", backgroundColor: "#ffffff" }}
-            >
-              Audiovisual Media
-            </option>
-            <option value="equipment" style={{ color: "#0f172a", backgroundColor: "#ffffff" }}>
-              Equipment
-            </option>
+            <option value="all">All Categories</option>
+            <option value="book">Books</option>
+            <option value="periodical">Periodicals</option>
+            <option value="audiovisualmedia">Audiovisual Media</option>
+            <option value="equipment">Equipment</option>
           </select>
         </div>
 
@@ -473,19 +476,19 @@ export default function ItemManager() {
       </form>
 
       <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
-        <aside className="rounded-2xl border border-white/10 bg-slate-950/40 p-5">
+        <aside className="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-semibold text-white">Inventory</h3>
-            <span className="text-sm text-slate-400">{items.length}</span>
+            <h3 className="text-xl font-bold text-slate-900">Inventory</h3>
+            <span className="text-sm font-semibold text-slate-500">{items.length} items</span>
           </div>
 
-          {listLoading ? <p className="mt-4 text-slate-300">Loading items...</p> : null}
+          {listLoading ? <p className="mt-4 font-medium text-slate-600">Loading items...</p> : null}
 
           {!listLoading && items.length === 0 ? (
-            <p className="mt-4 text-slate-300">No items match the current filters.</p>
+            <p className="mt-4 font-medium text-slate-600">No items match the current filters.</p>
           ) : null}
 
-          <div className="mt-4 space-y-3">
+          <div className="mt-6 space-y-3">
             {items.map((item) => {
               const isSelected = Number(item.itemId) === Number(selectedItemId);
 
@@ -494,19 +497,19 @@ export default function ItemManager() {
                   key={item.itemId}
                   type="button"
                   onClick={() => setSelectedItemId(item.itemId)}
-                  className={`w-full rounded-2xl border px-4 py-4 text-left transition ${isSelected
-                      ? "border-sky-400/40 bg-sky-400/10"
-                      : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+                  className={`w-full rounded-2xl border px-4 py-4 text-left transition-all ${isSelected
+                      ? "border-sky-200 bg-sky-50 shadow-sm"
+                      : "border-slate-100 bg-white hover:border-slate-300 hover:bg-slate-50"
                     }`}
                 >
-                  <p className="font-semibold text-white">{item.title}</p>
-                  <p className="mt-1 text-sm text-slate-400">
+                  <p className="font-bold text-slate-900">{item.title}</p>
+                  <p className="mt-1 text-sm font-medium text-slate-500">
                     {BuildCategoryLabel(item.category)} · Item #{item.itemId}
                   </p>
-                  <p className="mt-2 text-sm text-slate-300">
+                  <p className="mt-2 text-sm font-medium text-slate-700">
                     Total copies: {item.totalCopies}
                   </p>
-                  <p className="mt-1 text-xs text-slate-400">
+                  <p className="mt-1 text-xs text-slate-500">
                     Available {item.available} · On hold {item.onHold} · Unavailable {item.unavailable}
                   </p>
                 </button>
@@ -515,35 +518,35 @@ export default function ItemManager() {
           </div>
         </aside>
 
-        <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-6">
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-8">
           {!selectedItemId ? (
-            <div className="flex min-h-72 items-center justify-center text-center text-slate-300">
+            <div className="flex min-h-[18rem] items-center justify-center text-center font-medium text-slate-500">
               Choose an item from the left to edit or delete that record.
             </div>
           ) : detailLoading ? (
-            <div className="flex min-h-72 items-center justify-center text-slate-300">
+            <div className="flex min-h-[18rem] items-center justify-center font-medium text-slate-500">
               Loading item details...
             </div>
           ) : !selectedItem ? (
-            <div className="flex min-h-72 items-center justify-center text-slate-300">
+            <div className="flex min-h-[18rem] items-center justify-center font-medium text-slate-500">
               Item details are unavailable.
             </div>
           ) : (
-            <form onSubmit={HandleSave} className="space-y-6">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <form onSubmit={HandleSave} className="space-y-8">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
+                  <p className="text-xs font-bold uppercase tracking-[0.3em] text-sky-700">
                     {BuildCategoryLabel(selectedItem.category)}
                   </p>
-                  <h3 className="mt-2 text-3xl font-semibold text-white">
+                  <h3 className="mt-2 text-3xl font-bold text-slate-900">
                     {selectedItem.title}
                   </h3>
-                  <p className="mt-2 text-sm text-slate-400">
+                  <p className="mt-2 text-sm font-medium text-slate-500">
                     Item #{selectedItem.itemId}
                   </p>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <PrimaryButton
                     title={saving ? "Saving..." : "Save Changes"}
                     type="submit"
@@ -557,26 +560,26 @@ export default function ItemManager() {
                 </div>
               </div>
 
-              <div className="grid gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-300 md:grid-cols-4">
+              <div className="grid gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm text-slate-600 md:grid-cols-4">
                 <div>
-                  <span className="font-semibold text-white">Available:</span> {selectedItem.available}
+                  <span className="font-bold text-slate-900">Available:</span> {selectedItem.available}
                 </div>
                 <div>
-                  <span className="font-semibold text-white">On Hold:</span> {selectedItem.onHold}
+                  <span className="font-bold text-slate-900">On Hold:</span> {selectedItem.onHold}
                 </div>
                 <div>
-                  <span className="font-semibold text-white">Unavailable:</span> {selectedItem.unavailable}
+                  <span className="font-bold text-slate-900">Unavailable:</span> {selectedItem.unavailable}
                 </div>
                 <div>
-                  <span className="font-semibold text-white">Locked Copies:</span> {lockedCopies}
+                  <span className="font-bold text-slate-900">Locked Copies:</span> {lockedCopies}
                 </div>
               </div>
 
-              {optionsLoading ? <p className="text-slate-300">Loading form options...</p> : null}
+              {optionsLoading ? <p className="font-medium text-slate-600">Loading form options...</p> : null}
 
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-6 md:grid-cols-2">
                 <div>
-                  <label htmlFor="title" className="text-sm text-slate-200">
+                  <label htmlFor="title" className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
                     {selectedItem.category === "equipment" ? "Equipment Name" : "Title"}
                   </label>
                   <input
@@ -592,7 +595,7 @@ export default function ItemManager() {
                 </div>
 
                 <div>
-                  <label htmlFor="totalCopies" className="text-sm text-slate-200">
+                  <label htmlFor="totalCopies" className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
                     Total Copies
                   </label>
                   <input
@@ -612,7 +615,7 @@ export default function ItemManager() {
                 {selectedItem.category !== "equipment" ? (
                   <>
                     <div>
-                      <label htmlFor="shelfNumber" className="text-sm text-slate-200">
+                      <label htmlFor="shelfNumber" className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
                         Shelf Number
                       </label>
                       <input
@@ -667,7 +670,7 @@ export default function ItemManager() {
                     )}
 
                     <div>
-                      <label htmlFor="publisher" className="text-sm text-slate-200">
+                      <label htmlFor="publisher" className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
                         Publisher
                       </label>
                       <input
@@ -683,7 +686,7 @@ export default function ItemManager() {
                     </div>
 
                     <div>
-                      <label htmlFor="publicationDate" className="text-sm text-slate-200">
+                      <label htmlFor="publicationDate" className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
                         Publication Date
                       </label>
                       <input
@@ -702,7 +705,7 @@ export default function ItemManager() {
                     {selectedItem.category === "book" ? (
                       <>
                         <div>
-                          <label htmlFor="authorFirstName" className="text-sm text-slate-200">
+                          <label htmlFor="authorFirstName" className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
                             Author First Name
                           </label>
                           <input
@@ -718,7 +721,7 @@ export default function ItemManager() {
                         </div>
 
                         <div>
-                          <label htmlFor="authorLastName" className="text-sm text-slate-200">
+                          <label htmlFor="authorLastName" className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
                             Author Last Name
                           </label>
                           <input
@@ -737,8 +740,8 @@ export default function ItemManager() {
 
                     {selectedItem.category === "audiovisualmedia" ? (
                       <div>
-                        <label htmlFor="runtime" className="text-sm text-slate-200">
-                          Runtime
+                        <label htmlFor="runtime" className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
+                          Runtime (mins)
                         </label>
                         <input
                           id="runtime"
@@ -756,7 +759,7 @@ export default function ItemManager() {
                     ) : null}
 
                     <div className="md:col-span-2">
-                      <label htmlFor="summary" className="text-sm text-slate-200">
+                      <label htmlFor="summary" className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
                         Summary
                       </label>
                       <textarea
@@ -766,8 +769,22 @@ export default function ItemManager() {
                           ...current,
                           summary: event.target.value,
                         }))}
-                        className={`${inputClassName} min-h-32`}
+                        className={`${inputClassName} min-h-32 resize-y`}
                         required
+                      />
+                    </div>
+
+                    <div className="md:col-span-2 space-y-2">
+                      <FileUploadField
+                        id="coverImageFile"
+                        label="Upload Cover Image (Optional)"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        selectedFileName={selectedImageName}
+                        onChange={(event) => {
+                          const nextFile = event.target.files?.[0] ?? null;
+                          setSelectedImageFile(nextFile);
+                          setSelectedImageName(nextFile?.name ?? "");
+                        }}
                       />
                     </div>
                   </>

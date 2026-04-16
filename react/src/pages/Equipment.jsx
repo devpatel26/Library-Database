@@ -5,18 +5,19 @@ import { FetchJson } from "../api";
 export default function Equipment() {
   const { showSuccess, showError } = useMessage();
   return (
-    <section className="rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
-      <h2 className="text-3xl font-bold text-white">
+    <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+      <h2 className="text-3xl font-bold text-slate-900">
         Equipment Entry
       </h2>
-      <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
+      <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600">
         Enter equipment information below.
       </p>
-      <p className="mt-2 max-w-2xl text-sm text-slate-400">
+      <p className="mt-2 max-w-2xl text-sm text-slate-400 italic">
         Image upload is not enabled for equipment yet.
       </p>
-      <div className="flex gap-4 flex-wrap justify-evenly mt-4">
+      <div className="flex gap-4 flex-wrap justify-evenly mt-6">
         <form
+          className="w-full"
           onSubmit={async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
@@ -46,35 +47,37 @@ export default function Equipment() {
           }}
         >
           <div className="space-y-4">
-            <div className="grid grid-cols-4 gap-x-6 ">
+            <div className="grid grid-cols-4 gap-x-6">
               <div className="col-span-2">
-                <label htmlFor="title">
+                <label htmlFor="title" className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">
                   Equipment Name
                 </label>
-                <div className="mt-2">
+                <div>
                   <input
                     required
                     id="title"
                     name="title"
-                    className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                    placeholder="e.g. Sony Camera"
+                    className="block w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-sky-500 transition-all"
                   />
                 </div>
               </div>
               <div className="sm:col-span-1">
-                <label htmlFor="available">
+                <label htmlFor="available" className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">
                   Copies
                 </label>
-                <div className="mt-2">
+                <div>
                   <input
                     required
                     type="number"
                     id="available"
                     name="available"
-                    className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                    placeholder="0"
+                    className="block w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-sky-500 transition-all"
                   />
                 </div>
               </div>
-              <div className=" flex items-end w-full">
+              <div className="flex items-end w-full">
                 <SubmitButton title={"Submit"} value={"OK"} fullwidth={true} />
               </div>
             </div>

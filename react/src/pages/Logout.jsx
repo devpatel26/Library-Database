@@ -17,12 +17,12 @@ export default function Logout() {
   }, [showInfo]);
 
   return (
-    <section className="mx-auto flex w-full max-w-lg flex-col items-center rounded-3xl border border-white/10 bg-slate-900/70 p-8 text-center shadow-2xl shadow-slate-950/30">
-      <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
+    <section className="mx-auto flex w-full max-w-lg flex-col items-center rounded-3xl border border-slate-100 bg-white p-8 text-center shadow-lg">
+      <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-900">
         Logout
       </p >
-      <h1 className="mt-3 text-3xl font-semibold text-white">Logging out...</h1>
-      <p className="mt-4 text-slate-300">
+      <h1 className="mt-3 text-3xl font-semibold text-slate-900">Logging out...</h1>
+      <p className="mt-4 text-slate-600">
         Your session has ended. Redirecting to login page.
       </p >
     </section>

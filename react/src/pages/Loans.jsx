@@ -17,13 +17,13 @@ function LoanHistoryCard({ itemData }) {
   const formattedLoanStart = FormatDate(new Date(itemData.loanStart), true);
   const formattedLoanEnd = FormatDate(new Date(itemData.loanEnd), true);
   return (
-    <div className="rounded-xl bg-white/2 px-3 py-1.5 outline-2 -outline-offset-1 outline-white/6">
+    <div className="rounded-xl bg-slate-50 px-3 py-1.5 outline-2 -outline-offset-1 outline-slate-200">
       <div className="grid grid-cols-4">
         <div className="col-span-3 m-2 flex gap-4">
           <ItemImage itemData={itemData} />
           <ItemHolder data={itemData} />
         </div>
-        <div className="col-span-1 grid grid-rows-3 items-center text-center text-sm text-slate-300">
+        <div className="col-span-1 grid grid-rows-3 items-center text-center text-sm text-slate-600">
           <div>Borrowed: {formattedLoanStart}</div>
           <div>Due: {formattedLoanEnd}</div>
           <div>Status: {itemData.loanStatus ?? "Completed"}</div>
@@ -92,12 +92,12 @@ export default function Loans() {
 
   return (
     <section>
-      <h2 className="mt-3 text-4xl font-semibold tracking-tight text-white">
+      <h2 className="mt-3 text-4xl font-semibold tracking-tight text-slate-900">
         Borrowing
       </h2>
-      <h3 className=" mt-2 text-lg font-semibold text-sky-300">Loans</h3>
-      {loading && <p className="mt-4 text-slate-300">Loading circulation...</p>}
-      {!loading && error && <p className="mt-4 text-rose-300">{error}</p>}
+      <h3 className=" mt-2 text-lg font-semibold text-slate-900">Loans</h3>
+      {loading && <p className="mt-4 text-slate-600">Loading circulation...</p>}
+      {!loading && error && <p className="mt-4 text-rose-600">{error}</p>}
 
       {!loading && !error && (
         <div className="mt-4 space-y-8">

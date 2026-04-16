@@ -10,7 +10,7 @@ export default function PrimaryButton({
         type={type}
         disabled={disabledValue}
         onClick={onClick}
-        className="rounded-md bg-indigo-800 px-3 py-1.5 outline-1 -outline-offset-1 outline-indigo-700 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 m-1 hover:bg-indigo-500 disabled:bg-indigo-1000"
+        className="rounded-xl bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {title}
       </button>
@@ -31,7 +31,7 @@ export function SubmitButton({
         type="submit"
         disabled={disabledValue}
         onClick={onClick}
-        className="w-full rounded-md bg-indigo-800 px-3 py-1.5 outline-1 -outline-offset-1 outline-indigo-700 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 m-1 hover:bg-indigo-500 disabled:bg-indigo-1000"
+        className="w-full rounded-xl bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {title}
       </button>
@@ -46,7 +46,7 @@ export function SecondaryButton({ title, onClick, disabled = false }) {
         type="button"
         disabled={disabled}
         onClick={onClick}
-        className="rounded-md px-3 py-1.5 outline-1 -outline-offset-1 outline-indigo-700 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-900 sm:text-sm/6 m-1 hover:bg-indigo-900 disabled:bg-indigo-1000"
+        className="rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 transition-all hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {title}
       </button>

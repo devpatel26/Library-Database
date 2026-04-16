@@ -142,28 +142,28 @@ export default function StaffLoans() {
   }, [loans, searchBy, searchText]);
 
   return (
-    <section className="mx-auto flex w-full max-w-6xl flex-col rounded-3xl border border-white/10 bg-slate-900/70 p-6 shadow-xl shadow-slate-950/30">
-      <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
+    <section className="mx-auto flex w-full max-w-6xl flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/50">
+      <p className="text-sm font-bold uppercase tracking-[0.3em] text-sky-700">
         Staff
       </p>
 
-      <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">
+      <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-900">
         Current Loans
       </h1>
 
-      <p className="mt-4 text-base leading-7 text-slate-300">
+      <p className="mt-4 text-base leading-7 text-slate-600">
         View all active loans, search by selected fields, and manage returns or lost items.
       </p>
 
       <div className="mt-6 grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+          <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
             Search By
           </label>
           <select
             value={searchBy}
             onChange={(event) => setSearchBy(event.target.value)}
-            className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
+            className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
           >
             <option value="all">
               All
@@ -190,7 +190,7 @@ export default function StaffLoans() {
         </div>
 
         <div>
-          <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+          <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
             Search Text
           </label>
           <input
@@ -198,18 +198,18 @@ export default function StaffLoans() {
             value={searchText}
             onChange={(event) => setSearchText(event.target.value)}
             placeholder="Enter search text..."
-            className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
+            className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
           />
         </div>
       </div>
 
       <div className="mt-6 space-y-4">
         {isLoading ? (
-          <div className="text-slate-300">
+          <div className="text-slate-600 font-medium">
             Loading loans...
           </div>
         ) : filteredLoans.length === 0 ? (
-          <div className="text-slate-300">
+          <div className="text-slate-600 font-medium">
             No matching current loans found.
           </div>
         ) : (
@@ -221,36 +221,36 @@ export default function StaffLoans() {
             return (
               <div
                 key={loan.loanId}
-                className="grid grid-cols-1 gap-4 rounded-xl bg-white/5 p-4 outline outline-1 outline-white/10 lg:grid-cols-4"
+                className="grid grid-cols-1 gap-4 rounded-xl bg-slate-50 p-4 border border-slate-200 hover:border-sky-200 transition-colors lg:grid-cols-4"
               >
                 <div className="lg:col-span-3">
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                    <div className="text-xl font-bold text-white">
+                    <div className="text-xl font-bold text-slate-900">
                       {loan.title}
                     </div>
-                    <div className="text-sm text-slate-400">
+                    <div className="text-sm text-slate-500">
                       Loan ID: {loan.loanId}
                     </div>
-                    <div className="text-sm text-slate-400">
+                    <div className="text-sm text-slate-500">
                       Item ID: {loan.itemId}
                     </div>
                   </div>
 
                   {loan.creator ? (
-                    <div className="mt-1 text-sky-300">
+                    <div className="mt-1 font-medium text-sky-700">
                       {loan.creator}
                     </div>
                   ) : null}
 
-                  <div className="mt-2 text-slate-300">
+                  <div className="mt-3 font-medium text-slate-700">
                     Borrowed by: {loan.patronName} (Patron ID: {loan.patronId})
                   </div>
 
-                  <div className="mt-1 text-slate-400">
+                  <div className="mt-1 text-sm text-slate-600">
                     Loan date: {loan.loanStart ? FormatDate(new Date(loan.loanStart), true) : "-"}
                   </div>
 
-                  <div className="text-slate-400">
+                  <div className="text-sm text-slate-600">
                     Due date: {loan.loanEnd ? FormatDate(new Date(loan.loanEnd), true) : "-"}
                   </div>
                 </div>

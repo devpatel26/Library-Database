@@ -30,17 +30,21 @@ export default function ItemEntry() {
 
   return (
     <div className="flex flex-col gap-8 lg:flex-row">
-      <aside className="rounded-3xl border border-white/10 bg-slate-900/70 p-6 shadow-xl shadow-slate-950/30 lg:sticky lg:top-8 lg:w-72 lg:self-start">
-        <nav className="space-y-2">
+      {/* Sidebar - Updated to match light theme */}
+      <aside className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm lg:sticky lg:top-8 lg:w-72 lg:self-start">
+        <h2 className="mb-4 px-3 text-xs font-bold uppercase tracking-widest text-slate-400">
+          Navigation
+        </h2>
+        <nav className="space-y-1">
           {navLinks.map((link) => (
             <NavLink
               key={link.to}
               to={link.to}
               className={({ isActive }) =>
-                `block rounded-md px-3 py-2 text-sm transition ${
+                `block rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${
                   isActive
-                    ? "bg-sky-400/10 text-white"
-                    : "text-slate-200 hover:bg-slate-800 hover:text-white"
+                    ? "bg-sky-50 text-sky-700 shadow-sm"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-sky-600"
                 }`
               }
             >
@@ -49,11 +53,20 @@ export default function ItemEntry() {
           ))}
         </nav>
       </aside>
-      <main className="flex-1 space-y-8 rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">
-          Item Entry
-        </h1>
-        <Outlet />
+
+      {/* Main Content Area */}
+      <main className="flex-1 space-y-6">
+        <div className="mb-2">
+          <h1 className="text-4xl font-bold tracking-tight text-slate-900">
+            Item Entry
+          </h1>
+          <p className="text-slate-500 mt-1">Add or manage library inventory.</p>
+        </div>
+        
+        {/* The Outlet renders the individual form pages (Books, Equipment, etc.) */}
+        <div className="w-full">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

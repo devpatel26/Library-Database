@@ -14,44 +14,45 @@ export default function AccountHolds() {
   return (
     <div className="space-y-6">
 
-      <h1 className="text-3xl font-semibold text-white">
+      <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">
         My Holds
       </h1>
 
-      <div className="rounded-xl bg-slate-900 border border-slate-700">
+      {/* Added overflow-hidden so the table headers respect the rounded corners */}
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
 
-        <table className="w-full text-sm">
+        <table className="w-full text-sm text-left">
 
-          <thead className="bg-slate-800 text-slate-300">
+          <thead className="bg-slate-50 text-slate-700 border-b border-slate-200">
             <tr>
-              <th className="p-3 text-left">
+              <th className="p-4 font-semibold">
                 Hold ID
               </th>
-              <th className="p-3 text-left">
+              <th className="p-4 font-semibold">
                 Item
               </th>
-              <th className="p-3 text-left">
+              <th className="p-4 font-semibold">
                 Creator
               </th>
-              <th className="p-3 text-left">
+              <th className="p-4 font-semibold">
                 Start
               </th>
-              <th className="p-3 text-left">
+              <th className="p-4 font-semibold">
                 Expire
               </th>
             </tr>
           </thead>
 
-          <tbody>
+          <tbody className="divide-y divide-slate-100">
 
             {holds.map((h) => (
-              <tr key={h.holdId} className="border-t border-slate-700">
+              <tr key={h.holdId} className="hover:bg-slate-50 transition-colors text-slate-600">
 
-                <td className="p-3">{h.holdId}</td>
-                <td className="p-3">{h.title}</td>
-                <td className="p-3">{h.creator}</td>
-                <td className="p-3">{h.holdStart}</td>
-                <td className="p-3">{h.holdEnd}</td>
+                <td className="p-4 font-medium text-[#244c5a]">{h.holdId}</td>
+                <td className="p-4 font-medium text-slate-900">{h.title}</td>
+                <td className="p-4">{h.creator}</td>
+                <td className="p-4">{h.holdStart}</td>
+                <td className="p-4">{h.holdEnd}</td>
 
               </tr>
             ))}
