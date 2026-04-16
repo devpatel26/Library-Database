@@ -1,9 +1,7 @@
 import { SubmitButton } from "../components/Buttons";
-import { useMessage } from "../hooks/useMessage";
-// import languages, { bookformats, genres } from "../data/dummy/formdropdowns";
-
 import { ObjectDropdown, DisabledDropdown } from "../components/Dropdown";
 import { FetchJson, GetErrorMessage, UploadImageFile } from "../api";
+import { useMessage } from "../hooks/useMessage";
 import { useEffect, useState } from "react";
 import FileUploadField from "../components/FileUploadField";
 
@@ -17,6 +15,7 @@ export default function Periodicals() {
   const [selectedImageFile, setSelectedImageFile] = useState(null);
   const [selectedImageName, setSelectedImageName] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
   useEffect(() => {
     async function LoadDropdowns() {
       try {
@@ -35,18 +34,19 @@ export default function Periodicals() {
     }
     LoadDropdowns();
   }, []);
+
   return (
-    <section className="rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
-      <h2 className="text-3xl font-bold text-white">Periodical Entry</h2>
-      <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
+    <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+      <h2 className="text-3xl font-bold text-slate-900">Periodical Entry</h2>
+      <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600">
         Enter periodical information below.
       </p>
-      <div className="flex gap-4 flex-wrap justify-evenly mt-4">
+
+      <div className="mt-8">
         <form
           className="w-full"
           onSubmit={async (e) => {
             e.preventDefault();
-
             const formData = new FormData(e.target);
             let coverImageUrl = "";
 
@@ -56,43 +56,34 @@ export default function Periodicals() {
             const available = formData.get("available");
             const shelfnumber = formData.get("shelfnumber");
 
-            if (
-              !title ||
-              !publisher ||
-              !publicationdate ||
-              !available ||
-              !shelfnumber
-            ) {
+            if (!title || !publisher || !publicationdate || !available || !shelfnumber) {
               showWarning("Please fill in all required fields.");
               return;
             }
 
             try {
               setSubmitting(true);
-
               if (selectedImageFile) {
                 const uploadResult = await UploadImageFile(selectedImageFile);
                 coverImageUrl = String(uploadResult?.url ?? "").trim() || coverImageUrl;
               }
 
               const periodicalData = {
-                title: formData.get("title"),
-                available: formData.get("available"),
-                shelfnumber: formData.get("shelfnumber"),
+                title,
+                available,
+                shelfnumber,
                 genre: formData.get("genre"),
                 language: formData.get("language"),
                 format: formData.get("format"),
-                publisher: formData.get("publisher"),
-                publicationdate: formData.get("publicationdate"),
+                publisher,
+                publicationdate,
                 summary: formData.get("summary"),
                 coverImageUrl,
               };
 
               await FetchJson("/api/itementry/periodical", {
                 method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(periodicalData),
               });
 
@@ -101,143 +92,142 @@ export default function Periodicals() {
               setSelectedImageFile(null);
               setSelectedImageName("");
             } catch (error) {
-              console.error(error);
               showError(error.message || "Periodical entry failed.");
             } finally {
               setSubmitting(false);
             }
           }}
         >
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 grid-rows-5 gap-x-6 ">
-              <div className="grid grid-cols-4 gap-x-6">
-                <div className="sm:col-span-2">
-                  <label htmlFor="title">
-                    Title
-                  </label>
-                  <div className="mt-2">
-                    <input
-                      required
-                      id="title"
-                      name="title"
-                      className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
-                    />
-                  </div>
-                </div>
-                <div className="sm:col-span-1">
-                  <label htmlFor="available">
-                    Copies
-                  </label>
-                  <div className="mt-2">
-                    <input
-                      required
-                      type="number"
-                      id="available"
-                      name="available"
-                      className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
-                    />
-                  </div>
-                </div>
-                <div className="sm:col-span-1">
-                  <label htmlFor="shelfnumber">
-                    Shelf Number
-                  </label>
-                  <div className="mt-2">
-                    <input
-                      required
-                      type="number"
-                      id="shelfnumber"
-                      name="shelfnumber"
-                      className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
-                    />
-                  </div>
-                </div>
+          <div className="space-y-6">
+            {/* Header Grid */}
+            <div className="grid grid-cols-4 gap-6">
+              <div className="col-span-2">
+                <label htmlFor="title" className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">
+                  Title
+                </label>
+                <input
+                  required
+                  id="title"
+                  name="title"
+                  placeholder="Periodical Title"
+                  className="block w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-sky-500 transition-all"
+                />
               </div>
+              <div className="col-span-1">
+                <label htmlFor="available" className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">
+                  Copies
+                </label>
+                <input
+                  required
+                  type="number"
+                  id="available"
+                  name="available"
+                  placeholder="0"
+                  className="block w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-sky-500 transition-all"
+                />
+              </div>
+              <div className="col-span-1">
+                <label htmlFor="shelfnumber" className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">
+                  Shelf
+                </label>
+                <input
+                  required
+                  type="number"
+                  id="shelfnumber"
+                  name="shelfnumber"
+                  placeholder="No."
+                  className="block w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-sky-500 transition-all"
+                />
+              </div>
+            </div>
 
-              {loading && !error && (
-                <div className="grid grid-cols-3 gap-x-6">
-                  <DisabledDropdown name="genre" />
-                  <DisabledDropdown name="language" />
-                  <DisabledDropdown name="format" />
-                </div>
-              )}
-              {!loading && error && (
-                <div className="rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
-                  {error}
-                </div>
-              )}
-              {!loading && !error && (
-                <div className="grid grid-cols-3 gap-x-6">
-                  <ObjectDropdown name="genre" options={genres} />
-                  <ObjectDropdown name="language" options={languages} />
-                  <ObjectDropdown name="format" options={format} />
-                </div>
-              )}
-              <div className="grid grid-cols-3 gap-x-6">
-                <div className="col-span-2">
-                  <label htmlFor="publisher">
-                    Publisher
-                  </label>
-                  <div className="mt-2">
-                    <input
-                      required
-                      id="publisher"
-                      name="publisher"
-                      className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
-                    />
-                  </div>
-                </div>
-                <div className="col-span-1">
-                  <label htmlFor="publicationdate">
-                    Publication Date
-                  </label>
-                  <div className="mt-2">
-                    <input
-                      required
-                      id="publicationdate"
-                      name="publicationdate"
-                      type="date"
-                      className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
-                    />
-                  </div>
-                </div>
+            {/* Dropdowns */}
+            {loading && !error && (
+              <div className="grid grid-cols-3 gap-6">
+                <DisabledDropdown name="genre" />
+                <DisabledDropdown name="language" />
+                <DisabledDropdown name="format" />
               </div>
-              <div>
-                <FileUploadField
-                  id="coverImageFile"
-                  label="Upload Cover Image (Optional)"
-                  accept="image/jpeg,image/png,image/webp,image/gif"
-                  selectedFileName={selectedImageName}
-                  onChange={(event) => {
-                    const nextFile = event.target.files?.[0] ?? null;
-                    setSelectedImageFile(nextFile);
-                    setSelectedImageName(nextFile?.name ?? "");
-                  }}
+            )}
+            {!loading && error && (
+              <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                {error}
+              </div>
+            )}
+            {!loading && !error && (
+              <div className="grid grid-cols-3 gap-6">
+                <ObjectDropdown name="genre" options={genres} />
+                <ObjectDropdown name="language" options={languages} />
+                <ObjectDropdown name="format" options={format} />
+              </div>
+            )}
+
+            {/* Publisher Info */}
+            <div className="grid grid-cols-3 gap-6">
+              <div className="col-span-2">
+                <label htmlFor="publisher" className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">
+                  Publisher
+                </label>
+                <input
+                  required
+                  id="publisher"
+                  name="publisher"
+                  placeholder="Publishing Co."
+                  className="block w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-sky-500 transition-all"
                 />
               </div>
-              <div>
-                <div className="sm:col-span-3">
-                  <label htmlFor="summary">
-                    Summary
-                  </label>
-                  <div className="mt-2">
-                    <textarea
-                      required
-                      id="summary"
-                      name="summary"
-                      className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="mt-4 flex justify-center items-center w-full">
-                <SubmitButton
-                  title={submitting ? "Saving..." : "Submit"}
-                  value={"OK"}
-                  halfwidth={true}
-                  disabledValue={submitting}
+              <div className="col-span-1">
+                <label htmlFor="publicationdate" className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">
+                  Release Date
+                </label>
+                <input
+                  required
+                  id="publicationdate"
+                  name="publicationdate"
+                  type="date"
+                  className="block w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-sky-500 transition-all"
                 />
               </div>
+            </div>
+
+            {/* File Upload */}
+            <div className="rounded-2xl border-2 border-dashed border-slate-200 p-4 bg-slate-50/50">
+              <FileUploadField
+                id="coverImageFile"
+                label="Cover Image"
+                accept="image/*"
+                selectedFileName={selectedImageName}
+                onChange={(event) => {
+                  const nextFile = event.target.files?.[0] ?? null;
+                  setSelectedImageFile(nextFile);
+                  setSelectedImageName(nextFile?.name ?? "");
+                }}
+              />
+            </div>
+
+            {/* Summary */}
+            <div>
+              <label htmlFor="summary" className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">
+                Summary
+              </label>
+              <textarea
+                required
+                id="summary"
+                name="summary"
+                rows="3"
+                placeholder="Brief description..."
+                className="block w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-sky-500 transition-all"
+              />
+            </div>
+
+            {/* Submit */}
+            <div className="pt-4 flex justify-center">
+              <SubmitButton
+                title={submitting ? "Processing..." : "Submit Periodical"}
+                value={"OK"}
+                halfwidth={true}
+                disabledValue={submitting}
+              />
             </div>
           </div>
         </form>

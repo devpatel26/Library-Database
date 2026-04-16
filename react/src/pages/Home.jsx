@@ -47,22 +47,22 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/70 p-6 shadow-xl shadow-slate-950/30">
-      <h1 className="text-3xl font-semibold tracking-tight text-white">
+    <div className="relative overflow-hidden rounded-3xl border border-slate-100 bg-white p-6 shadow-lg">
+      <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
         {welcomeName}
       </h1>
-      <p className="mt-2 text-sm text-slate-300">
+      <p className="mt-2 text-sm text-slate-600">
         Browse the latest additions across the collection.
       </p>
 
       <div className="mt-8 space-y-12">
         <section>
-          <h2 className="text-lg font-semibold text-sky-300">Recent Books</h2>
+          <h2 className="text-lg font-semibold text-slate-900">Recent Books</h2>
           <div className="mt-5 flex flex-wrap justify-center gap-8">
             {loading && (
-              <p className="mt-4 text-slate-300">Loading circulation...</p>
+              <p className="mt-4 text-slate-600">Loading circulation...</p>
             )}
-            {!loading && error && <p className="mt-4 text-rose-300">{error}</p>}
+            {!loading && error && <p className="mt-4 text-rose-600">{error}</p>}
             {!loading && !error && (
               <div className="mt-4 space-y-8">
                 <div>
@@ -81,14 +81,14 @@ export default function Home() {
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold text-sky-300">
+          <h2 className="text-lg font-semibold text-slate-900">
             Recent Periodicals
           </h2>
           <div className="mt-5 flex flex-wrap justify-center gap-8">
             {loading && (
-              <p className="mt-4 text-slate-300">Loading circulation...</p>
+              <p className="mt-4 text-slate-600">Loading circulation...</p>
             )}
-            {!loading && error && <p className="mt-4 text-rose-300">{error}</p>}
+            {!loading && error && <p className="mt-4 text-rose-600">{error}</p>}
             {!loading && !error && (
               <div className="mt-4 space-y-8">
                 <div>
@@ -107,14 +107,14 @@ export default function Home() {
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold text-sky-300">
+          <h2 className="text-lg font-semibold text-slate-900">
             Recent Audiovisual Media
           </h2>
           <div className="mt-5 flex flex-wrap justify-center gap-8">
             {loading && (
-              <p className="mt-4 text-slate-300">Loading circulation...</p>
+              <p className="mt-4 text-slate-600">Loading circulation...</p>
             )}
-            {!loading && error && <p className="mt-4 text-rose-300">{error}</p>}
+            {!loading && error && <p className="mt-4 text-rose-600">{error}</p>}
             {!loading && !error && (
               <div className="mt-4 space-y-8">
                 <div>
@@ -133,14 +133,14 @@ export default function Home() {
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold text-sky-300">
+          <h2 className="text-lg font-semibold text-slate-900">
             Recent Equipment
           </h2>
           <div className="mt-5 flex flex-wrap justify-center gap-8">
             {loading && (
-              <p className="mt-4 text-slate-300">Loading circulation...</p>
+              <p className="mt-4 text-slate-600">Loading circulation...</p>
             )}
-            {!loading && error && <p className="mt-4 text-rose-300">{error}</p>}
+            {!loading && error && <p className="mt-4 text-rose-600">{error}</p>}
             {!loading && !error && (
               <div className="mt-4 space-y-8">
                 <div>

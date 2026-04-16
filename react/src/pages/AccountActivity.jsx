@@ -17,28 +17,29 @@ function FormatActivityDate(value) {
   }).format(parsedDate);
 }
 
+// Updated to use light-theme badge colors!
 function GetStatusClass(status) {
   if (status === "Paid") {
-    return "bg-emerald-400/10 text-emerald-300";
+    return "bg-emerald-100 text-emerald-800 border-emerald-200";
   }
 
   if (status === "Waived") {
-    return "bg-sky-400/10 text-sky-300";
+    return "bg-slate-100 text-slate-800 border-slate-200";
   }
 
   if (status === "Overdue" || status === "Fine") {
-    return "bg-rose-400/10 text-rose-300";
+    return "bg-rose-100 text-rose-800 border-rose-200";
   }
 
   if (status === "Ready for pickup" || status === "Hold" || status === "Ready") {
-    return "bg-amber-400/10 text-amber-300";
+    return "bg-amber-100 text-amber-800 border-amber-200";
   }
 
   if (status === "New") {
-    return "bg-sky-400/10 text-sky-300";
+    return "bg-blue-100 text-blue-800 border-blue-200";
   }
 
-  return "bg-white/10 text-slate-200";
+  return "bg-slate-100 text-slate-600 border-slate-200";
 }
 
 export default function AccountActivity() {
@@ -88,54 +89,56 @@ export default function AccountActivity() {
   return (
     <section className="space-y-6">
       <div>
-        <h2 className="mt-3 text-4xl font-semibold tracking-tight text-white">
+        <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">
           Account Activity
         </h2>
       </div>
 
-      {loading ? <p className="text-slate-300">Loading activity...</p> : null}
-      {!loading && error ? <p className="text-rose-300">{error}</p> : null}
+      {loading ? <p className="text-slate-500 font-medium">Loading activity...</p> : null}
+      {!loading && error ? <p className="text-rose-600 font-medium">{error}</p> : null}
 
       {!loading && !error ? (
         <div className="space-y-4">
           {activities.length === 0 ? (
-            <p className="text-slate-300">No account activity found.</p>
+            <p className="text-slate-500">No account activity found.</p>
           ) : (
             activities.map((activity) => (
               <article
                 key={activity.activityId}
-                className="rounded-2xl border border-white/10 bg-slate-950/40 p-5"
+                className="rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm transition-all hover:shadow-md"
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.25em] text-sky-300">
+                    <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#244c5a]">
                       {activity.activityType}
                     </p>
-                    <h2 className="mt-1 text-xl font-semibold text-white">
+                    <h3 className="mt-1 text-xl font-bold text-slate-900">
                       {activity.headline}
-                    </h2>
+                    </h3>
                     {activity.title ? (
-                      <p className="mt-3 text-base text-slate-100">
+                      <p className="mt-2 text-base font-medium text-slate-800">
                         {activity.title}
                       </p>
                     ) : null}
                     {activity.creator ? (
-                      <p className="text-sm text-sky-300">{activity.creator}</p>
+                      <p className="mt-1 text-sm font-medium text-[#244c5a]">
+                        {activity.creator}
+                      </p>
                     ) : null}
                     {activity.detail ? (
-                      <p className="mt-2 text-sm text-slate-300">
+                      <p className="mt-2 text-sm text-slate-600">
                         {activity.detail}
                       </p>
                     ) : null}
                   </div>
 
                   <div className="flex flex-col items-start gap-2 sm:items-end">
-                    <p className="text-sm text-slate-300">
+                    <p className="text-sm font-medium text-slate-500">
                       {FormatActivityDate(activity.activityDate)}
                     </p>
                     {activity.status ? (
                       <span
-                        className={`rounded-full px-3 py-1 text-xs font-medium ${GetStatusClass(activity.status)}`}
+                        className={`rounded-full border px-3 py-1 text-xs font-semibold ${GetStatusClass(activity.status)}`}
                       >
                         {activity.status}
                       </span>

@@ -183,45 +183,36 @@ export default function Fines() {
 
   return (
     <section>
-      <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">
+      <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-900">
         Fines
       </h1>
 
       {!loading && !error ? (
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
-            <h3 className="text-lg font-bold  text-sky-300">Open Balance</h3>
-            <p className="mt-2 text-2xl font-semibold text-white">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <h3 className="text-lg font-bold text-slate-900">Open Balance</h3>
+            <p className="mt-2 text-2xl font-semibold text-slate-900">
               {FormatMoney(outstandingBalance)}
             </p>
           </div>
 
-          {/* <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
-            <p className="text-xs uppercase tracking-[0.25em] text-sky-300">
-              Paid So Far
-            </p>
-            <p className="mt-2 text-2xl font-semibold text-white">
-              {FormatMoney(totalPaid)}
-            </p>
-          </div> */}
-
-          <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
-            <h3 className="text-lg font-bold  text-sky-300">Fine Records</h3>
-            <p className="mt-2 text-2xl font-semibold text-white">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <h3 className="text-lg font-bold text-slate-900">Fine Records</h3>
+            <p className="mt-2 text-2xl font-semibold text-slate-900">
               {fines.length}
             </p>
           </div>
         </div>
       ) : null}
 
-      {loading ? <p className="mt-6 text-slate-300">Loading fines...</p> : null}
+      {loading ? <p className="mt-6 text-slate-600 font-medium">Loading fines...</p> : null}
 
-      {!loading && error ? <p className="mt-6 text-rose-300">{error}</p> : null}
+      {!loading && error ? <p className="mt-6 text-rose-600 font-medium">{error}</p> : null}
 
       {!loading && !error ? (
         <div className="mt-6 flex flex-col gap-4">
           {fines.length === 0 ? (
-            <p className="text-slate-300">No fines found.</p>
+            <p className="text-slate-600 font-medium">No fines found.</p>
           ) : (
             fines.map((fine) => {
               const status = NormalizeStatus(fine);
@@ -236,22 +227,22 @@ export default function Fines() {
               return (
                 <div
                   key={fine.fineId}
-                  className="rounded-2xl border border-white/10 bg-slate-950/40 p-5"
+                  className={`rounded-2xl border transition-all duration-300 p-5 ${isExpanded ? 'border-sky-300 bg-slate-50 shadow-md shadow-sky-100' : 'border-slate-200 bg-slate-50 hover:border-sky-200'}`}
                 >
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="space-y-2">
-                      <div className="text-sm text-slate-400">
+                      <div className="text-sm font-semibold text-slate-500">
                         Fine ID #{fine.fineId}
                       </div>
 
-                      <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-300">
+                      <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium text-slate-900">
                         <span>Total: {FormatMoney(fineAmount)}</span>
                         <span>Paid: {FormatMoney(paidAmount)}</span>
-                        <span>Remaining: {FormatMoney(remainingAmount)}</span>
+                        <span className={remainingAmount > 0 ? "text-rose-600" : ""}>Remaining: {FormatMoney(remainingAmount)}</span>
                         <span>Status: {status}</span>
                       </div>
 
-                      <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-400">
+                      <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-600">
                         {fine.assignedDate ? (
                           <span>
                             Assigned: {FormatDateValue(fine.assignedDate)}
@@ -277,7 +268,7 @@ export default function Fines() {
                         <button
                           type="button"
                           onClick={() => OpenPaymentBox(fine)}
-                          className="rounded-full border border-sky-400/30 bg-sky-500/10 px-4 py-2 text-sm font-medium text-sky-200 transition hover:border-sky-300 hover:bg-sky-500/20"
+                          className="rounded-full border border-[#244c5a]/30 bg-[#244c5a]/10 px-4 py-2 text-sm font-medium text-[#244c5a] transition hover:border-[#244c5a] hover:bg-[#244c5a]/20"
                         >
                           Pay Fine
                         </button>
@@ -285,7 +276,7 @@ export default function Fines() {
                         <button
                           type="button"
                           disabled
-                          className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-500"
+                          className="rounded-full border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-medium text-slate-500"
                         >
                           {status === "Waived" ? "Waived" : "Paid"}
                         </button>
@@ -294,10 +285,10 @@ export default function Fines() {
                   </div>
 
                   {isExpanded ? (
-                    <div className="mt-4 rounded-2xl border border-white/10 bg-slate-900/70 p-4">
-                      <p className="text-sm text-slate-300">
+                    <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                      <p className="text-sm font-medium text-slate-600">
                         Enter payment amount up to{" "}
-                        {FormatMoney(remainingAmount)}.
+                        <span className="text-slate-900 font-bold">{FormatMoney(remainingAmount)}</span>.
                       </p>
 
                       <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -310,7 +301,7 @@ export default function Fines() {
                             setPaymentAmount(event.target.value)
                           }
                           placeholder="Payment amount"
-                          className="w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-2 text-white outline-none focus:border-sky-400 sm:max-w-xs"
+                          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-slate-900 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all sm:max-w-xs"
                         />
 
                         <div className="flex gap-2">
@@ -318,7 +309,7 @@ export default function Fines() {
                             type="button"
                             onClick={() => PayFine(fine)}
                             disabled={isPending}
-                            className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-200 transition hover:border-emerald-300 hover:bg-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
                           >
                             {isPending ? "Processing..." : "Confirm Payment"}
                           </button>
@@ -327,7 +318,7 @@ export default function Fines() {
                             type="button"
                             onClick={ClosePaymentBox}
                             disabled={isPending}
-                            className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
                           >
                             Cancel
                           </button>

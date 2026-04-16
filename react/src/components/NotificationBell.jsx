@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // NEW: Imported useNavigate
+import { useNavigate } from 'react-router-dom';
 import { FetchJson } from "../api"; 
 
 // Helper function to format dates
@@ -19,40 +19,32 @@ const NotificationBell = () => {
   const [readIds, setReadIds] = useState([]); 
   
   const dropdownRef = useRef(null);
-  const navigate = useNavigate(); // NEW: Initialize the navigate function
+  const navigate = useNavigate();
 
-  // 1. Load read notification IDs from local storage when component loads
   useEffect(() => {
     const storedReadIds = JSON.parse(localStorage.getItem('readNotifications') || '[]');
     setReadIds(storedReadIds);
   }, []);
 
-  // 2. Fetch the activity data AND new notifications from triggers
   useEffect(() => {
     let isMounted = true;
 
     const fetchActivities = async () => {
       try {
         setIsLoading(true);
-        console.log("🔄 Fetching account activity...");
         const data = await FetchJson("/api/account/activity"); 
-        console.log("✅ Account activity fetched:", data);
         
-        // Also fetch new notifications from triggers
         let newNotifications = [];
         try {
-          console.log("🔔 Attempting to fetch notifications from /api/notifications?limit=50");
           newNotifications = await FetchJson("/api/notifications?limit=50");
-          console.log("✅ Fetched notifications from /api/notifications:", newNotifications);
         } catch (notifError) {
-          console.error("❌ Failed to fetch notifications - Error details:", notifError);
+          console.error("🔔 Notification fetch failed", notifError);
           newNotifications = [];
         }
         
         if (isMounted && Array.isArray(data)) {
-          // Combine both sources: account activity + new trigger notifications
           const combinedData = [
-            ...data.slice(0, 10), // Keep original account activity
+            ...data.slice(0, 10),
             ...(Array.isArray(newNotifications) ? newNotifications.map(notif => ({
               activityId: `notif_${notif.notification_id}`,
               headline: notif.notification_type,
@@ -66,9 +58,7 @@ const NotificationBell = () => {
             })) : [])
           ];
           
-          console.log("📦 Combined notifications count:", combinedData.length);
-          console.log("📦 Combined data:", combinedData);
-          setNotifications(combinedData.slice(0, 15)); // Show top 15 combined
+          setNotifications(combinedData.slice(0, 15));
         }
       } catch (error) {
         console.error("❌ Error in fetchActivities:", error);
@@ -78,13 +68,7 @@ const NotificationBell = () => {
     };
 
     fetchActivities();
-    
-    // Poll every 10 seconds for new notifications
-    const interval = setInterval(() => {
-      if (isMounted) {
-        fetchActivities();
-      }
-    }, 10000);
+    const interval = setInterval(() => { if (isMounted) fetchActivities(); }, 10000);
     
     return () => { 
       isMounted = false;
@@ -92,7 +76,6 @@ const NotificationBell = () => {
     };
   }, []);
 
-  // 3. Close dropdown when clicking outside of it
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -103,36 +86,26 @@ const NotificationBell = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // 4. Calculate unread count
   const unreadCount = notifications.filter(n => !readIds.includes(n.activityId)).length;
 
-  // 5. Mark all as read function
   const markAllAsRead = (e) => {
-    e.stopPropagation(); // Prevents the dropdown from closing if clicking this
+    e.stopPropagation();
     const allIds = notifications.map(n => n.activityId);
     const newReadIds = [...new Set([...readIds, ...allIds])];
-    
     setReadIds(newReadIds);
     localStorage.setItem('readNotifications', JSON.stringify(newReadIds));
   };
 
-  // NEW: 6. Handle clicking a single notification
   const handleNotificationClick = (activityId) => {
-    // Mark this specific item as read if it isn't already
     if (!readIds.includes(activityId)) {
       const newReadIds = [...readIds, activityId];
       setReadIds(newReadIds);
       localStorage.setItem('readNotifications', JSON.stringify(newReadIds));
     }
-    
-    // Close the dropdown
     setIsOpen(false);
-    
-    // Navigate to the Account Activity page
     navigate('/account/activity');
   };
 
-  // NEW: 7. Handle clicking "View all activity"
   const handleViewAllClick = () => {
     setIsOpen(false);
     navigate('/account/activity');
@@ -143,7 +116,7 @@ const NotificationBell = () => {
       {/* Bell Button */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-slate-400 hover:text-white focus:outline-none transition-colors duration-200"
+        className="relative p-2 text-slate-500 hover:text-sky-600 transition-colors duration-200"
       >
         <svg 
           xmlns="http://www.w3.org/2000/svg" 
@@ -157,7 +130,7 @@ const NotificationBell = () => {
 
         {/* Unread Badge */}
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-red-500 rounded-full border-2 border-slate-950">
+          <span className="absolute top-1 right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-red-500 rounded-full border-2 border-white">
             {unreadCount}
           </span>
         )}
@@ -165,22 +138,22 @@ const NotificationBell = () => {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50 overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 bg-slate-900 border-b border-slate-700">
-            <h3 className="text-sm font-semibold text-slate-200">Recent Activity</h3>
+        <div className="absolute right-0 mt-3 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 bg-slate-50 border-b border-slate-100">
+            <h3 className="text-sm font-bold text-slate-900">Recent Activity</h3>
             {unreadCount > 0 && (
               <button 
                 onClick={markAllAsRead}
-                className="text-xs text-sky-400 hover:text-sky-300 focus:outline-none"
+                className="text-xs font-bold text-sky-600 hover:text-sky-700 transition-colors"
               >
                 Mark all as read
               </button>
             )}
           </div>
           
-          <div className="max-h-80 overflow-y-auto custom-scrollbar">
+          <div className="max-h-80 overflow-y-auto overflow-x-hidden">
             {isLoading ? (
-               <div className="px-4 py-6 text-center text-sm text-slate-400">
+               <div className="px-4 py-8 text-center text-sm font-medium text-slate-500">
                  Loading activity...
                </div>
             ) : notifications.length > 0 ? (
@@ -190,44 +163,43 @@ const NotificationBell = () => {
                 return (
                   <div 
                     key={notification.activityId} 
-                    onClick={() => handleNotificationClick(notification.activityId)} // NEW: Added click handler here
-                    className={`px-4 py-3 border-b border-slate-700 hover:bg-slate-700 transition-colors duration-150 cursor-pointer ${!isRead ? 'bg-slate-700/50' : ''}`}
+                    onClick={() => handleNotificationClick(notification.activityId)}
+                    className={`px-4 py-4 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer ${!isRead ? 'bg-sky-50/40' : ''}`}
                   >
                     <div className="flex justify-between items-start">
-                      <p className="text-sm font-semibold text-slate-200">
+                      <p className={`text-sm font-bold ${!isRead ? 'text-sky-900' : 'text-slate-900'}`}>
                         {notification.headline}
                       </p>
                       {notification.status === 'Overdue' && (
-                         <span className="text-[10px] bg-red-500/20 text-red-300 px-2 py-0.5 rounded-full">Overdue</span>
+                         <span className="text-[10px] font-bold bg-red-100 text-red-600 px-2 py-0.5 rounded-full uppercase">Overdue</span>
                       )}
                       {notification.status === 'Ready' && (
-                         <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full">Ready</span>
+                         <span className="text-[10px] font-bold bg-green-100 text-green-600 px-2 py-0.5 rounded-full uppercase">Ready</span>
                       )}
                     </div>
                     
                     {notification.title && (
-                      <p className="text-sm text-slate-300 mt-0.5">{notification.title}</p>
+                      <p className="text-sm text-slate-600 mt-1 font-medium leading-snug">{notification.title}</p>
                     )}
                     
-                    <div className="flex justify-between items-center mt-2">
-                      <p className="text-xs text-sky-300">{notification.detail}</p>
-                      <p className="text-xs text-slate-500">{FormatActivityDate(notification.activityDate)}</p>
+                    <div className="flex justify-between items-center mt-3">
+                      <p className="text-xs font-bold text-sky-600">{notification.detail}</p>
+                      <p className="text-[11px] font-medium text-slate-400">{FormatActivityDate(notification.activityDate)}</p>
                     </div>
                   </div>
                 );
               })
             ) : (
-              <div className="px-4 py-6 text-center text-sm text-slate-500">
+              <div className="px-4 py-10 text-center text-sm font-medium text-slate-400">
                 No new activity
               </div>
             )}
           </div>
           
-          <div className="px-4 py-2 border-t border-slate-700 bg-slate-900 text-center">
-            {/* NEW: Added click handler to view all button */}
+          <div className="px-4 py-3 bg-slate-50 text-center border-t border-slate-100">
             <button 
               onClick={handleViewAllClick}
-              className="text-sm text-sky-400 hover:text-sky-300 font-medium focus:outline-none w-full"
+              className="text-sm text-sky-600 hover:text-sky-700 font-bold w-full transition-colors"
             >
               View all activity
             </button>

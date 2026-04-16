@@ -50,13 +50,13 @@ function FormatDateLabel(value) {
 
 function SummaryCard({ title, value, subtitle = "" }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.25em] text-sky-300">
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <p className="text-xs font-bold uppercase tracking-[0.25em] text-sky-700">
         {title}
       </p>
-      <p className="mt-3 text-3xl font-semibold text-white">{value}</p>
+      <p className="mt-3 text-3xl font-bold text-slate-900">{value}</p>
       {subtitle ? (
-        <p className="mt-2 text-sm text-slate-400">{subtitle}</p>
+        <p className="mt-2 text-sm font-medium text-slate-600">{subtitle}</p>
       ) : null}
     </div>
   );
@@ -361,38 +361,38 @@ export default function PopularityReport() {
   }
 
   return (
-    <section className="flex w-full flex-col rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-2xl shadow-slate-950/30">
-      <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">
+    <section className="flex w-full flex-col rounded-3xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50">
+      <p className="text-sm font-bold uppercase tracking-[0.3em] text-sky-700">
         Admin Report
       </p>
 
-      <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">
+      <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-900">
         Popularity Report
       </h1>
 
-      <p className="mt-3 text-sm font-medium text-sky-300">
+      <p className="mt-3 text-sm font-medium text-sky-700">
         Note: Dates in this report refer to item loan dates used to measure
         popularity.
       </p>
 
-      <p className="mt-4 max-w-3xl text-base leading-7 text-slate-300">
+      <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">
         Review the most borrowed items across categories, filter by genre and
         format, and analyze popularity with flexible search and sorting tools.
       </p>
 
       {isLoading ? (
-        <div className="mt-8 text-slate-300">
+        <div className="mt-8 font-medium text-slate-600">
           Loading popularity report...
         </div>
       ) : (
         <>
           <div className="mt-8">
-            <p className="text-sm font-medium text-slate-300">
+            <p className="text-sm font-semibold text-slate-700">
               {dateRangeLabel}
             </p>
           </div>
 
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3 bg-slate-50 p-6 rounded-2xl border border-slate-200">
             <SummaryCard title="Total Loans Count" value={summary.totalLoans} />
             <SummaryCard
               title="Unique Items Borrowed"
@@ -410,44 +410,44 @@ export default function PopularityReport() {
             />
           </div>
 
-          <div className="mt-8 rounded-2xl border border-white/10 bg-slate-950/40 p-5">
-            <h2 className="text-xl font-semibold text-white">
+          <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 className="text-xl font-bold text-slate-900">
               Search / Filter / Sort
             </h2>
 
-            <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <div>
-                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
                   Start Date
                 </label>
                 <input
                   type="date"
                   value={startDate}
                   onChange={(event) => setStartDate(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
                   End Date
                 </label>
                 <input
                   type="date"
                   value={endDate}
                   onChange={(event) => setEndDate(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
                   Filter By Category
                 </label>
                 <select
                   value={categoryFilter}
                   onChange={(event) => setCategoryFilter(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
                 >
                   <option>
                     All
@@ -468,13 +468,13 @@ export default function PopularityReport() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
                   Filter By Genre
                 </label>
                 <select
                   value={genreFilter}
                   onChange={(event) => setGenreFilter(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
                 >
                   {availableGenres.map((genre) => (
                     <option key={genre} value={genre}>
@@ -485,13 +485,13 @@ export default function PopularityReport() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
                   Search By
                 </label>
                 <select
                   value={searchBy}
                   onChange={(event) => setSearchBy(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
                 >
                   <option>
                     All
@@ -518,7 +518,7 @@ export default function PopularityReport() {
               </div>
 
               <div className="xl:col-span-2">
-                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
                   Search Text
                 </label>
                 <input
@@ -526,18 +526,18 @@ export default function PopularityReport() {
                   value={searchText}
                   onChange={(event) => setSearchText(event.target.value)}
                   placeholder="Enter search value..."
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
                   Sort By
                 </label>
                 <select
                   value={sortBy}
                   onChange={(event) => setSortBy(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
                 >
                   <option value="loanCount">
                     Loan Count
@@ -567,13 +567,13 @@ export default function PopularityReport() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+                <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
                   Sort Direction
                 </label>
                 <select
                   value={sortDirection}
                   onChange={(event) => setSortDirection(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-sky-400"
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
                 >
                   <option value="desc">
                     Descending
@@ -585,45 +585,45 @@ export default function PopularityReport() {
               </div>
             </div>
 
-            <div className="mt-5">
+            <div className="mt-6">
               <PrimaryButton title="Reset Filters" onClick={ResetFilters} />
             </div>
           </div>
 
-          <div className="mt-8 rounded-2xl border border-white/10 bg-slate-950/40 p-5">
-            <h2 className="text-xl font-semibold text-white">
+          <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 className="text-xl font-bold text-slate-900">
               Popularity Detail Table
             </h2>
 
-            <div className="mt-4 w-full overflow-x-hidden">
-              <table className="w-full table-fixed text-left text-sm">
+            <div className="mt-6 w-full overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+              <table className="w-full table-fixed text-left text-sm min-w-[900px]">
                 <thead>
-                  <tr className="border-b border-white/10 text-slate-300">
-                    <th className="px-2 py-2 w-[64px]">
+                  <tr className="bg-slate-100 text-left text-sm text-slate-700 border-b border-slate-200">
+                    <th className="px-4 py-3 font-semibold w-[80px]">
                       Item ID
                     </th>
-                    <th className="px-2 py-2 w-[130px]">
+                    <th className="px-4 py-3 font-semibold w-[150px]">
                       Title
                     </th>
-                    <th className="px-2 py-2 w-[120px]">
+                    <th className="px-4 py-3 font-semibold w-[130px]">
                       Creator
                     </th>
-                    <th className="px-2 py-2 w-[92px]">
+                    <th className="px-4 py-3 font-semibold w-[110px]">
                       Category
                     </th>
-                    <th className="px-2 py-2 w-[98px]">
+                    <th className="px-4 py-3 font-semibold w-[110px]">
                       Genre
                     </th>
-                    <th className="px-2 py-2 w-[110px]">
+                    <th className="px-4 py-3 font-semibold w-[120px]">
                       Publisher
                     </th>
-                    <th className="px-2 py-2 w-[110px]">
+                    <th className="px-4 py-3 font-semibold w-[120px]">
                       Publication Date
                     </th>
-                    <th className="px-2 py-2 w-[80px]">
+                    <th className="px-4 py-3 font-semibold w-[100px]">
                       Loan Count
                     </th>
-                    <th className="px-2 py-2">
+                    <th className="px-4 py-3 font-semibold">
                       Summary
                     </th>
                   </tr>
@@ -632,7 +632,7 @@ export default function PopularityReport() {
                 <tbody>
                   {filteredItems.length === 0 ? (
                     <tr>
-                      <td colSpan={9} className="px-3 py-5 text-slate-400">
+                      <td colSpan={9} className="px-4 py-5 text-center font-medium text-slate-500 bg-white">
                         No popularity records match the current filters.
                       </td>
                     </tr>
@@ -640,52 +640,52 @@ export default function PopularityReport() {
                     filteredItems.map((item) => (
                       <tr
                         key={item.itemId}
-                        className="border-b border-white/5 text-slate-200 align-top"
+                        className="border-b border-slate-100 bg-white text-slate-600 hover:bg-slate-50 transition-colors align-top"
                       >
-                        <td className="px-2 py-3">
+                        <td className="px-4 py-3 font-medium text-slate-900">
                           {item.itemId}
                         </td>
 
-                        <td className="px-2 py-3 font-semibold text-white align-top">
+                        <td className="px-4 py-3 font-bold text-slate-900 align-top">
                           <div className="break-words">
                             {item.title || "-"}
                           </div>
                         </td>
 
-                        <td className="px-2 py-3 align-top">
+                        <td className="px-4 py-3 align-top">
                           <div className="break-words">
                             {item.creator || "-"}
                           </div>
                         </td>
 
-                        <td className="px-2 py-3 align-top">
+                        <td className="px-4 py-3 align-top">
                           {NormalizeCategory(item.category)}
                         </td>
 
-                        <td className="px-2 py-3 align-top">
+                        <td className="px-4 py-3 align-top">
                           <div className="break-words">
                             {item.genre || "-"}
                           </div>
                         </td>
 
-                        <td className="px-2 py-3 align-top">
+                        <td className="px-4 py-3 align-top">
                           <div className="break-words">
                             {item.publisher || "-"}
                           </div>
                         </td>
 
-                        <td className="px-2 py-3 align-top">
+                        <td className="px-4 py-3 align-top">
                           {item.publicationDate
                             ? FormatDate(new Date(item.publicationDate), true)
                             : "-"}
                         </td>
 
-                        <td className="px-2 py-3 font-semibold text-sky-300 align-top">
+                        <td className="px-4 py-3 font-bold text-sky-700 align-top">
                           {SafeNumber(item.loanCount)}
                         </td>
 
-                        <td className="px-2 py-3 align-top">
-                          <div className="break-words text-slate-300">
+                        <td className="px-4 py-3 align-top text-slate-500">
+                          <div className="break-words">
                             {item.summary || "-"}
                           </div>
                         </td>

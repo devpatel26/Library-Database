@@ -44,88 +44,94 @@ export default function Search() {
   }
 
   return (
-    <section className="rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
-      <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">
-        Search Page
+    <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+      <h1 className="text-4xl font-bold tracking-tight text-slate-900 mb-6">
+        Search Catalog
       </h1>
-      <form onSubmit={HandleSubmit}>
-        <div className="grid gap-x-6 gap-y-12 grid-cols-8 mt-2">
-          <div className="sm:col-span-4">
-            <label htmlFor="q">Search Term</label>
-            <div className="mt-2">
-              <input
-                required
-                id="q"
-                name="q"
-                className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
-              />
-            </div>
-          </div>
-          <div className="sm:col-span-2">
-            <label htmlFor="category">Category</label>
-            <div className="mt-2">
-              <select
-                required
-                id="category"
-                name="category"
-                className="block w-full rounded-md bg-white/5 px-3 py-1.5 text-slate-100 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
-              >
-                <option
-                  value="book"
-                  style={{ color: "#0f172a", backgroundColor: "#ffffff" }}
-                >
-                  Book
-                </option>
-                <option
-                  value="audiovisualmedia"
-                  style={{ color: "#0f172a", backgroundColor: "#ffffff" }}
-                >
-                  Audiovisual Media
-                </option>
-                <option
-                  value="periodical"
-                  style={{ color: "#0f172a", backgroundColor: "#ffffff" }}
-                >
-                  Periodicals
-                </option>
-                <option
-                  value="equipment"
-                  style={{ color: "#0f172a", backgroundColor: "#ffffff" }}
-                >
-                  Equipment
-                </option>
-              </select>
-            </div>
+      
+      <form onSubmit={HandleSubmit} className="space-y-6">
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-12 items-end">
+          {/* Search Term */}
+          <div className="md:col-span-5">
+            <label htmlFor="q" className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">
+              Search Term
+            </label>
+            <input
+              required
+              id="q"
+              name="q"
+              placeholder="Title, author, or keywords..."
+              className="block w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-sky-500 transition-all"
+            />
           </div>
 
-          <div className="sm:col-span-1 grid">
-            <label htmlFor="availableOnly">Available Only</label>
-            <div className="mt-2 mt-2 scale-150">
+          {/* Category Dropdown */}
+          <div className="md:col-span-3">
+            <label htmlFor="category" className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">
+              Category
+            </label>
+            <select
+              required
+              id="category"
+              name="category"
+              className="block w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-sky-500 transition-all appearance-none cursor-pointer"
+            >
+              <option value="book">Books</option>
+              <option value="audiovisualmedia">Audiovisual Media</option>
+              <option value="periodical">Periodicals</option>
+              <option value="equipment">Equipment</option>
+            </select>
+          </div>
+
+          {/* Available Only Toggle */}
+          <div className="md:col-span-2 flex items-center justify-center pb-2">
+            <label htmlFor="availableOnly" className="flex items-center gap-3 cursor-pointer group">
               <input
                 type="checkbox"
                 id="availableOnly"
                 name="availableOnly"
-                className="block w-full rounded-md bg-white/5 px-3 m:text-sm/6"
+                className="w-5 h-5 rounded border-slate-300 text-sky-600 focus:ring-sky-500 cursor-pointer"
               />
-            </div>
+              <span className="text-sm font-bold text-slate-700 uppercase tracking-wide group-hover:text-sky-600 transition-colors">
+                Available Only
+              </span>
+            </label>
           </div>
 
-          <div className="grid justify-items-start col-span-1 items-end">
-            <SubmitButton title={"Search"} value={"OK"} />
+          {/* Submit Button */}
+          <div className="md:col-span-2">
+            <SubmitButton title={"Search"} value={"OK"} fullwidth={true} />
           </div>
         </div>
       </form>
-      <div id="results" className="flex gap-6 flex-wrap justify-evenly mt-6">
-        {loading && <p className="text-slate-300">Searching...</p>}
-        {!loading && error && <p className="text-rose-300">{error}</p>}
-        {!loading && !error && hasSearched && results.length === 0 && (
-          <p className="text-slate-300">No results found.</p>
+
+      {/* Results Section */}
+      <div id="results" className="mt-10 pt-10 border-t border-slate-100">
+        {loading && (
+          <div className="flex justify-center items-center py-12">
+            <p className="text-slate-500 font-medium animate-pulse">Searching the catalog...</p>
+          </div>
         )}
-        {!loading &&
-          !error &&
-          results.map((item) => (
-            <Item key={`${item.category}-${item.itemId}`} itemData={item} />
-          ))}
+        
+        {!loading && error && (
+          <div className="rounded-xl bg-red-50 border border-red-200 p-4 text-red-700 text-sm font-medium">
+            {error}
+          </div>
+        )}
+
+        {!loading && !error && hasSearched && results.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-slate-400 italic text-lg">No items match your search criteria.</p>
+          </div>
+        )}
+
+        {!loading && !error && (
+          <div className="flex gap-6 flex-wrap justify-evenly">
+            {results.map((item) => (
+              <Item key={`${item.category}-${item.itemId}`} itemData={item} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

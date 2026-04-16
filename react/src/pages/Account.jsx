@@ -104,18 +104,22 @@ export default function Account() {
 
   return (
     <div className="flex flex-col gap-8 lg:flex-row">
-      <aside className="rounded-3xl border border-white/10 bg-slate-900/70 p-6 shadow-xl shadow-slate-950/30 lg:sticky lg:top-8 lg:w-72 lg:self-start">
-        <nav className="space-y-2">
+      {/* Sidebar Navigation - Matches Light Theme */}
+      <aside className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm lg:sticky lg:top-8 lg:w-72 lg:self-start">
+        <h2 className="mb-4 px-3 text-xs font-bold uppercase tracking-widest text-slate-400">
+          User Menu
+        </h2>
+        <nav className="space-y-1">
           {navLinks.map((link) => (
             <NavLink
               key={link.to}
               to={link.to}
               end={link.end}
               className={({ isActive }) =>
-                `block rounded-md px-3 py-2 text-sm transition ${
+                `block rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${
                   isActive
-                    ? "bg-sky-400/10 text-white"
-                    : "text-slate-200 hover:bg-slate-800 hover:text-white"
+                    ? "bg-sky-50 text-sky-700 shadow-sm"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-sky-600"
                 }`
               }
             >
@@ -124,81 +128,81 @@ export default function Account() {
           ))}
         </nav>
       </aside>
-      <main className="flex-1 space-y-6 rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-xl shadow-slate-950/30">
-        <h1 className="text-3xl font-bold text-white">Account</h1>
+      
+      {/* Main Content Card */}
+      <main className="flex-1 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900 mb-6">Account</h1>
         {outlet ? (
           outlet
         ) : (
-          <section className="space-y-4 text-slate-200">
-            <p className="text-slate-300">
-              View your account details below.
-              {isPatron
-                ? " Use the account menu for fines, activity, loan history, and settings."
-                : ""}
-              {isStaff
-                ? " Warning: This is a staff account. Do not share your credentials."
-                : ""}
-            </p>
+          <section className="space-y-6">
+            <div className="rounded-2xl bg-slate-50 p-4 border border-slate-100">
+              <p className="text-sm text-slate-600">
+                {isPatron
+                  ? "View your membership details below. Use the menu to manage loans and settings."
+                  : isStaff
+                  ? "Logged in as Staff. Exercise caution when viewing internal identifiers."
+                  : "Account details are displayed below."}
+              </p>
+            </div>
 
-            {loading && <p className="text-slate-300">Loading account...</p>}
+            {loading && (
+              <div className="flex items-center gap-3 text-slate-500 font-medium animate-pulse">
+                <div className="h-4 w-4 rounded-full bg-sky-400"></div>
+                Loading account information...
+              </div>
+            )}
 
-            {!loading && error && <p className="text-rose-300">{error}</p>}
+            {!loading && error && (
+              <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700 font-medium">
+                {error}
+              </div>
+            )}
 
             {!loading && !error && account && (
-              <div className="space-y-2">
-                {/* <p>
-                  <span className="font-semibold text-white">
-                    Account Type:
-                  </span>{" "}
-                  {account.user_type === "staff" ? "Staff" : "Patron"}
-                </p> */}
-                <p>
-                  <span className="font-semibold text-white">Name:</span>{" "}
-                  {account.first_name} {account.last_name}
-                </p>
-                <p>
-                  <span className="font-semibold text-white">Email:</span>{" "}
-                  {account.email}
-                </p>
-                <p>
-                  <span className="font-semibold text-white">
-                    {account.user_type === "staff" ? "Staff ID:" : "Member ID:"}
-                  </span>{" "}
-                  {account.staff_id ?? account.patron_id}
-                </p>
-                {/* <p>
-                  <span className="font-semibold text-white">Role Code:</span>{" "}
-                  {account.role}
-                </p> */}
-                {/* <p>
-                  <span className="font-semibold text-white">Status:</span>{" "}
-                  {account.is_active ? "Active" : "Inactive"}
-                </p> */}
-                <p>
-                  <span className="font-semibold text-white">
-                    Date of Birth:
-                  </span>{" "}
-                  {FormatDateOfBirth(account.date_of_birth)}
-                </p>
-                {account.phone_number && (
-                  <p>
-                    <span className="font-semibold text-white">
-                      Phone Number:
-                    </span>{" "}
-                    {account.phone_number}
-                  </p>
-                )}
-                {account.address && (
-                  <p>
-                    <span className="font-semibold text-white">Address:</span>{" "}
-                    {account.address}
-                  </p>
-                )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <span className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Full Name</span>
+                    <span className="text-lg font-semibold text-slate-900">{account.first_name} {account.last_name}</span>
+                  </div>
+                  <div>
+                    <span className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Email Address</span>
+                    <span className="text-lg font-semibold text-slate-900">{account.email}</span>
+                  </div>
+                  <div>
+                    <span className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
+                      {account.user_type === "staff" ? "Staff ID" : "Member ID"}
+                    </span>
+                    <span className="text-lg font-semibold text-sky-700 font-mono">
+                      #{account.staff_id ?? account.patron_id}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <span className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Date of Birth</span>
+                    <span className="text-lg font-semibold text-slate-900">{FormatDateOfBirth(account.date_of_birth)}</span>
+                  </div>
+                  {account.phone_number && (
+                    <div>
+                      <span className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Phone Number</span>
+                      <span className="text-lg font-semibold text-slate-900">{account.phone_number}</span>
+                    </div>
+                  )}
+                  {account.address && (
+                    <div>
+                      <span className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Primary Address</span>
+                      <span className="text-lg font-semibold text-slate-900 leading-tight">{account.address}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
             {!loading && !error && !account && (
-              <p className="text-slate-300">No account found.</p>
+              <p className="text-slate-400 italic">No account records found in the database.</p>
             )}
           </section>
         )}

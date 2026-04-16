@@ -6,10 +6,12 @@ import {
   ReadStoredUser,
   UpdateStoredUser,
 } from "../api";
-// import { FormatBirthdateField } from "../components/TimeFormats";
 
+// Updated to match the high-visibility "Search Bar" style from your screenshots
 const inputClassName =
-  "mt-2 block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6";
+  "mt-2 block w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-sky-500 transition-all placeholder:text-slate-400";
+
+const labelClassName = "block text-sm font-bold text-slate-700 uppercase tracking-wide mt-4 mb-1";
 
 export default function AccountSettings() {
   const [email, setEmail] = useState("");
@@ -83,44 +85,31 @@ export default function AccountSettings() {
 
   async function HandleContactSubmit(event) {
     event.preventDefault();
-
     try {
       setContactSaving(true);
       setContactMessage("");
       setError("");
       const contactData = {
-        firstname: firstname,
-        lastname: lastname,
-        email: email,
-        address: address,
+        firstname,
+        lastname,
+        email,
+        address,
         phone_number: phonenumber,
       };
       const data = await FetchJson("/api/account/contact", {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(contactData),
       });
 
       setEmail(data.email ?? email);
       UpdateStoredUser({ email: data.email ?? email });
-
       setFirstname(data.firstname ?? firstname);
-      UpdateStoredUser({ firstname: data.firstname ?? firstname });
-
       setLastname(data.lastname ?? lastname);
-      UpdateStoredUser({ lastname: data.lastname ?? lastname });
-
       setAddress(data.address ?? address);
-      UpdateStoredUser({ address: data.address ?? address });
-
       setPhoneNumber(data.phone_number ?? phonenumber);
-      UpdateStoredUser({ phonenumber: data.phone_number ?? phonenumber });
 
-      setContactMessage(
-        data.message ?? "Contact information updated successfully.",
-      );
+      setContactMessage(data.message ?? "Contact information updated successfully.");
     } catch (err) {
       setError(GetErrorMessage(err, "Failed to update contact information."));
     } finally {
@@ -130,24 +119,17 @@ export default function AccountSettings() {
 
   async function HandlePasswordSubmit(event) {
     event.preventDefault();
-
     try {
       setPasswordSaving(true);
       setPasswordMessage("");
       setError("");
       const data = await FetchJson("/api/account/password", {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(passwordForm),
       });
 
-      setPasswordForm({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
+      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
       setPasswordMessage(data.message ?? "Password updated successfully.");
     } catch (err) {
       setError(GetErrorMessage(err, "Failed to update password."));
@@ -158,196 +140,142 @@ export default function AccountSettings() {
 
   return (
     <section className="space-y-6">
-      <h2 className="mt-3 text-4xl font-semibold tracking-tight text-white">
-        Settings
-      </h2>
+      <div className="mb-4">
+        <h2 className="text-3xl font-bold tracking-tight text-slate-900">Settings</h2>
+        <p className="text-slate-500">Manage your profile and security preferences.</p>
+      </div>
 
-      {loading ? <p className="text-slate-300">Loading settings...</p> : null}
-      {!loading && error ? <p className="text-rose-300">{error}</p> : null}
+      {loading && <p className="text-slate-500 animate-pulse">Loading settings...</p>}
+      {!loading && error && <div className="rounded-xl bg-red-50 border border-red-200 p-4 text-red-700 text-sm font-medium">{error}</div>}
 
-      {!loading && !error ? (
-        <div className="grid gap-6 xl:grid-cols-2">
+      {!loading && !error && (
+        <div className="grid gap-8 xl:grid-cols-2">
+          {/* Contact Info Form */}
           <form
             onSubmit={HandleContactSubmit}
-            className="rounded-2xl border border-white/10 bg-slate-950/40 p-6"
+            className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm"
           >
-            <h2 className="text-xl font-semibold text-white">Contact Info</h2>
-            <p className="mt-2 text-sm text-slate-400">
-              self-service currently supports email updates.
-            </p>
+            <h3 className="text-xl font-bold text-slate-900">Contact Information</h3>
+            <p className="mt-1 text-sm text-slate-500 italic">Self-service profile management.</p>
 
-            <label
-              htmlFor="email"
-              className="mt-4 block text-sm text-slate-200"
-            >
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              className={inputClassName}
-            />
+            <div className="space-y-1">
+              <label htmlFor="email" className={labelClassName}>Email Address</label>
+              <input
+                id="email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={inputClassName}
+              />
 
-            <div className="sm:col-span-3">
-              <label htmlFor="firstname">First Name</label>
-              <div className="mt-2">
-                <input
-                  required
-                  id="firstname"
-                  name="firstname"
-                  value={firstname}
-                  type="text"
-                  onChange={(event) => setFirstname(event.target.value)}
-                  className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
-                />
-              </div>
-            </div>
-            <div className="sm:col-span-3">
-              <label htmlFor="lastname">Last Name</label>
-              <div className="mt-2">
-                <input
-                  required
-                  id="lastname"
-                  name="lastname"
-                  value={lastname}
-                  type="text"
-                  onChange={(event) => setLastname(event.target.value)}
-                  className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
-                />
-              </div>
-            </div>
-            {isStaff ? (
-              <div>
-                <div className="sm:col-span-2">
-                  <label htmlFor="address">Address</label>
-                  <div className="mt-2">
-                    <input
-                      required
-                      id="address"
-                      name="address"
-                      type="text"
-                      value={address}
-                      onChange={(event) => setAddress(event.target.value)}
-                      className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
-                    />
-                  </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="firstname" className={labelClassName}>First Name</label>
+                  <input
+                    required
+                    id="firstname"
+                    value={firstname}
+                    onChange={(e) => setFirstname(e.target.value)}
+                    className={inputClassName}
+                  />
                 </div>
-
-                <div className="sm:col-span-1">
-                  <div>
-                    <label htmlFor="phonenumber">Phone Number</label>
-                    <div className="mt-2">
-                      <input
-                        required
-                        id="phonenumber"
-                        name="phonenumber"
-                        type="tel"
-                        value={phonenumber}
-                        onChange={(event) => setPhoneNumber(event.target.value)}
-                        className="block w-full rounded-md bg-white/5 px-3 py-1.5 outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
-                      />
-                    </div>
-                  </div>
+                <div>
+                  <label htmlFor="lastname" className={labelClassName}>Last Name</label>
+                  <input
+                    required
+                    id="lastname"
+                    value={lastname}
+                    onChange={(e) => setLastname(e.target.value)}
+                    className={inputClassName}
+                  />
                 </div>
               </div>
-            ) : null}
 
-            {contactMessage ? (
-              <p className="mt-3 text-sm text-emerald-300">{contactMessage}</p>
-            ) : null}
+              {isStaff && (
+                <>
+                  <label htmlFor="address" className={labelClassName}>Home Address</label>
+                  <input
+                    required
+                    id="address"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    className={inputClassName}
+                  />
 
-            <div className="mt-4">
+                  <label htmlFor="phonenumber" className={labelClassName}>Phone Number</label>
+                  <input
+                    required
+                    id="phonenumber"
+                    type="tel"
+                    value={phonenumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    className={inputClassName}
+                  />
+                </>
+              )}
+            </div>
+
+            {contactMessage && (
+              <p className="mt-4 text-sm font-medium text-emerald-600 bg-emerald-50 p-2 rounded-lg border border-emerald-100">{contactMessage}</p>
+            )}
+
+            <div className="mt-8">
               <PrimaryButton
                 type="submit"
-                title={contactSaving ? "Saving..." : "Save Info"}
+                title={contactSaving ? "Saving..." : "Update Profile"}
                 disabledValue={contactSaving}
               />
             </div>
           </form>
 
+          {/* Password Form */}
           <form
             onSubmit={HandlePasswordSubmit}
-            className="rounded-2xl border border-white/10 bg-slate-950/40 p-6"
+            className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm"
           >
-            <h2 className="text-xl font-semibold text-white">Password</h2>
-            <p className="mt-2 text-sm text-slate-400">
-              Choose a new password with at least 8 characters.
-            </p>
+            <h3 className="text-xl font-bold text-slate-900">Security</h3>
+            <p className="mt-1 text-sm text-slate-500 italic">Update your account password.</p>
 
-            <label
-              htmlFor="currentPassword"
-              className="mt-4 block text-sm text-slate-200"
-            >
-              Current Password
-            </label>
-            <input
-              id="currentPassword"
-              name="currentPassword"
-              type="password"
-              required
-              value={passwordForm.currentPassword}
-              onChange={(event) =>
-                setPasswordForm((current) => ({
-                  ...current,
-                  currentPassword: event.target.value,
-                }))
-              }
-              className={inputClassName}
-            />
+            <div className="space-y-1">
+              <label htmlFor="currentPassword" className={labelClassName}>Current Password</label>
+              <input
+                id="currentPassword"
+                type="password"
+                required
+                value={passwordForm.currentPassword}
+                onChange={(e) => setPasswordForm(c => ({ ...c, currentPassword: e.target.value }))}
+                className={inputClassName}
+              />
 
-            <label
-              htmlFor="newPassword"
-              className="mt-4 block text-sm text-slate-200"
-            >
-              New Password
-            </label>
-            <input
-              id="newPassword"
-              name="newPassword"
-              type="password"
-              required
-              minLength={8}
-              value={passwordForm.newPassword}
-              onChange={(event) =>
-                setPasswordForm((current) => ({
-                  ...current,
-                  newPassword: event.target.value,
-                }))
-              }
-              className={inputClassName}
-            />
+              <label htmlFor="newPassword" className={labelClassName}>New Password</label>
+              <input
+                id="newPassword"
+                type="password"
+                required
+                minLength={8}
+                value={passwordForm.newPassword}
+                onChange={(e) => setPasswordForm(c => ({ ...c, newPassword: e.target.value }))}
+                className={inputClassName}
+              />
 
-            <label
-              htmlFor="confirmPassword"
-              className="mt-4 block text-sm text-slate-200"
-            >
-              Confirm New Password
-            </label>
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              required
-              minLength={8}
-              value={passwordForm.confirmPassword}
-              onChange={(event) =>
-                setPasswordForm((current) => ({
-                  ...current,
-                  confirmPassword: event.target.value,
-                }))
-              }
-              className={inputClassName}
-            />
+              <label htmlFor="confirmPassword" className={labelClassName}>Confirm New Password</label>
+              <input
+                id="confirmPassword"
+                type="password"
+                required
+                minLength={8}
+                value={passwordForm.confirmPassword}
+                onChange={(e) => setPasswordForm(c => ({ ...c, confirmPassword: e.target.value }))}
+                className={inputClassName}
+              />
+            </div>
 
-            {passwordMessage ? (
-              <p className="mt-3 text-sm text-emerald-300">{passwordMessage}</p>
-            ) : null}
+            {passwordMessage && (
+              <p className="mt-4 text-sm font-medium text-emerald-600 bg-emerald-50 p-2 rounded-lg border border-emerald-100">{passwordMessage}</p>
+            )}
 
-            <div className="mt-4">
+            <div className="mt-8">
               <PrimaryButton
                 type="submit"
                 title={passwordSaving ? "Updating..." : "Change Password"}
@@ -356,7 +284,7 @@ export default function AccountSettings() {
             </div>
           </form>
         </div>
-      ) : null}
+      )}
     </section>
   );
 }
