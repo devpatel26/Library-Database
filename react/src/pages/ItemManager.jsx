@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PrimaryButton, { SecondaryButton } from "../components/Buttons";
-import { FetchJson, GetErrorMessage, ReadStoredUser } from "../api";
+import FileUploadField from "../components/FileUploadField";
+import { FetchJson, GetErrorMessage, ReadStoredUser, UploadImageFile } from "../api";
 import { useMessage } from "../hooks/useMessage";
 
 const inputClassName =
@@ -83,6 +84,8 @@ export default function ItemManager() {
   const [optionsLoading, setOptionsLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
+  const [selectedImageName, setSelectedImageName] = useState("");
 
   const [selectedItemId, setSelectedItemId] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -223,6 +226,8 @@ export default function ItemManager() {
     if (!selectedItemId) {
       setSelectedItem(null);
       setFormState(emptyFormState);
+      setSelectedImageFile(null);
+      setSelectedImageName("");
       return () => {
         isMounted = false;
       };
@@ -239,10 +244,14 @@ export default function ItemManager() {
 
         setSelectedItem(data);
         setFormState(BuildItemForm(data));
+        setSelectedImageFile(null);
+        setSelectedImageName("");
       } catch (error) {
         if (isMounted) {
           setSelectedItem(null);
           setFormState(emptyFormState);
+          setSelectedImageFile(null);
+          setSelectedImageName("");
           showError(GetErrorMessage(error, "Failed to load item details."));
         }
       } finally {
@@ -302,6 +311,8 @@ export default function ItemManager() {
       return;
     }
 
+    let coverImageUrl = formState.coverImageUrl;
+
     const payload = {
       title: formState.title,
       totalCopies: Number(formState.totalCopies),
@@ -312,7 +323,7 @@ export default function ItemManager() {
       publisher: formState.publisher,
       publicationDate: formState.publicationDate,
       summary: formState.summary,
-      coverImageUrl: formState.coverImageUrl,
+      coverImageUrl,
       authorFirstName: formState.authorFirstName,
       authorLastName: formState.authorLastName,
       runtime: formState.runtime === "" ? null : Number(formState.runtime),
@@ -320,6 +331,13 @@ export default function ItemManager() {
 
     try {
       setSaving(true);
+
+      if (selectedImageFile) {
+        const uploadResult = await UploadImageFile(selectedImageFile);
+        coverImageUrl = String(uploadResult?.url ?? "").trim() || coverImageUrl;
+        payload.coverImageUrl = coverImageUrl;
+      }
+
       await FetchJson(`/api/items/manage/${selectedItem.itemId}`, {
         method: "PUT",
         headers: {
@@ -329,6 +347,8 @@ export default function ItemManager() {
       });
 
       showSuccess("Item updated successfully.");
+      setSelectedImageFile(null);
+      setSelectedImageName("");
       setRefreshKey((current) => current + 1);
     } catch (error) {
       showError(GetErrorMessage(error, "Failed to update item."));
@@ -768,6 +788,20 @@ export default function ItemManager() {
                         }))}
                         className={`${inputClassName} min-h-32`}
                         required
+                      />
+                    </div>
+
+                    <div className="md:col-span-2 space-y-2">
+                      <FileUploadField
+                        id="coverImageFile"
+                        label="Upload Cover Image (Optional)"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        selectedFileName={selectedImageName}
+                        onChange={(event) => {
+                          const nextFile = event.target.files?.[0] ?? null;
+                          setSelectedImageFile(nextFile);
+                          setSelectedImageName(nextFile?.name ?? "");
+                        }}
                       />
                     </div>
                   </>
