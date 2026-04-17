@@ -223,7 +223,7 @@ export default function Account() {
 
             {!loading && !error && !account && (
               <p className="text-slate-700 italic">
-                No account records found in the database.
+                No account records found.
               </p>
             )}
           </section>

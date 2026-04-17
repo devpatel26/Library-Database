@@ -354,7 +354,7 @@ function App() {
 
               <div className="flex flex-col-reverse md:flex-row justify-between items-center pt-4 border-t border-cyan-800">
                 <p className="font-medium tracking-wide">
-                  Version {version} — Datahaven Library Database
+                  Version {version} — Datahaven Library
                 </p>
 
                 <div className="flex space-x-6">
