@@ -150,7 +150,7 @@ export default function Lost() {
         </div>
       </div>
 
-      <div className="mt-6 space-y-4">
+      <div className="mt-6 space-y-4 max-h-screen overflow-auto">
         {isLoading ? (
           <div className="text-slate-600 font-medium">
             Loading lost items...
