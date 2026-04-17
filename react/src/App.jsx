@@ -59,12 +59,12 @@ function NavSection({ title, links }) {
   if (!links.length) return null;
 
   return (
-    <div className="mb-6  font-bold transition-all">
-      <p className="mb-2 px-6 text-md font-bold tracking-[0.15em] text-white transition-all">
+    <div className="font-bold transition-all">
+      {/* <p className="mb-2 px-6 text-md font-bold tracking-[0.15em] text-white transition-all">
         {title}
-      </p>
+      </p> */}
 
-      <div className="space-y-1 font-bold text-white transition-all">
+      <div className="space-y-1 font-bold text-white transition-all whitespace-pre-line">
         {links.map(({ to, label }) => (
           <NavLink
             key={to}
@@ -104,21 +104,21 @@ function App() {
     userType === "staff" && (roleCode === 1 || roleCode === 2)
       ? [
           // { to: "/itementry", label: "Item Entry" },
-          { to: "/itementry/manage", label: "Item Management" },
+          { to: "/itementry/manage", label: "Item\nManagement" },
           { to: "/staffloans", label: "Loans" },
           { to: "/holds", label: "Holds" },
           { to: "/stafffines", label: "Fines" },
-          { to: "/lost", label: "Lost Items" },
+          { to: "/lost", label: "Lost\nItems" },
         ]
       : [];
 
   const adminLinks =
     userType === "staff" && roleCode === 2
       ? [
-          { to: "/changerole", label: "Manage Users" },
+          { to: "/changerole", label: "Manage\nUsers" },
           { to: "/report", label: "Reports" },
-          { to: "/staffregistration", label: "Staff Signup" },
-          { to: "/createsignupcode", label: "New Signup Code" },
+          { to: "/staffregistration", label: "Staff\nSignup" },
+          { to: "/createsignupcode", label: "New\nSignup\nCode" },
         ]
       : [];
 
@@ -195,7 +195,7 @@ function App() {
           <div className="flex flex-1 overflow-hidden">
             {/* Collapsible Sidebar */}
             <aside
-              className={`bg-cyan-700 transition-all duration-300 ease-in-out flex-shrink-0 z-0 py-4 ${
+              className={`bg-cyan-700 transition-all duration-300 ease-in-out flex-shrink-0 z-0  ${
                 isSidebarOpen
                   ? "w-[125px] opacity-100"
                   : "w-0 opacity-0 overflow-hidden"
