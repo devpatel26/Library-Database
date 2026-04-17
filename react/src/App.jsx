@@ -125,8 +125,8 @@ function App() {
       <BrowserRouter>
         <div className="min-h-screen flex flex-col font-sans">
           {/* Header */}
-          <header className="top-0 bg-[#164e63] px-6 py-3 flex justify-between items-center text-white z-10 shadow-sm">
-            <div className="flex items-center gap-3">
+          <header className="top-0 bg-[#164e63] px-6 py-1 flex justify-between items-center text-white z-10 shadow-sm">
+            <div className="flex items-center gap-3 s">
               {/* Hamburger Menu Toggle Button */}
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -195,7 +195,7 @@ function App() {
             <aside
               className={`bg-[#164e63] transition-all duration-300 ease-in-out flex-shrink-0 z-0 py-4 ${
                 isSidebarOpen
-                  ? "w-[200px] opacity-100"
+                  ? "w-[125px] opacity-100"
                   : "w-0 opacity-0 overflow-hidden"
               }`}
             >
