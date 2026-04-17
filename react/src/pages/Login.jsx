@@ -42,7 +42,7 @@ export default function Login() {
             });
             showSuccess("Login successful!");
             setTimeout(() => {
-              window.location.href = "/account";
+              window.location.href = "/";
             }, 1500);
           } catch (error) {
             showWarning(error.message || "Login failed.");
