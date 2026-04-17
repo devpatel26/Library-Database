@@ -31,7 +31,11 @@ function GetStatusClass(status) {
     return "bg-rose-100 text-rose-800 border-rose-200";
   }
 
-  if (status === "Ready for pickup" || status === "Hold" || status === "Ready") {
+  if (
+    status === "Ready for pickup" ||
+    status === "Hold" ||
+    status === "Ready"
+  ) {
     return "bg-amber-100 text-amber-800 border-amber-200";
   }
 
@@ -87,15 +91,17 @@ export default function AccountActivity() {
   }, [userKey]);
 
   return (
-    <section className="space-y-6">
-      <div>
-        <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">
-          Account Activity
-        </h2>
-      </div>
+    <section className="space-y-2 pt-2 rounded-xl bg-slate-100/40  border border-gray-100 p-4 inset-shadow-sm ">
+      <h2 className="text-3xl font-semibold tracking-tight text-slate-800">
+        Account Activity
+      </h2>
 
-      {loading ? <p className="text-slate-500 font-medium">Loading activity...</p> : null}
-      {!loading && error ? <p className="text-rose-600 font-medium">{error}</p> : null}
+      {loading ? (
+        <p className="text-slate-500 font-medium">Loading activity...</p>
+      ) : null}
+      {!loading && error ? (
+        <p className="text-rose-600 font-medium">{error}</p>
+      ) : null}
 
       {!loading && !error ? (
         <div className="space-y-4">
@@ -105,7 +111,7 @@ export default function AccountActivity() {
             activities.map((activity) => (
               <article
                 key={activity.activityId}
-                className="rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm transition-all hover:shadow-md"
+                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:shadow-md"
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
