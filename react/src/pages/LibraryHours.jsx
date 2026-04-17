@@ -18,14 +18,10 @@ const LibraryHours = () => {
   ];
 
   return (
-    <div className="relative w-full max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
-      {/* Decorative Background Glows - Adjusted for light theme */}
-      <div className="absolute top-20 left-10 w-72 h-72 bg-sky-200/50 blur-[120px] rounded-full pointer-events-none"></div>
-      <div className="absolute bottom-10 right-10 w-96 h-96 bg-blue-200/50 blur-[150px] rounded-full pointer-events-none"></div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-8 items-center relative z-10">
+    <div className=" w-full max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-8 items-center">
         {/* Left Column: Context & Contact Info */}
-        <div className="space-y-8">
+        <div className="w-full space-y-6">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 shadow-sm mb-6">
               <span className="relative flex h-2.5 w-2.5">
@@ -42,10 +38,7 @@ const LibraryHours = () => {
             </div>
 
             <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6 tracking-tight">
-              Plan Your{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 to-blue-700">
-                Visit
-              </span>
+              <span className="text-sky-900">Visiting?</span>
             </h1>
             <p className="text-lg text-slate-600 leading-relaxed max-w-md">
               Datahaven Library offers a quiet sanctuary for deep work,
@@ -54,7 +47,7 @@ const LibraryHours = () => {
             </p>
           </div>
 
-          <div className="space-y-6 pt-4 border-t border-slate-200 max-w-md">
+          <div className="space-y-6 pt-4 border-t border-sky-800/80 max-w-md">
             {/* Location */}
             <div className="flex items-start gap-4 group">
               <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0 group-hover:bg-sky-50 group-hover:border-sky-200 transition-colors">
