@@ -37,15 +37,18 @@ export default function Books() {
   }, []);
 
   return (
-    <section>
-      <h2 className="text-3xl font-bold text-slate-900">Book Entry</h2>
-      <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600">
-        Enter book information below.
-      </p>
+    <section className="rounded-xl bg-slate-100/40 border border-slate-200 p-2 inset-shadow-sm">
+      <div className="flex text-center items-center justify-between align-center flex-wrap">
+        <h2 className="text-3xl font-semibold tracking-tight text-slate-900">
+          Book Entry
+        </h2>
+        <p className="max-w-2xl text-base leading-7 text-slate-600">
+          Enter book information below.
+        </p>
+      </div>
 
-      <div className="mt-8">
+      <div className="mt-4 w-full">
         <form
-          className="w-full"
           onSubmit={async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
@@ -91,7 +94,7 @@ export default function Books() {
             }
           }}
         >
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div className="grid grid-cols-4 gap-6">
               <InputComponent
                 colspan={2}
@@ -114,27 +117,29 @@ export default function Books() {
               />
             </div>
 
-            {loading && !error && (
-              <div className="grid grid-cols-3 gap-6">
-                <DisabledDropdown name="genre" />
-                <DisabledDropdown name="language" />
-                <DisabledDropdown name="format" />
-              </div>
-            )}
-            {!loading && error && (
-              <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-                {error}
-              </div>
-            )}
-            {!loading && !error && (
-              <div className="grid grid-cols-3 gap-6">
-                <ObjectDropdown name="genre" options={genres} />
-                <ObjectDropdown name="language" options={languages} />
-                <ObjectDropdown name="format" options={format} />
-              </div>
-            )}
+            <div className="grid grid-cols-3 gap-6">
+              {loading && !error && (
+                <>
+                  <DisabledDropdown name="genres" />
+                  <DisabledDropdown name="languages" />
+                  <DisabledDropdown name="formats" />
+                </>
+              )}
+              {!loading && error && (
+                <div className="w-full rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                  {error}
+                </div>
+              )}
+              {!loading && !error && (
+                <>
+                  <ObjectDropdown name="genre" options={genres} />
+                  <ObjectDropdown name="language" options={languages} />
+                  <ObjectDropdown name="format" options={format} />
+                </>
+              )}
+            </div>
 
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-4 gap-6">
               <InputComponent
                 id="authorfirstname"
                 label="Author First Name"
@@ -145,11 +150,7 @@ export default function Books() {
                 label="Author Last Name"
                 placeholder="Last Name"
               />
-            </div>
-
-            <div className="grid grid-cols-3 gap-6">
               <InputComponent
-                colspan={2}
                 id="publisher"
                 label="Publisher"
                 placeholder="Publishing Co."
@@ -160,27 +161,27 @@ export default function Books() {
                 type="date"
               />
             </div>
-
-            <InputComponent
-              colspan={3}
-              id="summary"
-              label="Summary"
-              type="textarea"
-              placeholder="Brief summary of the book..."
-            />
-
-            <div className="rounded-2xl border-2 border-dashed border-slate-200 p-4 bg-slate-50/50">
-              <FileUploadField
-                id="coverImageFile"
-                label="Upload Cover Image (Optional)"
-                accept="image/*"
-                selectedFileName={selectedImageName}
-                onChange={(event) => {
-                  const nextFile = event.target.files?.[0] ?? null;
-                  setSelectedImageFile(nextFile);
-                  setSelectedImageName(nextFile?.name ?? "");
-                }}
+            <div className="grid colspan-3 grid-cols-2 gap-6">
+              <InputComponent
+                id="summary"
+                label="Summary"
+                type="textarea"
+                placeholder="Brief summary of the book..."
               />
+
+              <div className="mt-7 rounded-2xl border-2 border-dashed border-slate-200 p-4 bg-slate-50/50">
+                <FileUploadField
+                  id="coverImageFile"
+                  label="Upload Cover Image (Optional)"
+                  accept="image/*"
+                  selectedFileName={selectedImageName}
+                  onChange={(event) => {
+                    const nextFile = event.target.files?.[0] ?? null;
+                    setSelectedImageFile(nextFile);
+                    setSelectedImageName(nextFile?.name ?? "");
+                  }}
+                />
+              </div>
             </div>
 
             <div className="pt-4 flex justify-center">

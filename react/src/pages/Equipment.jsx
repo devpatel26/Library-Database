@@ -5,17 +5,19 @@ import { FetchJson } from "../api";
 export default function Equipment() {
   const { showSuccess, showError } = useMessage();
   return (
-    <section>
-      <h2 className="text-3xl font-bold text-slate-900">Equipment Entry</h2>
-      <div className="mt-4 flex align-center text-center justify-between">
-        <span className="text-base leading-7 text-slate-600">
+    <section className="rounded-xl bg-slate-100/40 border border-gray-100 p-2 inset-shadow-sm">
+      <div className="flex align-center text-center justify-between text-center">
+        <h2 className="text-3xl font-semibold tracking-tight text-slate-900">
+          Equipment Entry
+        </h2>
+        <span className="max-w-2xl text-base leading-7 text-slate-600">
           Enter equipment information below.
         </span>
-        <span className="text-base leading-7 text-slate-500 italic">
+        <span className="max-w-2xl text-base leading-7 text-slate-500/80 italic">
           Image upload is not enabled for equipment yet.
         </span>
       </div>
-      <div className="flex gap-4 flex-wrap justify-evenly mt-8">
+      <div className="flex gap-4 flex-wrap justify-evenly mt-4">
         <form
           className="w-full"
           onSubmit={async (e) => {

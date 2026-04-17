@@ -11,7 +11,7 @@ import {
 import { useMessage } from "../hooks/useMessage";
 
 const inputClassName =
-  "mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all";
+  "mt-2 w-full rounded-xl border border-slate-200 bg-slate-100/10 px-4 py-3 text-slate-900 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all";
 
 const emptyFormState = {
   title: "",
@@ -415,7 +415,7 @@ export default function ItemManager() {
       <div>
         <label
           htmlFor={id}
-          className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700"
+          className="ml-1 text-sm font-semibold uppercase  text-sky-700"
         >
           {label}
         </label>
@@ -442,12 +442,12 @@ export default function ItemManager() {
   }
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-4 pt-2 rounded-xl bg-slate-100/40  border border-gray-100 p-4 inset-shadow-sm ">
       <div>
-        <h2 className="mt-3 text-4xl font-semibold tracking-tight text-slate-900">
+        <h2 className="text-3xl font-semibold tracking-tight text-slate-900">
           Manage Items
         </h2>
-        <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">
+        <p className="mt-2 max-w-3xl text-base leading-7 text-slate-600">
           Search the existing inventory, update item details, or delete records
           that have no hold or loan history.
         </p>
@@ -455,12 +455,12 @@ export default function ItemManager() {
 
       <form
         onSubmit={HandleSearchSubmit}
-        className="grid gap-4 rounded-2xl border border-slate-200 bg-white shadow-sm p-6 lg:grid-cols-[1.2fr_220px_auto_auto]"
+        className="grid gap-4 rounded-2xl border border-slate-200 bg-white shadow-sm p-4 pt-2 lg:grid-cols-[1.2fr_220px_auto_auto]"
       >
         <div>
           <label
             htmlFor="item-search"
-            className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700"
+            className="ml-1 text-sm font-semibold uppercase tracking-[0.1em] text-sky-700"
           >
             Search by title, creator, publisher, or summary
           </label>
@@ -476,7 +476,7 @@ export default function ItemManager() {
         <div>
           <label
             htmlFor="item-category-filter"
-            className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700"
+            className="ml-1 text-sm font-semibold uppercase tracking-[0.1em] text-sky-700"
           >
             Category
           </label>
@@ -504,7 +504,7 @@ export default function ItemManager() {
       </form>
 
       <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
-        <aside className="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
+        <aside className="rounded-2xl border border-slate-200 bg-white shadow-sm p-6 overflow-auto h-dvh">
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-bold text-slate-900">Inventory</h3>
             <span className="text-sm font-semibold text-slate-500">
@@ -522,7 +522,7 @@ export default function ItemManager() {
             </p>
           ) : null}
 
-          <div className="mt-6 space-y-3">
+          <div className="mt-4 space-y-3">
             {items.map((item) => {
               const isSelected = Number(item.itemId) === Number(selectedItemId);
 
@@ -531,20 +531,20 @@ export default function ItemManager() {
                   key={item.itemId}
                   type="button"
                   onClick={() => setSelectedItemId(item.itemId)}
-                  className={`w-full rounded-2xl border px-4 py-4 text-left transition-all ${
+                  className={`w-full rounded-2xl border px-4 py-2 text-left transition-all ${
                     isSelected
-                      ? "border-sky-200 bg-sky-50 shadow-sm"
-                      : "border-slate-100 bg-white hover:border-slate-300 hover:bg-slate-50"
+                      ? "border-sky-300 bg-sky-100/60 shadow-md"
+                      : "border-slate-300 bg-slate-100/40 hover:border-slate-400 hover:bg-slate-200/50 shadow-sm"
                   }`}
                 >
                   <p className="font-bold text-slate-900">{item.title}</p>
-                  <p className="mt-1 text-sm font-medium text-slate-600">
+                  <p className="text-sm font-medium text-slate-600">
                     {BuildCategoryLabel(item.category)} · Item #{item.itemId}
                   </p>
-                  <p className="mt-2 text-sm font-medium text-slate-700">
+                  <p className="mt-1 text-sm font-medium text-slate-700">
                     Total copies: {item.totalCopies}
                   </p>
-                  <p className="mt-1 text-xs text-slate-600">
+                  <p className="text-xs text-slate-600">
                     Available {item.available} · On hold {item.onHold} ·
                     Unavailable {item.unavailable}
                   </p>
@@ -570,16 +570,16 @@ export default function ItemManager() {
           ) : (
             <form onSubmit={HandleSave} className="space-y-8">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.3em] text-sky-700">
-                    {BuildCategoryLabel(selectedItem.category)}
-                  </p>
+                <div className="w-full">
                   <h3 className="mt-2 text-3xl font-bold text-slate-900">
                     {selectedItem.title}
                   </h3>
-                  <p className="mt-2 text-sm font-medium text-slate-500">
+                  <span className="text-md font-bold uppercase text-sky-700">
+                    {BuildCategoryLabel(selectedItem.category)}:
+                  </span>{" "}
+                  <span className="text-md font-medium text-slate-500">
                     Item #{selectedItem.itemId}
-                  </p>
+                  </span>
                 </div>
 
                 <div className="flex gap-3">
@@ -596,7 +596,7 @@ export default function ItemManager() {
                 </div>
               </div>
 
-              <div className="grid gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm text-slate-600 md:grid-cols-4">
+              <div className="grid gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm text-slate-600 md:grid-cols-4 items-center text-center justify-evenly">
                 <div>
                   <span className="font-bold text-slate-900">Available:</span>{" "}
                   {selectedItem.available}
@@ -627,7 +627,7 @@ export default function ItemManager() {
                 <div>
                   <label
                     htmlFor="title"
-                    className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700"
+                    className="ml-1 text-sm font-semibold uppercase  text-sky-700"
                   >
                     {selectedItem.category === "equipment"
                       ? "Equipment Name"
@@ -650,7 +650,7 @@ export default function ItemManager() {
                 <div>
                   <label
                     htmlFor="totalCopies"
-                    className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700"
+                    className="ml-1 text-sm font-semibold uppercase  text-sky-700"
                   >
                     Total Copies
                   </label>
@@ -675,7 +675,7 @@ export default function ItemManager() {
                     <div>
                       <label
                         htmlFor="shelfNumber"
-                        className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700"
+                        className="ml-1 text-sm font-semibold uppercase  text-sky-700"
                       >
                         Shelf Number
                       </label>
@@ -738,7 +738,7 @@ export default function ItemManager() {
                     <div>
                       <label
                         htmlFor="publisher"
-                        className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700"
+                        className="ml-1 text-sm font-semibold uppercase  text-sky-700"
                       >
                         Publisher
                       </label>
@@ -759,7 +759,7 @@ export default function ItemManager() {
                     <div>
                       <label
                         htmlFor="publicationDate"
-                        className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700"
+                        className="ml-1 text-sm font-semibold uppercase  text-sky-700"
                       >
                         Publication Date
                       </label>
@@ -783,7 +783,7 @@ export default function ItemManager() {
                         <div>
                           <label
                             htmlFor="authorFirstName"
-                            className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700"
+                            className="ml-1 text-sm font-semibold uppercase  text-sky-700"
                           >
                             Author First Name
                           </label>
@@ -804,7 +804,7 @@ export default function ItemManager() {
                         <div>
                           <label
                             htmlFor="authorLastName"
-                            className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700"
+                            className="ml-1 text-sm font-semibold uppercase  text-sky-700"
                           >
                             Author Last Name
                           </label>
@@ -828,7 +828,7 @@ export default function ItemManager() {
                       <div>
                         <label
                           htmlFor="runtime"
-                          className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700"
+                          className="ml-1 text-sm font-semibold uppercase  text-sky-700"
                         >
                           Runtime (mins)
                         </label>
@@ -852,7 +852,7 @@ export default function ItemManager() {
                     <div className="md:col-span-2">
                       <label
                         htmlFor="summary"
-                        className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700"
+                        className="ml-1 text-sm font-semibold uppercase  text-sky-700"
                       >
                         Summary
                       </label>
@@ -870,7 +870,7 @@ export default function ItemManager() {
                       />
                     </div>
 
-                    <div className="md:col-span-2 space-y-2">
+                    <div className="md:col-span-2 space-y-2 ">
                       <FileUploadField
                         id="coverImageFile"
                         label="Upload Cover Image (Optional)"

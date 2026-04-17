@@ -36,13 +36,17 @@ export default function Periodicals() {
   }, []);
 
   return (
-    <section>
-      <h2 className="text-3xl font-bold text-slate-900">Periodical Entry</h2>
-      <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600">
-        Enter periodical information below.
-      </p>
+    <section className="rounded-xl bg-slate-100/40 border border-gray-100 p-2 inset-shadow-sm">
+      <div className="flex text-center items-center justify-between align-center flex-wrap">
+        <h2 className="text-3xl font-semibold tracking-tight text-slate-900">
+          Periodical Entry
+        </h2>
+        <p className="max-w-2xl text-base leading-7 text-slate-600">
+          Enter periodical information below.
+        </p>
+      </div>
 
-      <div className="mt-8">
+      <div className="mt-4">
         <form
           className="w-full"
           onSubmit={async (e) => {
@@ -105,7 +109,7 @@ export default function Periodicals() {
             }
           }}
         >
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Header Grid */}
             <div className="grid grid-cols-4 gap-6">
               <div className="col-span-2">
@@ -160,25 +164,27 @@ export default function Periodicals() {
             </div>
 
             {/* Dropdowns */}
-            {loading && !error && (
-              <div className="grid grid-cols-3 gap-6">
-                <DisabledDropdown name="genre" />
-                <DisabledDropdown name="language" />
-                <DisabledDropdown name="format" />
-              </div>
-            )}
-            {!loading && error && (
-              <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-                {error}
-              </div>
-            )}
-            {!loading && !error && (
-              <div className="grid grid-cols-3 gap-6">
-                <ObjectDropdown name="genre" options={genres} />
-                <ObjectDropdown name="language" options={languages} />
-                <ObjectDropdown name="format" options={format} />
-              </div>
-            )}
+            <div className="grid grid-cols-3 gap-6">
+              {loading && !error && (
+                <>
+                  <DisabledDropdown name="genres" />
+                  <DisabledDropdown name="languages" />
+                  <DisabledDropdown name="formats" />
+                </>
+              )}
+              {!loading && error && (
+                <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                  {error}
+                </div>
+              )}
+              {!loading && !error && (
+                <>
+                  <ObjectDropdown name="genre" options={genres} />
+                  <ObjectDropdown name="language" options={languages} />
+                  <ObjectDropdown name="format" options={format} />
+                </>
+              )}
+            </div>
 
             {/* Publisher Info */}
             <div className="grid grid-cols-3 gap-6">
@@ -213,40 +219,39 @@ export default function Periodicals() {
                 />
               </div>
             </div>
-
-            {/* File Upload */}
-            <div className="rounded-2xl border-2 border-dashed border-slate-200 p-4 bg-slate-50/50">
-              <FileUploadField
-                id="coverImageFile"
-                label="Cover Image"
-                accept="image/*"
-                selectedFileName={selectedImageName}
-                onChange={(event) => {
-                  const nextFile = event.target.files?.[0] ?? null;
-                  setSelectedImageFile(nextFile);
-                  setSelectedImageName(nextFile?.name ?? "");
-                }}
-              />
+            <div className="grid colspan-3 grid-cols-2 gap-6">
+              {/* Summary */}
+              <div>
+                <label
+                  htmlFor="summary"
+                  className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2"
+                >
+                  Summary
+                </label>
+                <textarea
+                  required
+                  id="summary"
+                  name="summary"
+                  rows="5"
+                  placeholder="Brief description..."
+                  className="block w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-sky-500 transition-all"
+                />
+              </div>
+              {/* File Upload */}
+              <div className="rounded-2xl mt-7 border-2 border-dashed border-slate-200 p-4 bg-slate-50/50">
+                <FileUploadField
+                  id="coverImageFile"
+                  label="Cover Image"
+                  accept="image/*"
+                  selectedFileName={selectedImageName}
+                  onChange={(event) => {
+                    const nextFile = event.target.files?.[0] ?? null;
+                    setSelectedImageFile(nextFile);
+                    setSelectedImageName(nextFile?.name ?? "");
+                  }}
+                />
+              </div>
             </div>
-
-            {/* Summary */}
-            <div>
-              <label
-                htmlFor="summary"
-                className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2"
-              >
-                Summary
-              </label>
-              <textarea
-                required
-                id="summary"
-                name="summary"
-                rows="3"
-                placeholder="Brief description..."
-                className="block w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-sky-500 transition-all"
-              />
-            </div>
-
             {/* Submit */}
             <div className="pt-4 flex justify-center">
               <SubmitButton
