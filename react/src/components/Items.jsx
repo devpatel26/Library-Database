@@ -709,7 +709,6 @@ export function CarouselItemHolder({ data }) {
     data.creator ??
     (data.author ? `${data.author.lastName}, ${data.author.firstName}` : null);
 
-  const formattedDate = BuildDisplayDate(data.publicationDate);
   const metaLine = [data.type, data.language, data.genre]
     .filter(Boolean)
     .join(", ");
@@ -718,20 +717,20 @@ export function CarouselItemHolder({ data }) {
     <div className="flex flex-col items-center justify-center text-center">
       <ItemImage
         itemData={data}
-        className="h-52 w-36 rounded-2xl object-cover shadow-md mb-4 border border-slate-100"
+        className="h-36 w-26 rounded-2xl object-cover shadow-md mb-4 border border-slate-100"
       />
       <div className="text-lg font-bold text-slate-900 leading-tight">
         {data.title}
       </div>
 
       {creator ? (
-        <div className="text-sm font-bold text-sky-700 mt-1 uppercase tracking-wide">
+        <div className="text-sm font-bold text-sky-700 uppercase tracking-wide leading-tight">
           {creator}
         </div>
       ) : null}
 
       {metaLine ? (
-        <div className="text-xs font-bold text-slate-600 mt-1 uppercase tracking-widest">
+        <div className="text-xs font-bold text-slate-600 uppercase tracking-widest leading-tight">
           {metaLine}
           {data.category === "audiovisualmedia" && data.runtime
             ? `, ${data.runtime} MINS`
@@ -741,11 +740,11 @@ export function CarouselItemHolder({ data }) {
 
       {data.summary ? (
         data.summary.length > 120 ? (
-          <div className="text-sm text-slate-600 mt-2 mb-2 leading-relaxed">
+          <div className="text-sm text-slate-600 mt-1 mb-1 leading-relaxed leading-tight">
             {data.summary.slice(0, 120)}...
           </div>
         ) : (
-          <div className="text-sm text-slate-600 mt-2 mb-2 leading-relaxed">
+          <div className="text-sm text-slate-600 mt-1 mb-1 leading-relaxed leading-tight">
             {data.summary}
           </div>
         )

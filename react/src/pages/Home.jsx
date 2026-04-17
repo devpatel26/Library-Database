@@ -48,23 +48,23 @@ export default function Home() {
 
   return (
     <div className="relative overflow-hidden rounded-3xl border border-slate-100 bg-white p-6 shadow-lg">
-      <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+      <h1 className="text-3xl font-bold tracking-tight text-slate-900">
         {welcomeName}
       </h1>
-      <p className="mt-2 text-sm text-slate-600">
+      <p className="text-sm text-slate-600">
         Browse the latest additions across the collection.
       </p>
 
-      <div className="mt-8 space-y-12">
+      <div className="mt-2 space-y-4">
         <section>
-          <h2 className="text-lg font-semibold text-slate-900">Recent Books</h2>
-          <div className="mt-5 flex flex-wrap justify-center gap-8">
-            {loading && <p className="mt-4 text-slate-600">Loading books...</p>}
-            {!loading && error && <p className="mt-4 text-rose-600">{error}</p>}
+          <h2 className="text-xl font-semibold text-slate-900">Recent Books</h2>
+          <div className="rounded-2xl mt-1 flex flex-wrap justify-center gap-8 bg-slate-100 inset-shadow-sm p-4">
+            {loading && <p className="text-slate-600">Loading books...</p>}
+            {!loading && error && <p className="text-rose-600">{error}</p>}
             {!loading && !error && (
-              <div className="mt-4 space-y-8">
+              <div className="space-y-8">
                 <div>
-                  <div className="mt-4 flex flex-wrap justify-evenly gap-4">
+                  <div className="flex flex-wrap justify-evenly gap-4">
                     {data.books.map((book) => (
                       <CarouselItem
                         key={`book-${book.itemId}`}
@@ -79,18 +79,18 @@ export default function Home() {
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold text-slate-900">
+          <h2 className="text-xl font-semibold text-slate-900">
             Recent Periodicals
           </h2>
-          <div className="mt-5 flex flex-wrap justify-center gap-8">
+          <div className="rounded-2xl mt-1 flex flex-wrap justify-center gap-8 bg-slate-100 inset-shadow-sm p-4">
             {loading && (
-              <p className="mt-4 text-slate-600">Loading periodicals...</p>
+              <p className="text-slate-600">Loading periodicals...</p>
             )}
-            {!loading && error && <p className="mt-4 text-rose-600">{error}</p>}
+            {!loading && error && <p className="text-rose-600">{error}</p>}
             {!loading && !error && (
-              <div className="mt-4 space-y-8">
+              <div className="space-y-8">
                 <div>
-                  <div className="mt-4 flex flex-wrap justify-evenly gap-4">
+                  <div className="flex flex-wrap justify-evenly gap-4">
                     {data.periodicals.map((periodicals) => (
                       <CarouselItem
                         key={`periodicals-${periodicals.itemId}`}
@@ -105,14 +105,14 @@ export default function Home() {
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold text-slate-900">Recent Media</h2>
-          <div className="mt-5 flex flex-wrap justify-center gap-8">
-            {loading && <p className="mt-4 text-slate-600">Loading media...</p>}
-            {!loading && error && <p className="mt-4 text-rose-600">{error}</p>}
+          <h2 className="text-xl font-semibold text-slate-900">Recent Media</h2>
+          <div className="rounded-2xl mt-1 flex flex-wrap justify-center gap-8 bg-slate-100 inset-shadow-sm p-4">
+            {loading && <p className="text-slate-600">Loading media...</p>}
+            {!loading && error && <p className="text-rose-600">{error}</p>}
             {!loading && !error && (
-              <div className="mt-4 space-y-8">
+              <div className="space-y-8">
                 <div>
-                  <div className="mt-4 flex flex-wrap justify-evenly gap-4">
+                  <div className="flex flex-wrap justify-evenly gap-4">
                     {data.audiovisualmedia.map((audiovisualmedia) => (
                       <CarouselItem
                         key={`audiovisualmedia-${audiovisualmedia.itemId}`}
@@ -127,18 +127,16 @@ export default function Home() {
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold text-slate-900">
+          <h2 className="text-xl font-semibold text-slate-900">
             Recent Equipment
           </h2>
-          <div className="mt-5 flex flex-wrap justify-center gap-8">
-            {loading && (
-              <p className="mt-4 text-slate-600">Loading equipment...</p>
-            )}
-            {!loading && error && <p className="mt-4 text-rose-600">{error}</p>}
+          <div className="rounded-2xl mt-1 flex flex-wrap justify-center gap-8 bg-slate-100 inset-shadow-sm p-4">
+            {loading && <p className="text-slate-600">Loading equipment...</p>}
+            {!loading && error && <p className="text-rose-600">{error}</p>}
             {!loading && !error && (
-              <div className="mt-4 space-y-8">
+              <div className="space-y-8">
                 <div>
-                  <div className="mt-4 flex flex-wrap justify-evenly gap-4">
+                  <div className="flex flex-wrap justify-evenly gap-4">
                     {data.equipment.map((equipment) => (
                       <CarouselItem
                         key={`equipment-${equipment.itemId}`}

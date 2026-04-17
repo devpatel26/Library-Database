@@ -17,7 +17,7 @@ function LoanHistoryCard({ itemData }) {
   const formattedLoanStart = FormatDate(new Date(itemData.loanStart), true);
   const formattedLoanEnd = FormatDate(new Date(itemData.loanEnd), true);
   return (
-    <div className="rounded-xl bg-slate-50 px-3 py-1.5 outline-2 -outline-offset-1 outline-slate-200">
+    <div className="rounded-3xl bg-white px-3 py-1.5 outline-2 -outline-offset-1 outline-slate-200/60">
       <div className="grid grid-cols-4">
         <div className="col-span-3 m-2 flex gap-4">
           <ItemImage itemData={itemData} />
@@ -91,18 +91,18 @@ export default function Loans() {
   }
 
   return (
-    <section>
-      <h2 className="mt-3 text-4xl font-semibold tracking-tight text-slate-900">
+    <section className="space-y-2 pt-2 rounded-xl bg-slate-100/40  border border-gray-100 p-4 inset-shadow-sm ">
+      <h2 className="text-3xl font-semibold tracking-tight text-slate-800">
         Borrowing
       </h2>
-      <h3 className=" mt-2 text-lg font-semibold text-slate-900">Loans</h3>
-      {loading && <p className="mt-4 text-slate-600">Loading circulation...</p>}
-      {!loading && error && <p className="mt-4 text-rose-600">{error}</p>}
+      <h3 className="mt-2 text-lg font-semibold text-slate-900">Loans</h3>
+      {loading && <p className="mt-2 text-slate-600">Loading circulation...</p>}
+      {!loading && error && <p className="mt-2 text-rose-600">{error}</p>}
 
       {!loading && !error && (
-        <div className="mt-4 space-y-8">
+        <div className="mt-2 space-y-8">
           <div>
-            <div className="mt-4 flex flex-wrap justify-evenly gap-4">
+            <div className="mt-2 flex flex-wrap justify-evenly gap-4">
               {data.loans.length === 0 ? (
                 <p className="text-slate-300">No current loans.</p>
               ) : (
@@ -114,8 +114,8 @@ export default function Loans() {
           </div>
 
           <div>
-            <h3 className=" mt-2 text-lg font-semibold text-sky-300">Holds</h3>
-            <div className="mt-4 flex flex-wrap justify-evenly gap-4">
+            <h3 className="mt-2 text-lg font-semibold text-slate-900">Holds</h3>
+            <div className="mt-2 flex flex-wrap justify-evenly gap-4">
               {data.holds.length === 0 ? (
                 <p className="text-slate-300">No active holds.</p>
               ) : (
@@ -131,10 +131,10 @@ export default function Loans() {
           </div>
 
           <div>
-            <h3 className=" mt-2 text-lg font-semibold text-sky-300">
+            <h3 className="mt-2 text-lg font-semibold text-slate-900">
               History
             </h3>
-            <div className="mt-4 space-y-4">
+            <div className="mt-2 space-y-4">
               {data.history.length === 0 ? (
                 <p className="text-slate-300">No completed loans found.</p>
               ) : (
