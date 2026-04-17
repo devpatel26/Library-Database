@@ -71,7 +71,9 @@ function NavSection({ title, links }) {
             to={to}
             className={({ isActive }) =>
               `block w-full px-6 py-2.5 text-sm transition-colors transition-all ${
-                isActive ? "bg-cyan-700 " : "text-cyan-100 hover:bg-cyan-800 "
+                isActive
+                  ? "bg-cyan-600 "
+                  : "text-cyan-100 hover:bg-cyan-600/50 "
               }`
             }
           >
@@ -193,7 +195,7 @@ function App() {
           <div className="flex flex-1 overflow-hidden">
             {/* Collapsible Sidebar */}
             <aside
-              className={`bg-[#164e63] transition-all duration-300 ease-in-out flex-shrink-0 z-0 py-4 ${
+              className={`bg-cyan-700 transition-all duration-300 ease-in-out flex-shrink-0 z-0 py-4 ${
                 isSidebarOpen
                   ? "w-[125px] opacity-100"
                   : "w-0 opacity-0 overflow-hidden"
@@ -309,29 +311,6 @@ function App() {
             <div className="w-full mx-auto px-6 w-full">
               <div className="flex flex-wrap gap-8 mb-8 text-center justify-evenly wrap">
                 <div>
-                  <h3 className="text-white font-bold mb-3 text-lg">
-                    Resources
-                  </h3>
-                  <ul className="space-y-2">
-                    <li>
-                      <a
-                        href="#"
-                        className="hover:text-white transition-colors"
-                      >
-                        Item Requests
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="hover:text-white transition-colors"
-                      >
-                        Donate
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-                <div>
                   <h3 className="text-white font-bold mb-3 text-lg">FAQs</h3>
                   <ul className="space-y-2">
                     <li>
@@ -339,7 +318,7 @@ function App() {
                         to="/policies"
                         className="hover:text-white transition-colors"
                       >
-                        Library Policies
+                        Policies
                       </NavLink>
                     </li>
                     <li>
@@ -347,7 +326,7 @@ function App() {
                         to="/"
                         className="hover:text-white transition-colors"
                       >
-                        Library Collection
+                        Collection
                       </NavLink>
                     </li>
                   </ul>
@@ -362,7 +341,7 @@ function App() {
                         to="/about"
                         className="hover:text-white transition-colors"
                       >
-                        About Datahaven Library
+                        About Datahaven
                       </NavLink>
                     </li>
                     <li>
@@ -370,7 +349,7 @@ function App() {
                         to="/hours"
                         className="hover:text-white transition-colors"
                       >
-                        Library Hours
+                        Hours
                       </NavLink>
                     </li>
                   </ul>

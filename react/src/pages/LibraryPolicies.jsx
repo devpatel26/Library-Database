@@ -83,37 +83,33 @@ const LibraryPolicies = () => {
   ];
 
   return (
-    <div className="relative w-full max-w-5xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-      {/* Decorative Background Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-2xl h-64 bg-sky-200/50 blur-[100px] rounded-full pointer-events-none"></div>
-
+    <div className="w-full max-w-5xl mx-auto">
       {/* Header Section */}
-      <div className="relative text-center mb-16 mt-4">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6 tracking-tight">
-          Library{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-700 to-blue-900">
-            Policies
-          </span>
+      <div className="text-center m-4">
+        <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-4 tracking-tight">
+          Library <span className="text-sky-900">Policies</span>
         </h1>
-        <p className="text-lg text-slate-700 max-w-2xl mx-auto leading-relaxed">
+        <p className="text-lg text-slate-700 max-w-2xl mx-auto">
           These guidelines help us maintain a safe, equitable, and welcoming
-          environment for all Datahaven patrons.
+          environment for all patrons.
         </p>
       </div>
 
       {/* Policies Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {policies.map((policy, index) => (
           <div
             key={index}
             className="group bg-white border border-slate-100 p-8 rounded-3xl hover:bg-slate-50 hover:border-sky-200 transition-all duration-500 flex flex-col shadow-xl shadow-slate-200/50"
           >
-            <div className="w-14 h-14 rounded-2xl bg-sky-50 border border-sky-100 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-sky-100 transition-all duration-500">
-              {policy.icon}
+            <div className="flex justify-left gap-4 text-center items-center flex-wrap">
+              <div className="w-14 h-14 rounded-2xl bg-sky-50 border border-sky-100 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-sky-100 transition-all duration-500">
+                {policy.icon}
+              </div>
+              <h2 className="text-2xl mb-6 font-bold text-slate-900 tracking-wide group-hover:text-sky-700 transition-colors">
+                {policy.title}
+              </h2>
             </div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-4 tracking-wide group-hover:text-sky-700 transition-colors">
-              {policy.title}
-            </h2>
             <p className="text-slate-600 leading-relaxed text-sm">
               {policy.description}
             </p>
@@ -122,7 +118,7 @@ const LibraryPolicies = () => {
       </div>
 
       {/* Footer Note */}
-      <div className="mt-12 text-center relative z-10">
+      <div className="mt-6 text-center">
         <p className="text-sm text-slate-600 bg-slate-50 inline-block px-6 py-3 rounded-full border border-slate-200 shadow-sm">
           Have a question not covered here? Feel free to ask our staff at the
           front desk.
