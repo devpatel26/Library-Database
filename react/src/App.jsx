@@ -73,7 +73,7 @@ function NavSection({ title, links }) {
               `block w-full px-6 py-2.5 text-sm transition-colors transition-all ${
                 isActive
                   ? "bg-cyan-600 "
-                  : "text-cyan-100 hover:bg-cyan-600/50 "
+                  : "text-white/80 hover:bg-cyan-600/50 "
               }`
             }
           >
