@@ -197,20 +197,16 @@ export default function StaffFines() {
 
   return (
     <section className="mx-auto flex w-full max-w-7xl flex-col rounded-3xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50">
-      <p className="text-sm font-bold uppercase tracking-[0.3em] text-sky-700">
-        Staff
-      </p>
-
-      <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-900">
+      <h1 className="text-4xl font-semibold tracking-tight text-slate-900">
         Fines
       </h1>
 
-      <p className="mt-4 text-base leading-7 text-slate-600">
+      <p className="mt-2 text-base leading-7 text-slate-600">
         View all fines, search by selected fields, and manage overdue, unpaid,
         paid, and waived balances.
       </p>
 
-      <div className="mt-6 grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="mt-2 grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
             Search By
@@ -245,7 +241,7 @@ export default function StaffFines() {
         </div>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-2">
         {isLoading ? (
           <div className="text-slate-600 font-medium">Loading fines...</div>
         ) : filteredFines.length === 0 ? (
@@ -253,7 +249,7 @@ export default function StaffFines() {
             No matching fines found.
           </div>
         ) : (
-          <div className="mt-6 w-full overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+          <div className="mt-2 w-full overflow-x-auto rounded-xl border border-slate-200 shadow-sm max-h-screen overflow-auto">
             <table className="w-full table-auto text-left text-sm">
               <thead>
                 <tr className="bg-slate-100 text-left text-sm text-slate-700 border-b border-slate-200">
