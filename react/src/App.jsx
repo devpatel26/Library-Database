@@ -307,12 +307,12 @@ function App() {
           </div>
 
           {/* Footer */}
-          <footer className="bg-[#164e63] text-cyan-100 pt-10 pb-6 text-sm mt-auto z-10 relative shadow-inner">
+          <footer className="bg-[#164e63] text-cyan-100 pt-2 pb-4 text-sm">
             <div className="w-full mx-auto px-6 w-full">
-              <div className="flex flex-wrap gap-8 mb-8 text-center justify-evenly wrap">
+              <div className="flex flex-wrap gap-8 mb-2 text-center justify-evenly wrap">
                 <div>
-                  <h3 className="text-white font-bold mb-3 text-lg">FAQs</h3>
-                  <ul className="space-y-2">
+                  <h3 className="text-white font-bold mb-1 text-lg">FAQs</h3>
+                  <ul className="space-y-1">
                     <li>
                       <NavLink
                         to="/policies"
@@ -332,10 +332,10 @@ function App() {
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-white font-bold mb-3 text-lg">
+                  <h3 className="text-white font-bold mb-1 text-lg">
                     About Us
                   </h3>
-                  <ul className="space-y-2">
+                  <ul className="space-y-1">
                     <li>
                       <NavLink
                         to="/about"
@@ -356,8 +356,8 @@ function App() {
                 </div>
               </div>
 
-              <div className="flex flex-col-reverse md:flex-row justify-between items-center pt-6 border-t border-cyan-800">
-                <p className="mt-4 md:mt-0 font-medium tracking-wide">
+              <div className="flex flex-col-reverse md:flex-row justify-between items-center pt-4 border-t border-cyan-800">
+                <p className="font-medium tracking-wide">
                   Version {version} — Datahaven Library Database
                 </p>
 
