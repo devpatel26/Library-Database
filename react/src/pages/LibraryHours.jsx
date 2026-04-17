@@ -162,8 +162,7 @@ const LibraryHours = () => {
 
             <div className="mt-8 pt-6 border-t border-slate-100">
               <p className="text-xs text-slate-500 leading-relaxed text-center">
-                * Hours may vary during national holidays. Our digital catalog
-                and online account services remain accessible 24/7.
+                * Hours may vary during national holidays.
               </p>
             </div>
           </div>
