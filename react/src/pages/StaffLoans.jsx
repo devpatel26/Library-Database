@@ -122,7 +122,10 @@ export default function StaffLoans() {
       };
 
       if (searchBy === "all") {
-        return Object.values(fields).join(" ").toLowerCase().includes(normalizedSearch);
+        return Object.values(fields)
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedSearch);
       }
 
       const value = SafeText(fields[searchBy]).toLowerCase();
@@ -143,16 +146,16 @@ export default function StaffLoans() {
 
   return (
     <section className="mx-auto flex w-full max-w-6xl flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/50">
-
       <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-900">
         Current Loans
       </h1>
 
       <p className="mt-4 text-base leading-7 text-slate-600">
-        View all active loans, search by selected fields, and manage returns or lost items.
+        View all active loans, search by selected fields, and manage returns or
+        lost items.
       </p>
 
-      <div className="mt-6 grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className=" grid w-full gap-4 grid-cols-4">
         <div>
           <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
             Search By
@@ -162,31 +165,17 @@ export default function StaffLoans() {
             onChange={(event) => setSearchBy(event.target.value)}
             className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
           >
-            <option value="all">
-              All
-            </option>
-            <option value="loanId">
-              Loan ID
-            </option>
-            <option value="patronName">
-              Patron Name
-            </option>
-            <option value="patronId">
-              Patron ID
-            </option>
-            <option value="itemId">
-              Item ID
-            </option>
-            <option value="title">
-              Item Title
-            </option>
-            <option value="creator">
-              Creator
-            </option>
+            <option value="all">All</option>
+            <option value="loanId">Loan ID</option>
+            <option value="patronName">Patron Name</option>
+            <option value="patronId">Patron ID</option>
+            <option value="itemId">Item ID</option>
+            <option value="title">Item Title</option>
+            <option value="creator">Creator</option>
           </select>
         </div>
 
-        <div>
+        <div className="col-span-3">
           <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
             Search Text
           </label>
@@ -200,11 +189,9 @@ export default function StaffLoans() {
         </div>
       </div>
 
-      <div className="mt-6 space-y-4">
+      <div className="mt-6 space-y-4  max-h-screen overflow-auto pr-3">
         {isLoading ? (
-          <div className="text-slate-600 font-medium">
-            Loading loans...
-          </div>
+          <div className="text-slate-600 font-medium">Loading loans...</div>
         ) : filteredLoans.length === 0 ? (
           <div className="text-slate-600 font-medium">
             No matching current loans found.
@@ -244,11 +231,17 @@ export default function StaffLoans() {
                   </div>
 
                   <div className="mt-1 text-sm text-slate-600">
-                    Loan date: {loan.loanStart ? FormatDate(new Date(loan.loanStart), true) : "-"}
+                    Loan date:{" "}
+                    {loan.loanStart
+                      ? FormatDate(new Date(loan.loanStart), true)
+                      : "-"}
                   </div>
 
                   <div className="text-sm text-slate-600">
-                    Due date: {loan.loanEnd ? FormatDate(new Date(loan.loanEnd), true) : "-"}
+                    Due date:{" "}
+                    {loan.loanEnd
+                      ? FormatDate(new Date(loan.loanEnd), true)
+                      : "-"}
                   </div>
                 </div>
 

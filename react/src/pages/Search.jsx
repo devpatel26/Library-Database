@@ -139,7 +139,7 @@ export default function Search() {
         )}
 
         {!loading && !error && (
-          <div className="pr-3 flex gap-4 flex-wrap justify-evenly max-h-screen overflow-auto">
+          <div className="pr-3 flex gap-4 flex-wrap justify-evenly max-h-screen overflow-auto  pr-3">
             {results.map((item) => (
               <Item key={`${item.category}-${item.itemId}`} itemData={item} />
             ))}

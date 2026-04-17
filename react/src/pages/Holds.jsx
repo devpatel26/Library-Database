@@ -180,7 +180,7 @@ export default function Holds() {
         convert them into loans.
       </p>
 
-      <div className="mt-6 grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="mt-6 grid w-full gap-4 grid-cols-4">
         <div>
           <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
             Search By
@@ -201,7 +201,7 @@ export default function Holds() {
           </select>
         </div>
 
-        <div>
+        <div className="col-span-3">
           <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
             Search Text
           </label>
@@ -215,7 +215,7 @@ export default function Holds() {
         </div>
       </div>
 
-      <div className="mt-6 space-y-4">
+      <div className="mt-6 space-y-4  max-h-screen overflow-auto pr-3">
         {isLoading ? (
           <div className="text-slate-600 font-medium">Loading holds...</div>
         ) : filteredHolds.length === 0 ? (

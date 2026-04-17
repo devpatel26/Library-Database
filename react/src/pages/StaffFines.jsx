@@ -206,7 +206,7 @@ export default function StaffFines() {
         paid, and waived balances.
       </p>
 
-      <div className="mt-2 grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="mt-2 w-full grid gap-4 grid-cols-4">
         <div>
           <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
             Search By
@@ -227,7 +227,7 @@ export default function StaffFines() {
           </select>
         </div>
 
-        <div>
+        <div className="col-span-3">
           <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
             Search Text
           </label>
