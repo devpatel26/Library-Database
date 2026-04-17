@@ -171,10 +171,6 @@ export default function Holds() {
 
   return (
     <section className="mx-auto flex w-full max-w-6xl flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/50">
-      <p className="text-sm font-bold uppercase tracking-[0.3em] text-sky-700">
-        Staff
-      </p>
-
       <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-900">
         Current Holds
       </h1>
@@ -223,7 +219,9 @@ export default function Holds() {
         {isLoading ? (
           <div className="text-slate-600 font-medium">Loading holds...</div>
         ) : filteredHolds.length === 0 ? (
-          <div className="text-slate-600 font-medium">No matching current holds found.</div>
+          <div className="text-slate-600 font-medium">
+            No matching current holds found.
+          </div>
         ) : (
           filteredHolds.map((hold) => {
             const holdStatusText = GetHoldStatusText(hold);
@@ -257,7 +255,9 @@ export default function Holds() {
                   </div>
 
                   {hold.creator ? (
-                    <div className="mt-1 font-medium text-sky-700">{hold.creator}</div>
+                    <div className="mt-1 font-medium text-sky-700">
+                      {hold.creator}
+                    </div>
                   ) : null}
 
                   <div className="mt-3 font-medium text-slate-700">
@@ -295,7 +295,9 @@ export default function Holds() {
                   />
                   <PrimaryButton
                     title={isReadyHold ? "Check Out" : "Waiting"}
-                    onClick={() => CheckoutHold(hold.holdId, hold.holdStatusCode)}
+                    onClick={() =>
+                      CheckoutHold(hold.holdId, hold.holdStatusCode)
+                    }
                     disabledValue={!isReadyHold}
                   />
                 </div>

@@ -113,10 +113,6 @@ export default function Lost() {
 
   return (
     <section className="mx-auto flex w-full max-w-6xl flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/50">
-      <p className="text-sm font-bold uppercase tracking-[0.3em] text-sky-700">
-        Staff
-      </p>
-
       <h1 className="mt-3 text-4xl font-semibold text-slate-900">Lost Items</h1>
 
       <div className="mt-6 grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2">
