@@ -64,7 +64,7 @@ function NavSection({ title, links }) {
         {title}
       </p> */}
 
-      <div className="space-y-1 font-bold text-white transition-all whitespace-pre-line">
+      <div className="space-y-1 font-semibold text-white transition-all whitespace-pre-line">
         {links.map(({ to, label }) => (
           <NavLink
             key={to}
@@ -72,8 +72,8 @@ function NavSection({ title, links }) {
             className={({ isActive }) =>
               `block w-full px-6 py-2.5 text-sm transition-colors transition-all ${
                 isActive
-                  ? "bg-cyan-600 "
-                  : "text-white/80 hover:bg-cyan-600/50 "
+                  ? "bg-cyan-600/50 font-bold"
+                  : "text-white/90 hover:bg-cyan-600/35 "
               }`
             }
           >
@@ -195,15 +195,11 @@ function App() {
           <div className="flex flex-1 overflow-hidden">
             {/* Collapsible Sidebar */}
             <aside
-              className={`bg-cyan-700 transition-all duration-300 ease-in-out flex-shrink-0 z-0  ${
-                isSidebarOpen
-                  ? "w-[125px] opacity-100"
-                  : "w-0 opacity-0 overflow-hidden"
+              className={`bg-cyan-700/80 transition-all duration-300 ease-in-out flex-shrink-0 z-0  ${
+                isSidebarOpen ? "w-[125px]" : "w-0 overflow-hidden"
               }`}
             >
-              <div
-                className={`transition-opacity duration-300${isSidebarOpen ? "opacity-100" : "opacity-0"}`}
-              >
+              <div className="overflow-hidden">
                 <NavSection title="General" links={generalLinks} />
                 <NavSection title="Staff" links={staffLinks} />
                 <NavSection title="Admin" links={adminLinks} />
