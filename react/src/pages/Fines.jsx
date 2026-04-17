@@ -182,21 +182,21 @@ export default function Fines() {
   );
 
   return (
-    <section>
-      <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-900">
+    <section className="space-y-2 pt-2 rounded-xl bg-slate-100/40  border border-gray-100 p-4 inset-shadow-sm ">
+      <h2 className="text-3xl font-semibold tracking-tight text-slate-800">
         Fines
-      </h1>
+      </h2>
 
       {!loading && !error ? (
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <div className="rounded-2xl border border-slate-200 bg-white  p-4">
             <h3 className="text-lg font-bold text-slate-900">Open Balance</h3>
             <p className="mt-2 text-2xl font-semibold text-slate-900">
               {FormatMoney(outstandingBalance)}
             </p>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <div className="rounded-2xl border border-slate-200 bg-white p-4">
             <h3 className="text-lg font-bold text-slate-900">Fine Records</h3>
             <p className="mt-2 text-2xl font-semibold text-slate-900">
               {fines.length}
@@ -205,9 +205,13 @@ export default function Fines() {
         </div>
       ) : null}
 
-      {loading ? <p className="mt-6 text-slate-600 font-medium">Loading fines...</p> : null}
+      {loading ? (
+        <p className="mt-6 text-slate-600 font-medium">Loading fines...</p>
+      ) : null}
 
-      {!loading && error ? <p className="mt-6 text-rose-600 font-medium">{error}</p> : null}
+      {!loading && error ? (
+        <p className="mt-6 text-rose-600 font-medium">{error}</p>
+      ) : null}
 
       {!loading && !error ? (
         <div className="mt-6 flex flex-col gap-4">
@@ -227,7 +231,7 @@ export default function Fines() {
               return (
                 <div
                   key={fine.fineId}
-                  className={`rounded-2xl border transition-all duration-300 p-5 ${isExpanded ? 'border-sky-300 bg-slate-50 shadow-md shadow-sky-100' : 'border-slate-200 bg-slate-50 hover:border-sky-200'}`}
+                  className={`rounded-2xl border transition-all bg-white duration-300 p-5 ${isExpanded ? "border-sky-300 bg-slate-50 shadow-md shadow-sky-100" : "border-slate-200 bg-slate-50 hover:border-sky-200"}`}
                 >
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="space-y-2">
@@ -238,7 +242,11 @@ export default function Fines() {
                       <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium text-slate-900">
                         <span>Total: {FormatMoney(fineAmount)}</span>
                         <span>Paid: {FormatMoney(paidAmount)}</span>
-                        <span className={remainingAmount > 0 ? "text-rose-600" : ""}>Remaining: {FormatMoney(remainingAmount)}</span>
+                        <span
+                          className={remainingAmount > 0 ? "text-rose-600" : ""}
+                        >
+                          Remaining: {FormatMoney(remainingAmount)}
+                        </span>
                         <span>Status: {status}</span>
                       </div>
 
@@ -288,7 +296,10 @@ export default function Fines() {
                     <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                       <p className="text-sm font-medium text-slate-600">
                         Enter payment amount up to{" "}
-                        <span className="text-slate-900 font-bold">{FormatMoney(remainingAmount)}</span>.
+                        <span className="text-slate-900 font-bold">
+                          {FormatMoney(remainingAmount)}
+                        </span>
+                        .
                       </p>
 
                       <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">

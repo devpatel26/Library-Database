@@ -407,9 +407,6 @@ export default function AllUsersReport() {
 
   return (
     <section className="flex w-full flex-col rounded-3xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50">
-      <p className="text-sm font-bold uppercase tracking-[0.3em] text-sky-700">
-        Admin Report
-      </p>
 
       <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-900">
         All Users Report

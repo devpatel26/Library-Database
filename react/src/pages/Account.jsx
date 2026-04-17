@@ -104,50 +104,50 @@ export default function Account() {
 
   return (
     <div className="flex flex-col gap-8 lg:flex-row">
-      {/* Sidebar Navigation - Matches Light Theme */}
-      <aside className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm lg:sticky lg:top-8 lg:w-72 lg:self-start">
-        <h2 className="mb-4 px-3 text-xs font-bold uppercase tracking-widest text-slate-400">
-          User Menu
-        </h2>
-        <nav className="space-y-1">
-          {navLinks.map((link) => (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              end={link.end}
-              className={({ isActive }) =>
-                `block rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${
-                  isActive
-                    ? "bg-sky-50 text-sky-700 shadow-sm"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-sky-600"
-                }`
-              }
-            >
-              {link.label}
-            </NavLink>
-          ))}
-        </nav>
-      </aside>
-      
-      {/* Main Content Card */}
       <main className="flex-1 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900 mb-6">Account</h1>
+        <div className="mb-2 flex justify-evenly items-center flex-wrap gap-4">
+          <h1 className="flex-1 text-4xl font-bold tracking-tight text-slate-800">
+            Account
+          </h1>
+          <nav className="flex-3 space-y-1 flex justify-evenly pt-4">
+            {navLinks.map((link) => (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                end={link.end}
+                className={({ isActive }) =>
+                  `block rounded-lg px-4 py-2.5 text-md transition-all ${
+                    isActive
+                      ? "bg-sky-50 text-sky-700 shadow-sm font-bold"
+                      : "text-slate-600 hover:bg-sky-100/50 font-medium hover:text-sky-800"
+                  }`
+                }
+              >
+                {link.label}
+              </NavLink>
+            ))}
+          </nav>
+        </div>
+
         {outlet ? (
           outlet
         ) : (
-          <section className="space-y-6">
-            <div className="rounded-2xl bg-slate-50 p-4 border border-slate-100">
+          <section className="space-y-4 pt-2 rounded-xl bg-slate-100/40  border border-gray-100 p-4 inset-shadow-sm ">
+            <h2 className="text-3xl font-semibold tracking-tight text-slate-800">
+              Information
+            </h2>
+            <div className="rounded-2xl bg-slate-200/40 p-4 border border-slate-300">
               <p className="text-sm text-slate-600">
                 {isPatron
                   ? "View your membership details below. Use the menu to manage loans and settings."
                   : isStaff
-                  ? "Logged in as Staff. Exercise caution when viewing internal identifiers."
-                  : "Account details are displayed below."}
+                    ? "Logged in as staff."
+                    : "Account details are displayed below."}
               </p>
             </div>
 
             {loading && (
-              <div className="flex items-center gap-3 text-slate-500 font-medium animate-pulse">
+              <div className="flex items-center gap-3 text-slate-700 font-medium animate-pulse">
                 <div className="h-4 w-4 rounded-full bg-sky-400"></div>
                 Loading account information...
               </div>
@@ -163,18 +163,26 @@ export default function Account() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <span className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Full Name</span>
-                    <span className="text-lg font-semibold text-slate-900">{account.first_name} {account.last_name}</span>
+                    <span className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-1">
+                      Full Name
+                    </span>
+                    <span className="text-lg font-semibold text-sky-800">
+                      {account.first_name} {account.last_name}
+                    </span>
                   </div>
                   <div>
-                    <span className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Email Address</span>
-                    <span className="text-lg font-semibold text-slate-900">{account.email}</span>
+                    <span className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-1">
+                      Email Address
+                    </span>
+                    <span className="text-lg font-semibold text-sky-800">
+                      {account.email}
+                    </span>
                   </div>
                   <div>
-                    <span className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
+                    <span className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-1">
                       {account.user_type === "staff" ? "Staff ID" : "Member ID"}
                     </span>
-                    <span className="text-lg font-semibold text-sky-700 font-mono">
+                    <span className="text-lg font-semibold text-sky-800 font-mono">
                       #{account.staff_id ?? account.patron_id}
                     </span>
                   </div>
@@ -182,19 +190,31 @@ export default function Account() {
 
                 <div className="space-y-4">
                   <div>
-                    <span className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Date of Birth</span>
-                    <span className="text-lg font-semibold text-slate-900">{FormatDateOfBirth(account.date_of_birth)}</span>
+                    <span className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-1">
+                      Date of Birth
+                    </span>
+                    <span className="text-lg font-semibold text-sky-800">
+                      {FormatDateOfBirth(account.date_of_birth)}
+                    </span>
                   </div>
                   {account.phone_number && (
                     <div>
-                      <span className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Phone Number</span>
-                      <span className="text-lg font-semibold text-slate-900">{account.phone_number}</span>
+                      <span className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-1">
+                        Phone Number
+                      </span>
+                      <span className="text-lg font-semibold text-sky-800">
+                        {account.phone_number}
+                      </span>
                     </div>
                   )}
                   {account.address && (
                     <div>
-                      <span className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Primary Address</span>
-                      <span className="text-lg font-semibold text-slate-900 leading-tight">{account.address}</span>
+                      <span className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-1">
+                        Primary Address
+                      </span>
+                      <span className="text-lg font-semibold text-sky-800 leading-tight">
+                        {account.address}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -202,7 +222,9 @@ export default function Account() {
             )}
 
             {!loading && !error && !account && (
-              <p className="text-slate-400 italic">No account records found in the database.</p>
+              <p className="text-slate-700 italic">
+                No account records found.
+              </p>
             )}
           </section>
         )}

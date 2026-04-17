@@ -11,7 +11,8 @@ import {
 const inputClassName =
   "mt-2 block w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-sky-500 transition-all placeholder:text-slate-400";
 
-const labelClassName = "block text-sm font-bold text-slate-700 uppercase tracking-wide mt-4 mb-1";
+const labelClassName =
+  "block ml-2 text-sm font-bold text-slate-700 uppercase tracking-wide mt-4 mb-1";
 
 export default function AccountSettings() {
   const [email, setEmail] = useState("");
@@ -109,7 +110,9 @@ export default function AccountSettings() {
       setAddress(data.address ?? address);
       setPhoneNumber(data.phone_number ?? phonenumber);
 
-      setContactMessage(data.message ?? "Contact information updated successfully.");
+      setContactMessage(
+        data.message ?? "Contact information updated successfully.",
+      );
     } catch (err) {
       setError(GetErrorMessage(err, "Failed to update contact information."));
     } finally {
@@ -129,7 +132,11 @@ export default function AccountSettings() {
         body: JSON.stringify(passwordForm),
       });
 
-      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      setPasswordForm({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
       setPasswordMessage(data.message ?? "Password updated successfully.");
     } catch (err) {
       setError(GetErrorMessage(err, "Failed to update password."));
@@ -139,27 +146,43 @@ export default function AccountSettings() {
   }
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-4 pt-2 rounded-xl bg-slate-100/40  border border-gray-100 p-4 inset-shadow-sm ">
       <div className="mb-4">
-        <h2 className="text-3xl font-bold tracking-tight text-slate-900">Settings</h2>
-        <p className="text-slate-500">Manage your profile and security preferences.</p>
+        <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+          Settings
+        </h2>
+        <p className="text-slate-600">
+          Manage your profile and security preferences.
+        </p>
       </div>
 
-      {loading && <p className="text-slate-500 animate-pulse">Loading settings...</p>}
-      {!loading && error && <div className="rounded-xl bg-red-50 border border-red-200 p-4 text-red-700 text-sm font-medium">{error}</div>}
+      {loading && (
+        <p className="text-slate-600 animate-pulse">Loading settings...</p>
+      )}
+      {!loading && error && (
+        <div className="rounded-xl bg-red-50 border border-red-200 p-4 text-red-700 text-sm font-medium">
+          {error}
+        </div>
+      )}
 
       {!loading && !error && (
         <div className="grid gap-8 xl:grid-cols-2">
           {/* Contact Info Form */}
           <form
             onSubmit={HandleContactSubmit}
-            className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm"
+            className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm"
           >
-            <h3 className="text-xl font-bold text-slate-900">Contact Information</h3>
-            <p className="mt-1 text-sm text-slate-500 italic">Self-service profile management.</p>
+            <h3 className="text-xl font-bold text-slate-900">
+              Contact Information
+            </h3>
+            <p className="mt-1 text-sm text-slate-600 italic">
+              Self-service profile management.
+            </p>
 
             <div className="space-y-1">
-              <label htmlFor="email" className={labelClassName}>Email Address</label>
+              <label htmlFor="email" className={labelClassName}>
+                Email Address
+              </label>
               <input
                 id="email"
                 type="email"
@@ -171,7 +194,9 @@ export default function AccountSettings() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="firstname" className={labelClassName}>First Name</label>
+                  <label htmlFor="firstname" className={labelClassName}>
+                    First Name
+                  </label>
                   <input
                     required
                     id="firstname"
@@ -181,7 +206,9 @@ export default function AccountSettings() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="lastname" className={labelClassName}>Last Name</label>
+                  <label htmlFor="lastname" className={labelClassName}>
+                    Last Name
+                  </label>
                   <input
                     required
                     id="lastname"
@@ -194,7 +221,9 @@ export default function AccountSettings() {
 
               {isStaff && (
                 <>
-                  <label htmlFor="address" className={labelClassName}>Home Address</label>
+                  <label htmlFor="address" className={labelClassName}>
+                    Home Address
+                  </label>
                   <input
                     required
                     id="address"
@@ -203,7 +232,9 @@ export default function AccountSettings() {
                     className={inputClassName}
                   />
 
-                  <label htmlFor="phonenumber" className={labelClassName}>Phone Number</label>
+                  <label htmlFor="phonenumber" className={labelClassName}>
+                    Phone Number
+                  </label>
                   <input
                     required
                     id="phonenumber"
@@ -217,7 +248,9 @@ export default function AccountSettings() {
             </div>
 
             {contactMessage && (
-              <p className="mt-4 text-sm font-medium text-emerald-600 bg-emerald-50 p-2 rounded-lg border border-emerald-100">{contactMessage}</p>
+              <p className="mt-4 text-sm font-medium text-emerald-600 bg-emerald-50 p-2 rounded-lg border border-emerald-100">
+                {contactMessage}
+              </p>
             )}
 
             <div className="mt-8">
@@ -232,47 +265,72 @@ export default function AccountSettings() {
           {/* Password Form */}
           <form
             onSubmit={HandlePasswordSubmit}
-            className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm"
+            className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm"
           >
             <h3 className="text-xl font-bold text-slate-900">Security</h3>
-            <p className="mt-1 text-sm text-slate-500 italic">Update your account password.</p>
+            <p className="mt-1 text-sm text-slate-600 italic">
+              Update your account password.
+            </p>
 
             <div className="space-y-1">
-              <label htmlFor="currentPassword" className={labelClassName}>Current Password</label>
+              <label htmlFor="currentPassword" className={labelClassName}>
+                Current Password
+              </label>
               <input
                 id="currentPassword"
                 type="password"
                 required
                 value={passwordForm.currentPassword}
-                onChange={(e) => setPasswordForm(c => ({ ...c, currentPassword: e.target.value }))}
+                onChange={(e) =>
+                  setPasswordForm((c) => ({
+                    ...c,
+                    currentPassword: e.target.value,
+                  }))
+                }
                 className={inputClassName}
               />
 
-              <label htmlFor="newPassword" className={labelClassName}>New Password</label>
+              <label htmlFor="newPassword" className={labelClassName}>
+                New Password
+              </label>
               <input
                 id="newPassword"
                 type="password"
                 required
                 minLength={8}
                 value={passwordForm.newPassword}
-                onChange={(e) => setPasswordForm(c => ({ ...c, newPassword: e.target.value }))}
+                onChange={(e) =>
+                  setPasswordForm((c) => ({
+                    ...c,
+                    newPassword: e.target.value,
+                  }))
+                }
                 className={inputClassName}
               />
 
-              <label htmlFor="confirmPassword" className={labelClassName}>Confirm New Password</label>
+              <label htmlFor="confirmPassword" className={labelClassName}>
+                Confirm New Password
+              </label>
               <input
                 id="confirmPassword"
                 type="password"
                 required
                 minLength={8}
                 value={passwordForm.confirmPassword}
-                onChange={(e) => setPasswordForm(c => ({ ...c, confirmPassword: e.target.value }))}
+                onChange={(e) =>
+                  setPasswordForm((c) => ({
+                    ...c,
+                    confirmPassword: e.target.value,
+                  }))
+                }
                 className={inputClassName}
               />
             </div>
 
             {passwordMessage && (
-              <p className="mt-4 text-sm font-medium text-emerald-600 bg-emerald-50 p-2 rounded-lg border border-emerald-100">{passwordMessage}</p>
+              <p className="mt-4 text-sm font-medium text-emerald-600 bg-emerald-50 p-2 rounded-lg border border-emerald-100">
+                {passwordMessage}
+              </p>
             )}
 
             <div className="mt-8">

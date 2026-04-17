@@ -10,11 +10,11 @@ function GetStatusColorClass(fineStatus) {
   }
 
   if (fineStatus === "Returned but unpaid") {
-    return "text-amber-600 font-bold";
+    return "text-amber-700 font-bold";
   }
 
   if (fineStatus === "Paid") {
-    return "text-emerald-600 font-bold";
+    return "text-emerald-700 font-bold";
   }
 
   if (fineStatus === "Waived") {
@@ -173,7 +173,10 @@ export default function StaffFines() {
       };
 
       if (searchBy === "all") {
-        return Object.values(fields).join(" ").toLowerCase().includes(normalizedSearch);
+        return Object.values(fields)
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedSearch);
       }
 
       const value = SafeText(fields[searchBy]).toLowerCase();
@@ -194,19 +197,16 @@ export default function StaffFines() {
 
   return (
     <section className="mx-auto flex w-full max-w-7xl flex-col rounded-3xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50">
-      <p className="text-sm font-bold uppercase tracking-[0.3em] text-sky-700">
-        Staff
-      </p>
-
-      <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-900">
+      <h1 className="text-4xl font-semibold tracking-tight text-slate-900">
         Fines
       </h1>
 
-      <p className="mt-4 text-base leading-7 text-slate-600">
-        View all fines, search by selected fields, and manage overdue, unpaid, paid, and waived balances.
+      <p className="mt-2 text-base leading-7 text-slate-600">
+        View all fines, search by selected fields, and manage overdue, unpaid,
+        paid, and waived balances.
       </p>
 
-      <div className="mt-6 grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="mt-2 w-full grid gap-4 grid-cols-4">
         <div>
           <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
             Search By
@@ -227,7 +227,7 @@ export default function StaffFines() {
           </select>
         </div>
 
-        <div>
+        <div className="col-span-3">
           <label className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
             Search Text
           </label>
@@ -241,17 +241,15 @@ export default function StaffFines() {
         </div>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-2">
         {isLoading ? (
-          <div className="text-slate-600 font-medium">
-            Loading fines...
-          </div>
+          <div className="text-slate-600 font-medium">Loading fines...</div>
         ) : filteredFines.length === 0 ? (
           <div className="text-slate-600 font-medium">
             No matching fines found.
           </div>
         ) : (
-          <div className="mt-6 w-full overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+          <div className="mt-2 w-full overflow-x-auto rounded-xl border border-slate-200 shadow-sm max-h-screen overflow-auto">
             <table className="w-full table-auto text-left text-sm">
               <thead>
                 <tr className="bg-slate-100 text-left text-sm text-slate-700 border-b border-slate-200">
@@ -279,33 +277,50 @@ export default function StaffFines() {
 
                   return (
                     <React.Fragment key={fine.fineId}>
-                      <tr className={`border-b border-slate-100 bg-white text-slate-600 hover:bg-slate-50 transition-colors ${isExpanded ? 'bg-slate-50' : ''}`}>
-                        <td className="px-4 py-3 font-medium text-slate-900">{fine.fineId}</td>
+                      <tr
+                        className={`border-b border-slate-100 bg-white text-slate-600 hover:bg-slate-50 transition-colors ${isExpanded ? "bg-slate-50" : ""}`}
+                      >
+                        <td className="px-4 py-3 font-medium text-slate-900">
+                          {fine.fineId}
+                        </td>
 
                         <td className="px-4 py-3">
-                          <div className="font-semibold text-slate-900">{fine.title}</div>
+                          <div className="font-semibold text-slate-900">
+                            {fine.title}
+                          </div>
                           {fine.creator ? (
-                            <div className="text-sm font-medium text-sky-700">{fine.creator}</div>
+                            <div className="text-sm font-medium text-sky-700">
+                              {fine.creator}
+                            </div>
                           ) : null}
                         </td>
 
                         <td className="px-4 py-3">
-                          {fine.patronName} <span className="text-slate-400">({fine.patronId})</span>
+                          {fine.patronName}{" "}
+                          <span className="text-slate-700">
+                            ({fine.patronId})
+                          </span>
                         </td>
 
                         <td className="px-4 py-3">
-                          {fine.loanDueDate ? FormatDate(new Date(fine.loanDueDate), true) : "-"}
+                          {fine.loanDueDate
+                            ? FormatDate(new Date(fine.loanDueDate), true)
+                            : "-"}
                         </td>
 
                         <td className="px-4 py-3">{fine.daysOverdue}</td>
 
-                        <td className="px-4 py-3">{FormatMoney(fine.dailyFine)}</td>
+                        <td className="px-4 py-3">
+                          {FormatMoney(fine.dailyFine)}
+                        </td>
 
                         <td className="px-4 py-3 font-medium text-rose-600">
                           {FormatMoney(fine.fineAmount)}
                         </td>
 
-                        <td className="px-4 py-3">{FormatMoney(fine.paidAmount)}</td>
+                        <td className="px-4 py-3">
+                          {FormatMoney(fine.paidAmount)}
+                        </td>
 
                         <td className="px-4 py-3 font-bold text-slate-900">
                           {FormatMoney(fine.remainingAmount)}
@@ -313,7 +328,7 @@ export default function StaffFines() {
 
                         <td
                           className={`px-4 py-3 ${GetStatusColorClass(
-                            fine.fineStatus
+                            fine.fineStatus,
                           )}`}
                         >
                           {fine.fineStatus}
@@ -343,7 +358,11 @@ export default function StaffFines() {
                           <td colSpan={11} className="px-4 py-4">
                             <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                               <div className="text-sm font-medium text-slate-600">
-                                Enter payment amount up to <span className="font-bold text-slate-900">{FormatMoney(fine.remainingAmount)}</span>.
+                                Enter payment amount up to{" "}
+                                <span className="font-bold text-slate-900">
+                                  {FormatMoney(fine.remainingAmount)}
+                                </span>
+                                .
                               </div>
 
                               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -352,14 +371,20 @@ export default function StaffFines() {
                                   min="0.01"
                                   step="0.01"
                                   value={paymentAmount}
-                                  onChange={(event) => setPaymentAmount(event.target.value)}
+                                  onChange={(event) =>
+                                    setPaymentAmount(event.target.value)
+                                  }
                                   placeholder="Payment amount"
                                   className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-slate-900 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all sm:max-w-xs"
                                 />
 
                                 <div className="flex gap-2">
                                   <PrimaryButton
-                                    title={isPayPending ? "Processing..." : "Confirm Payment"}
+                                    title={
+                                      isPayPending
+                                        ? "Processing..."
+                                        : "Confirm Payment"
+                                    }
                                     disabledValue={isPayPending}
                                     onClick={() =>
                                       PayFine(fine.fineId, fine.remainingAmount)

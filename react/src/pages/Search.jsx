@@ -48,12 +48,15 @@ export default function Search() {
       <h1 className="text-4xl font-bold tracking-tight text-slate-900 mb-6">
         Search Catalog
       </h1>
-      
+
       <form onSubmit={HandleSubmit} className="space-y-6">
         <div className="grid gap-6 grid-cols-1 md:grid-cols-12 items-end">
           {/* Search Term */}
           <div className="md:col-span-5">
-            <label htmlFor="q" className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">
+            <label
+              htmlFor="q"
+              className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2"
+            >
               Search Term
             </label>
             <input
@@ -67,7 +70,10 @@ export default function Search() {
 
           {/* Category Dropdown */}
           <div className="md:col-span-3">
-            <label htmlFor="category" className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">
+            <label
+              htmlFor="category"
+              className="block text-sm font-bold text-slate-700 uppercase tracking-wide mb-2"
+            >
               Category
             </label>
             <select
@@ -85,7 +91,10 @@ export default function Search() {
 
           {/* Available Only Toggle */}
           <div className="md:col-span-2 flex items-center justify-center pb-2">
-            <label htmlFor="availableOnly" className="flex items-center gap-3 cursor-pointer group">
+            <label
+              htmlFor="availableOnly"
+              className="flex items-center gap-3 cursor-pointer group"
+            >
               <input
                 type="checkbox"
                 id="availableOnly"
@@ -98,35 +107,39 @@ export default function Search() {
             </label>
           </div>
 
-          {/* Submit Button */}
+          {/* Submit */}
           <div className="md:col-span-2">
             <SubmitButton title={"Search"} value={"OK"} fullwidth={true} />
           </div>
         </div>
       </form>
 
-      {/* Results Section */}
-      <div id="results" className="mt-10 pt-10 border-t border-slate-100">
+      {/* Results */}
+      <div id="results" className="pr-3 mt-6 pt-6 border-t border-slate-100">
         {loading && (
-          <div className="flex justify-center items-center py-12">
-            <p className="text-slate-500 font-medium animate-pulse">Searching the catalog...</p>
+          <div className="flex justify-center items-center py-4">
+            <p className="text-slate-500 font-medium animate-pulse">
+              Searching the catalog...
+            </p>
           </div>
         )}
-        
+
         {!loading && error && (
-          <div className="rounded-xl bg-red-50 border border-red-200 p-4 text-red-700 text-sm font-medium">
+          <div className="pr-3 rounded-xl bg-red-50 border border-red-200 p-4 text-red-700 text-sm font-medium">
             {error}
           </div>
         )}
 
         {!loading && !error && hasSearched && results.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-slate-400 italic text-lg">No items match your search criteria.</p>
+          <div className="pr-3 text-center py-4">
+            <p className="text-slate-400 italic text-lg">
+              No items match your search criteria.
+            </p>
           </div>
         )}
 
         {!loading && !error && (
-          <div className="flex gap-6 flex-wrap justify-evenly">
+          <div className="pr-3 flex gap-4 flex-wrap justify-evenly max-h-screen overflow-auto  pr-3">
             {results.map((item) => (
               <Item key={`${item.category}-${item.itemId}`} itemData={item} />
             ))}

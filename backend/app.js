@@ -1951,7 +1951,6 @@ app.get(["/loans", "/api/loans"], async (req, res) => {
 // Home items endpoint
 app.get(["/mainitems", "/api/mainitems"], async (req, res) => {
   try {
-
     const [books] = await pool.query(`
             SELECT
               (
@@ -1972,16 +1971,16 @@ app.get(["/mainitems", "/api/mainitems"], async (req, res) => {
           FROM (
               SELECT item_id
               FROM books
+              ORDER BY item_id DESC
               LIMIT 4
-          ) AS first4
-          JOIN books b ON b.item_id = first4.item_id
+          ) AS last4
+          JOIN books b ON b.item_id = last4.item_id
           LEFT JOIN authors a ON b.item_id = a.item_id
           LEFT JOIN items i ON b.item_id = i.item_id
           LEFT JOIN book_types bt ON bt.book_type_code = b.book_type_code
           LEFT JOIN languages l ON l.language_code = b.language_code
           LEFT JOIN genres g ON g.genre_code = b.genre_code
-            `
-    );
+            `);
     const [periodicals] = await pool.query(`
             SELECT
               p.item_id as itemId,
@@ -1997,15 +1996,15 @@ app.get(["/mainitems", "/api/mainitems"], async (req, res) => {
           FROM (
               SELECT item_id
               FROM periodicals
+              ORDER BY item_id DESC
               LIMIT 4
-          ) AS first4
-          JOIN periodicals p ON p.item_id = first4.item_id
+          ) AS last4
+          JOIN periodicals p ON p.item_id = last4.item_id
           LEFT JOIN items i ON p.item_id = i.item_id
           LEFT JOIN periodical_types pt ON pt.periodical_type_code = p.periodical_type_code
           LEFT JOIN languages l ON l.language_code = p.language_code
           LEFT JOIN genres g ON g.genre_code = p.genre_code
-            `
-    );
+            `);
     const [audiovisualmedia] = await pool.query(`
               SELECT
               (
@@ -2029,15 +2028,15 @@ app.get(["/mainitems", "/api/mainitems"], async (req, res) => {
           FROM (
               SELECT item_id
               FROM audiovisual_media
+              ORDER BY item_id DESC
               LIMIT 4
-          ) AS first4
-          JOIN audiovisual_media am ON am.item_id = first4.item_id
+          ) AS last4
+          JOIN audiovisual_media am ON am.item_id = last4.item_id
           LEFT JOIN contributors c ON am.item_id = c.item_id
           LEFT JOIN items i ON am.item_id = i.item_id
           LEFT JOIN audiovisual_media_types amt ON am.audiovisual_media_type_code = amt.audiovisual_media_type_code
           LEFT JOIN languages l ON am.language_code = l.language_code
-          LEFT JOIN genres g ON am.genre_code = g.genre_code`
-    );
+          LEFT JOIN genres g ON am.genre_code = g.genre_code`);
 
     const [equipment] = await pool.query(`
           SELECT
@@ -2048,12 +2047,12 @@ app.get(["/mainitems", "/api/mainitems"], async (req, res) => {
           FROM (
               SELECT item_id
               FROM equipment
+              ORDER BY item_id DESC
               LIMIT 4
-          ) AS first4
-          JOIN equipment e ON e.item_id = first4.item_id
+          ) AS last4
+          JOIN equipment e ON e.item_id = last4.item_id
           LEFT JOIN items i ON e.item_id = i.item_id
-            `
-    );
+            `);
 
     res.json({ books, periodicals, audiovisualmedia, equipment });
   } catch (error) {
