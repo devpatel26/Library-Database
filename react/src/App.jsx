@@ -175,7 +175,7 @@ function App() {
               </NavLink>
             ) : (
               <div className="flex items-center gap-4">
-                <NotificationBell />
+                {userType == "staff" ? null : <NotificationBell />}
                 <span className="text-cyan-100 hidden sm:inline">
                   Hello{" "}
                   <span className="font-semibold text-white">
