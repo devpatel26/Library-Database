@@ -1,12 +1,6 @@
 import { CarouselItem } from "../components/Items";
 import { useEffect, useState } from "react";
 import { FetchJson, GetErrorMessage, ReadStoredUser } from "../api";
-import {
-  dummyBooks,
-  dummyAVM,
-  dummyEquipment,
-  dummyPeriodicals,
-} from "../data/dummy/items";
 
 async function FetchCirculationData() {
   const payload = await FetchJson("/api/mainitems");
