@@ -3854,54 +3854,6 @@ app.post(["/reset-password", "/api/reset-password"], async (req, res) => {
 });
 
 
-// Admin creates staff signup_code endpoint
-app.post(["/staff-signup-codes", "/api/staff-signup-codes"], async (req, res) => {
-  try {
-    const user = await RequireStaffUser(req, res, { adminOnly: true });
-
-    if (!user) {
-      return;
-    }
-
-    const { signup_code, staff_role_code } = req.body;
-    const normalizedStaffRoleCode = ParsePositiveInteger(staff_role_code);
-
-    if (!signup_code || !normalizedStaffRoleCode) {
-      return res.status(400).json({ error: "Missing required fields." });
-    }
-
-    if (![1, 2].includes(normalizedStaffRoleCode)) {
-      return res.status(400).json({ error: "staff_role_code must be 1 or 2." });
-    }
-
-    // check if the signup code already exists
-    const [existingCodes] = await pool.query(
-      "SELECT code_id FROM staff_signup_codes WHERE signup_code = ?",
-      [signup_code]
-    );
-
-    if (existingCodes.length > 0) {
-      return res.status(409).json({ error: "Signup code already exists." });
-    }
-
-    await pool.query(
-      `
-      INSERT INTO staff_signup_codes
-        (signup_code, staff_role_code, created_by_admin_id, is_used)
-      VALUES
-        (?, ?, ?, ?)
-      `,
-      [signup_code, normalizedStaffRoleCode, user.staffId, 0]
-    );
-
-    res.status(201).json({ message: "Signup code created successfully." });
-  } catch (error) {
-    console.error("Create signup code error:", error);
-    res.status(500).json({
-      error: FormatServerError(error, "Failed to create signup code."),
-    });
-  }
-});
 
 app.post(["/staff/register", "/api/staff/register"], async (req, res) => {
   try {
@@ -3913,7 +3865,7 @@ app.post(["/staff/register", "/api/staff/register"], async (req, res) => {
       password,
       phone_number,
       address,
-      signup_code,
+      staff_role_code,
     } = req.body;
 
     if (
@@ -3923,26 +3875,10 @@ app.post(["/staff/register", "/api/staff/register"], async (req, res) => {
       !password ||
       !birthday ||
       !address ||
-      !signup_code
+      !staff_role_code
     ) {
       return res.status(400).json({ error: "Missing required fields." });
     }
-
-    //  check signup code
-    const [codes] = await pool.query(
-      `
-      SELECT *
-      FROM staff_signup_codes
-      WHERE signup_code = ? AND is_used = 0
-      `,
-      [signup_code]
-    );
-
-    if (codes.length === 0) {
-      return res.status(400).json({ error: "Invalid or already used signup code." });
-    }
-
-    const codeRecord = codes[0];
 
     // check email
     const [existingStaff] = await pool.query(
@@ -3975,7 +3911,7 @@ app.post(["/staff/register", "/api/staff/register"], async (req, res) => {
         (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       [
-        codeRecord.staff_role_code,
+        staff_role_code,
         firstname,
         lastname,
         birthday,
@@ -3985,16 +3921,6 @@ app.post(["/staff/register", "/api/staff/register"], async (req, res) => {
         passwordHash,
         1,
       ]
-    );
-
-    // mark the signup code as used
-    await pool.query(
-      `
-      UPDATE staff_signup_codes
-      SET is_used = 1
-      WHERE code_id = ?
-      `,
-      [codeRecord.code_id]
     );
 
     res.status(201).json({ message: "Staff registration successful." });

@@ -32,7 +32,7 @@ export default function StaffRegistration() {
             password: formData.get("password"),
             phone_number: formData.get("phonenumber"),
             address: formData.get("address"),
-            signup_code: formData.get("signup_code"),
+            staff_role_code: formData.get("staff_role_code"),
           };
 
           try {
@@ -153,19 +153,20 @@ export default function StaffRegistration() {
           </div>
 
           {/* Verification Row */}
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 items-end pt-4">
-            <div className="sm:col-span-1">
-              <label htmlFor="signup_code" className={labelClasses}>
-                Signup Code
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 items-end">
+            <div>
+              <label htmlFor="staff_role_code" className={labelClasses}>
+                Assign Staff Role
               </label>
-              <input
+              <select
                 required
-                id="signup_code"
-                name="signup_code"
-                type="text"
-                placeholder="STAFF-2024"
-                className={`${inputClasses} border-sky-200 bg-sky-50/30`}
-              />
+                id="staff_role_code"
+                name="staff_role_code"
+                className={`${inputClasses} appearance-none cursor-pointer`}
+              >
+                <option value="1">Staff (General Access)</option>
+                <option value="2">Admin (System Manager)</option>
+              </select>
             </div>
             <div className="sm:col-span-2">
               <SubmitButton

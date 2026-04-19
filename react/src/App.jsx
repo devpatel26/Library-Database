@@ -28,7 +28,6 @@ import Search from "./pages/Search.jsx";
 import StaffRegistration from "./pages/StaffRegistration.jsx";
 import TestPage from "./pages/TestPage.jsx";
 import Logout from "./pages/Logout.jsx";
-import CreateSignupCode from "./pages/CreateSignupCode.jsx";
 import PopularityReport from "./pages/PopularityReport.jsx";
 import PatronSummaryReport from "./pages/PatronSummaryReport.jsx";
 import OverdueReport from "./pages/OverdueReport.jsx";
@@ -117,8 +116,7 @@ function App() {
       ? [
           { to: "/changerole", label: "Manage\nUsers" },
           { to: "/report", label: "Reports" },
-          { to: "/staffregistration", label: "Staff\nSignup" },
-          { to: "/createsignupcode", label: "New\nSignup\nCode" },
+          { to: "/staffregistration", label: "Staff\nSignup" }
         ]
       : [];
 
@@ -175,7 +173,7 @@ function App() {
               </NavLink>
             ) : (
               <div className="flex items-center gap-4">
-                <NotificationBell />
+                {userType == "staff" ? null : <NotificationBell />}
                 <span className="text-cyan-100 hidden sm:inline">
                   Hello{" "}
                   <span className="font-semibold text-white">
@@ -269,10 +267,6 @@ function App() {
                 </Route>
 
                 <Route path="/changerole" element={<ChangeRole />} />
-                <Route
-                  path="/createsignupcode"
-                  element={<CreateSignupCode />}
-                />
                 <Route
                   path="/staffregistration"
                   element={<StaffRegistration />}
