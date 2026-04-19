@@ -3854,6 +3854,84 @@ app.post(["/reset-password", "/api/reset-password"], async (req, res) => {
 });
 
 
+
+app.post(["/staff/register", "/api/staff/register"], async (req, res) => {
+  try {
+    const {
+      firstname,
+      lastname,
+      birthday,
+      email,
+      password,
+      phone_number,
+      address,
+      staff_role_code,
+    } = req.body;
+
+    if (
+      !firstname ||
+      !lastname ||
+      !email ||
+      !password ||
+      !birthday ||
+      !address ||
+      !staff_role_code
+    ) {
+      return res.status(400).json({ error: "Missing required fields." });
+    }
+
+    // check email
+    const [existingStaff] = await pool.query(
+      "SELECT staff_id FROM staff WHERE email = ?",
+      [email]
+    );
+
+    if (existingStaff.length > 0) {
+      return res.status(409).json({ error: "Email already registered." });
+    }
+
+    const passwordHash = HashPassword(password);
+
+    //create staff account
+    await pool.query(
+      `
+      INSERT INTO staff
+        (
+          staff_role_code,
+          first_name,
+          last_name,
+          date_of_birth,
+          email,
+          phone_number,
+          address,
+          password_hash,
+          is_active
+        )
+      VALUES
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      [
+        staff_role_code,
+        firstname,
+        lastname,
+        birthday,
+        email,
+        phone_number || null,
+        address,
+        passwordHash,
+        1,
+      ]
+    );
+
+    res.status(201).json({ message: "Staff registration successful." });
+  } catch (error) {
+    console.error("Staff registration error:", error);
+    res.status(500).json({
+      error: FormatServerError(error, "Staff registration failed."),
+    });
+  }
+});
+
 // Place hold endpoint
 app.post(["/holds", "/api/holds"], async (req, res) => {
   try {

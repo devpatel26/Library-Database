@@ -317,7 +317,7 @@ VALUES
 (5,'Christopher','Nolan','Director'),
 (55,'Steven','Spielberg','Director'),
 (59,'Billie','Joe','Vocalist'),
-(56,'Alfread','Hitchcock','Vocalist');
+(60,'Alfread','Hitchcock','Vocalist');
 
 -- -----------------------------------------------------
 -- Equipment

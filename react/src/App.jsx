@@ -25,6 +25,7 @@ import Login from "./pages/Login.jsx";
 import Registration from "./pages/Registration.jsx";
 import Report from "./pages/Report.jsx";
 import Search from "./pages/Search.jsx";
+import StaffRegistration from "./pages/StaffRegistration.jsx";
 import TestPage from "./pages/TestPage.jsx";
 import Logout from "./pages/Logout.jsx";
 import PopularityReport from "./pages/PopularityReport.jsx";
@@ -115,6 +116,7 @@ function App() {
       ? [
           { to: "/changerole", label: "Manage\nUsers" },
           { to: "/report", label: "Reports" },
+          { to: "/staffregistration", label: "Staff\nSignup" }
         ]
       : [];
 
@@ -265,6 +267,10 @@ function App() {
                 </Route>
 
                 <Route path="/changerole" element={<ChangeRole />} />
+                <Route
+                  path="/staffregistration"
+                  element={<StaffRegistration />}
+                />
 
                 <Route path="/report" element={<Report />} />
                 <Route
