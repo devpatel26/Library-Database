@@ -25,10 +25,8 @@ import Login from "./pages/Login.jsx";
 import Registration from "./pages/Registration.jsx";
 import Report from "./pages/Report.jsx";
 import Search from "./pages/Search.jsx";
-import StaffRegistration from "./pages/StaffRegistration.jsx";
 import TestPage from "./pages/TestPage.jsx";
 import Logout from "./pages/Logout.jsx";
-import CreateSignupCode from "./pages/CreateSignupCode.jsx";
 import PopularityReport from "./pages/PopularityReport.jsx";
 import PatronSummaryReport from "./pages/PatronSummaryReport.jsx";
 import OverdueReport from "./pages/OverdueReport.jsx";
@@ -117,8 +115,6 @@ function App() {
       ? [
           { to: "/changerole", label: "Manage\nUsers" },
           { to: "/report", label: "Reports" },
-          { to: "/staffregistration", label: "Staff\nSignup" },
-          { to: "/createsignupcode", label: "New\nSignup\nCode" },
         ]
       : [];
 
@@ -269,14 +265,6 @@ function App() {
                 </Route>
 
                 <Route path="/changerole" element={<ChangeRole />} />
-                <Route
-                  path="/createsignupcode"
-                  element={<CreateSignupCode />}
-                />
-                <Route
-                  path="/staffregistration"
-                  element={<StaffRegistration />}
-                />
 
                 <Route path="/report" element={<Report />} />
                 <Route

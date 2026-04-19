@@ -467,37 +467,6 @@ SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 
-
-
--- -----------------------------------------------------
--- Table `Library_Database`.`staff_signup_codes`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `Library_Database`.`staff_signup_codes` (
-  `code_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `signup_code` VARCHAR(50) NOT NULL,
-  `staff_role_code` INT NOT NULL,
-  `created_by_admin_id` INT UNSIGNED NULL,
-  `is_used` TINYINT(1) NOT NULL DEFAULT 0,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`code_id`),
-  UNIQUE INDEX `signup_code_UNIQUE` (`signup_code` ASC) VISIBLE,
-  INDEX `staff_role_code_idx` (`staff_role_code` ASC) VISIBLE,
-  INDEX `created_by_admin_id_idx` (`created_by_admin_id` ASC) VISIBLE,
-  CONSTRAINT `signup_codes_staff_role_code`
-    FOREIGN KEY (`staff_role_code`)
-    REFERENCES `Library_Database`.`staff_roles` (`staff_role_code`)
-    ON DELETE RESTRICT
-    ON UPDATE CASCADE,
-  CONSTRAINT `signup_codes_admin_id`
-    FOREIGN KEY (`created_by_admin_id`)
-    REFERENCES `Library_Database`.`staff` (`staff_id`)
-    ON DELETE SET NULL
-    ON UPDATE CASCADE
-)
-ENGINE = InnoDB;
-
-
-
 ALTER TABLE fines
 ADD COLUMN loan_id INT UNSIGNED NULL;
 

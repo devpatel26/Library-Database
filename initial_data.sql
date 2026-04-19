@@ -44,16 +44,6 @@ VALUES
 )
 ON DUPLICATE KEY UPDATE
 email = VALUES(email);
-
--- -----------------------------------------------------
--- Seed Data: Demo Staff Signup Codes
--- -----------------------------------------------------
-INSERT INTO staff_signup_codes
-(signup_code, staff_role_code, created_by_admin_id, is_used)
-VALUES
-('STAFF2026', 1, 1, 0),
-('ADMIN2026', 2, 1, 0);
-
 -- -----------------------------------------------------
 -- Languages
 -- -----------------------------------------------------
