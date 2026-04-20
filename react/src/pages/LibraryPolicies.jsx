@@ -38,7 +38,7 @@ const LibraryPolicies = () => {
           />
         </svg>
       ),
-      description: `Overdue items will garner fines daily. Patrons receive a 0.25$ per day, students receive a 0.20$ fine per day, and faculty receive a 0.10$ fine per day the item overdue. Items overdue by more than 30 days are marked as "Lost," and a $25 fine will be issued for the replacement cost. Fines can be paid in person or online. Patrons with unpaid fines of over $10 will be unable to place new holds or check out items.`,
+      description: `Overdue items will garner fines daily. Patrons receive a 0.25$ per day, students receive a 0.20$ fine per day, and faculty receive a 0.10$ fine per day the item overdue. Fines can be paid in person or online.`,
     },
     {
       title: "Code of Conduct",
