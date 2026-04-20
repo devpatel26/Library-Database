@@ -29,6 +29,10 @@ function NormalizeStatus(fine) {
     return "Waived";
   }
 
+  if (rawStatus.includes("unpaid")) {
+    return "Open";
+  }
+
   if (rawStatus.includes("paid")) {
     return "Paid";
   }
